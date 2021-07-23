@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <StartupObject></StartupObject>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <Win32Resource />
+    <Product>PitCrewUltimate</Product>
+    <Authors>Derek Hearst</Authors>
+    <Company>derekhearst.com</Company>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>DerekKeyfile.pfx</AssemblyOriginatorKeyFile>
+    <DelaySign>false</DelaySign>
+    <AssemblyName>PitCrewUltimateByDerekHearst</AssemblyName>
+    <RootNamespace>PitCrewUltimateByDerekHearst</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>

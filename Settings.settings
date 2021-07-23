@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PitCrewUltimateByDerekHearst" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DuneLastFW" Type="System.String" Scope="User">
+      <Value Profile="(Default)">6.1.0.1743/</Value>
+    </Setting>
+    <Setting Name="Version" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">1.01</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
