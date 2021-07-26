@@ -94,6 +94,20 @@
                     </TabControl>
                 </Grid>
             </TabItem>
+            <TabItem Header="Print">
+                <Grid>
+                    <Border BorderThickness="1" BorderBrush="Black" Margin="474,10,10,10">
+                        <Button Content="Send File by 9100" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,9,0,0" Width="290" Click="SendBy9100"/>
+                    </Border>
+                    <TextBox x:Name="printerIP" HorizontalAlignment="Left" Margin="10,10,0,0" Text="255.255.255" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Background="{x:Null}" TextChanged="printerIP_TextChanged"/>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="Tests">
+                <Grid>
+
+                </Grid>
+            </TabItem>
         </TabControl>
 
     </Grid>

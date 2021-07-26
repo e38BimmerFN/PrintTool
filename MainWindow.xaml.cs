@@ -240,6 +240,36 @@ namespace PitCrewUltimateByDerekHearst
             }
         }
 
-        
+
+        //END FIRMWARE 
+
+
+ 
+
+
+
+        // PRINT BOX    
+        private void printerIP_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
+            var myRegex = Regex.Match(printerIP.Text, regexmatch);
+            if (myRegex.Success)
+            {
+                printerIP.Background = System.Windows.Media.Brushes.LightGreen;
+            }
+            else
+            {
+                printerIP.Background = System.Windows.Media.Brushes.PaleVioletRed;
+            }
+
+        }
+
+        private async void SendBy9100(object sender, RoutedEventArgs e)
+        {
+            var printer = new PrintJobHandler();
+            await printer.sendPrint9100(printerIP.Text);
+
+        }
     }
 }
+    
