@@ -358,7 +358,17 @@ namespace PrintTool
 
         private async void SendBy9100(object sender, RoutedEventArgs e)
         {
-            byte[] data = File.ReadAllBytes(PrintFileToSend);
+            byte[] data= new byte[0];
+            try
+            {
+                data = File.ReadAllBytes(PrintFileToSend);
+            }
+            catch
+            {
+                MessageBox.Show("File read error");
+                return;
+            }
+            
             TcpClient client = new TcpClient();
             try
             {
