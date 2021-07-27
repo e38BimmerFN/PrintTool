@@ -43,7 +43,7 @@ namespace PrintTool
         }
         private bool checkHPStatus()
         {
-            if (File.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\1AUpdates\PitCrewUltimate\version.txt"))
+            if (File.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\@Shared\PrintToolVersion.txt"))
             {
                 return true;
             }
@@ -58,7 +58,7 @@ namespace PrintTool
         private void checkForUpdates()
         {
 
-            StreamReader sr = File.OpenText(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\1AUpdates\PrintTool\version.txt");
+            StreamReader sr = File.OpenText(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\@Shared\PrintToolVersion.txt");
 
             decimal version = decimal.Parse(sr.ReadLine());
             if (Settings.Default.Version < version)
@@ -111,13 +111,19 @@ namespace PrintTool
         }
         private void AddSavedConnectionConfig()
         {
-            var filenames = Directory.GetFiles("./ConnectionConfig");
-            SavedConnectionConfigs.Items.Clear();
-            foreach (string filename in filenames)
+            try
             {
-                SavedConnectionConfigs.Items.Add(filename);
+                string[] filenames = Directory.GetFiles("./ConnectionConfig");
+                SavedConnectionConfigs.Items.Clear();
+                foreach (string filename in filenames)
+                {
+                    SavedConnectionConfigs.Items.Add(filename);
+                }
             }
-           
+            catch
+            {
+                Directory.CreateDirectory("ConnectionConfig");
+            }          
         }
         
         #endregion

@@ -87,41 +87,83 @@
                 </TabItem>
                 <TabItem Header="Yolo">
                     <Grid>
-                        <ComboBox x:Name="yoloProductSelection" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="300" SelectedIndex="1" IsReadOnly="True" Height="22">
-                            <ComboBoxItem Content="yoshino_dist"/>
-                            <ComboBoxItem Content="lochsa_dist"/>
-                        </ComboBox>
-                        <ComboBox x:Name="yoloFWDateSelector" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Width="150" SelectedIndex="0" Height="22"/>
-                        <Label Content="Select your product." HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="301" Height="26"/>
-                        <Label Content="Selection your firmware version." HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top" Height="26" Width="185"/>
-                        <ComboBox x:Name="yoloFWSelect" HorizontalAlignment="Left" Margin="166,99,0,0" VerticalAlignment="Top" Width="145" SelectedIndex="0" Height="22">
-                            <ComboBoxItem Content="assert"/>
-                            <ComboBoxItem Content="nonassert"/>
-                            <ComboBoxItem Content="signable_assert"/>
-                            <ComboBoxItem Content="nonassert/signed"/>
-                        </ComboBox>
-                        <Button x:Name="yoloInstallButton" Content="Download &amp; send" HorizontalAlignment="Left" Margin="10,368,0,0" VerticalAlignment="Top" Click="yoloUpdateButton" Height="50" Width="245"/>
-                        <Button Content="Cancel&#xA;" HorizontalAlignment="Left" Margin="260,368,0,0" VerticalAlignment="Top" Click="usbSendDestroy" Height="50" Width="50"/>
-                        <Border BorderThickness="1" BorderBrush="Black" Margin="367,10,10,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width=".75*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <GroupBox Header="Firmware Select" Grid.Column="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".50*"/>
+                                    <RowDefinition Height=".20*"/>
+                                    <RowDefinition Height=".20*"/>
+                                </Grid.RowDefinitions>
+                                <Label Content="Select your product." Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="yoloProductSelection" SelectedIndex="1" IsReadOnly="True" Grid.Row="1" VerticalAlignment="Center">
+                                    <ComboBoxItem Content="yoshino_dist"/>
+                                    <ComboBoxItem Content="lochsa_dist"/>
+                                </ComboBox>
+                                <Label Content="Select Firmware" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="yoloFWDateSelector" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center"/>
+                                <Label Content="Selection your firmware version." Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="yoloFWSelect" SelectedIndex="0" Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                    <ComboBoxItem Content="assert"/>
+                                    <ComboBoxItem Content="nonassert"/>
+                                    <ComboBoxItem Content="signable_assert"/>
+                                    <ComboBoxItem Content="nonassert/signed"/>
+                                </ComboBox>
+                                <Button x:Name="yoloInstallButton" Content="Download &amp; send" Click="yoloUpdateButton" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                                <Button Content="Cancel&#xA;" Click="usbSendDestroy" Grid.Row="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Logs"  Grid.Column="1">
                             <ScrollViewer>
-                                <TextBox x:Name="yoloTBLogs" Text="Log:" TextWrapping="Wrap" IsReadOnly="True"  FontSize="10"/>
+                                <TextBox x:Name="yoloTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="10"/>
                             </ScrollViewer>
-                        </Border>
+                        </GroupBox>
                     </Grid>
                 </TabItem>
                 <TabItem Header="DUNE">
                     <Grid>
-                        <Border BorderThickness="1" BorderBrush="Black" Margin="367,10,10,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width=".75*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <GroupBox Header="Firmware Select" Grid.Column="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".25*"/>
+                                    <RowDefinition Height=".50*"/>
+                                    <RowDefinition Height=".20*"/>
+                                    <RowDefinition Height=".20*"/>
+                                </Grid.RowDefinitions>
+                                <Label Content="Select firmware Version" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="duneVSelect" IsEditable="True" SelectedIndex="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+                                <Label Content="Select Hardware Model" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <ComboBox x:Name="duneHWModelBox"  DropDownOpened="grabDuneProduct" Grid.Row="3" VerticalAlignment="Center"/>
+                                <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="duneUpdateButton" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                                <Button Content="Cancel&#xA;" Click="usbSendDestroy" Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Logs" Grid.Column="1">
                             <ScrollViewer>
-                                <TextBox x:Name="duneTBLogs" Text="Log:" TextWrapping="Wrap" IsReadOnly="True"  FontSize="10"/>
+                                <TextBox x:Name="duneTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="8" FontFamily="Agency FB"/>
                             </ScrollViewer>
-                        </Border>
-                        <ComboBox x:Name="duneVSelect" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="306" IsEditable="True" SelectedIndex="0" />
-                        <Label Content="Select firmware Version" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                        <Label Content="Select Hardware Model" HorizontalAlignment="Left" Margin="10,68,0,0" VerticalAlignment="Top"/>
-                        <ComboBox x:Name="duneHWModelBox" HorizontalAlignment="Left" Margin="10,99,0,0" VerticalAlignment="Top" Width="306" DropDownOpened="grabDuneProduct" />
-                        <Button x:Name="duneInstallButton" Content="Download &amp; Install" HorizontalAlignment="Left" Margin="10,368,0,0" VerticalAlignment="Top" Width="245" Click="duneUpdateButton" Height="50"/>
-                        <Button Content="Cancel&#xA;" HorizontalAlignment="Left" Margin="260,368,0,0" VerticalAlignment="Top" Click="usbSendDestroy" Height="50" Width="50"/>
+                        </GroupBox>
+                            
+                        
+                        
                     </Grid>
                 </TabItem>
             </TabControl>
