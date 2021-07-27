@@ -8,5 +8,11 @@
     <Setting Name="Version" Type="System.Decimal" Scope="User">
       <Value Profile="(Default)">1.01</Value>
     </Setting>
+    <Setting Name="PrinterIp" Type="System.String" Scope="User">
+      <Value Profile="(Default)">15.86.118.9</Value>
+    </Setting>
+    <Setting Name="DartIp" Type="System.String" Scope="User">
+      <Value Profile="(Default)">15.86.118.1</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -46,5 +46,29 @@ namespace PitCrewUltimateByDerekHearst {
                 this["Version"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15.86.118.9")]
+        public string PrinterIp {
+            get {
+                return ((string)(this["PrinterIp"]));
+            }
+            set {
+                this["PrinterIp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15.86.118.1")]
+        public string DartIp {
+            get {
+                return ((string)(this["DartIp"]));
+            }
+            set {
+                this["DartIp"] = value;
+            }
+        }
     }
 }

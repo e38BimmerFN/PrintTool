@@ -7,6 +7,7 @@ using System.Windows;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using System.IO.Ports;
 using System.IO;
 
@@ -19,9 +20,16 @@ namespace PitCrewUltimateByDerekHearst
         public MainWindow()
         {
             InitializeComponent();
-            updater();
         }
-        private void updater()
+
+        private async void StartupTasks(object sender, EventArgs e)
+        {
+            checkForUpdates();
+            PrinterIp.Text = Settings.Default.PrinterIp;
+            grabYoloFirmware();
+            grabDuneRevison();
+        }
+        private void checkForUpdates()
         {
             StreamReader sr = File.OpenText("\\\\jedibdlbroker.boi.rd.hpicorp.net\\DevScratch\\Derek\\1AUpdates\\PitCrewUltimate\\version.txt");
             decimal version = decimal.Parse(sr.ReadLine());
@@ -31,40 +39,9 @@ namespace PitCrewUltimateByDerekHearst
             }
         }
 
-        
-
-        //LOG Collecting
-        private void mainLog(string x)
-        {
-            mainLogBlock.Text = mainLogBlock.Text + "\n" + x;
-        }
-        private void yoloLogs(string x)
-        {
-            
-            yoloTBLogs.Text = yoloTBLogs.Text + "\n" + x;
-            
-        }
-        private void duneLogs(string x)
-        {
-            
-            
-            duneTBLogs.Text = duneTBLogs.Text + "\n" + x;
-        }
-        private void fwLogs(string x)
-        {
-            yoloLogs(x);
-            duneLogs(x);
-            
-        }
-
-
-        //Firmware Install//
-
-        //Jedi
-       
-  
+        #region Firmware Tab
+        #region Jedi Firmware
         const string JEDIPATH = "\\\\jedibdlserver.boi.rd.hpicorp.net\\JediSystems\\Published\\DailyBuilds\\25s\\2021";
-
         private void loadJediFWList(object sender, RoutedEventArgs e)
         {
             foreach (string f in Directory.GetDirectories(JEDIPATH))
@@ -73,16 +50,19 @@ namespace PitCrewUltimateByDerekHearst
                 yoloFWDateSelector.Items.Add(f.Remove(0, JEDIPATH.Length));
             }
         }
-
-
-
-
-        //Yolo
+        #endregion
+        #region Yolo Firmware
         const string YOLOWEBSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
         List<string> yoloFWList = new List<string>();
-        private async void grabYoloFirmware(object sender, EventArgs e)
+        private void yoloLogs(string x)
         {
-            
+
+            yoloTBLogs.Text = yoloTBLogs.Text + "\n" + x;
+
+        }
+
+        private async void grabYoloFirmware()
+        {
             yoloFWList.Clear();
             string sitetograbstring = YOLOWEBSITE + yoloProductSelection.SelectionBoxItem.ToString() + "/?C=M;O=D";
             string data = await downloadSite(sitetograbstring);
@@ -98,14 +78,20 @@ namespace PitCrewUltimateByDerekHearst
             {
                 yoloFWDateSelector.Items.Add(yoloFWList[i]);
             }
-            yoloLogs("Succesfully grabbed " + yoloFWList.Count + " versions from " + yoloProductSelection.SelectionBoxItem.ToString());
+
         }
+         
         private async void yoloUpdateButton(object sender, RoutedEventArgs e)
         {
-
+            
             string selection = yoloProductSelection.SelectionBoxItem.ToString() + "/" + yoloFWDateSelector.SelectionBoxItem.ToString() + "/" + yoloFWSelect.SelectionBoxItem.ToString() + "/";
             string filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + yoloFWDateSelector.SelectionBoxItem.ToString() + "_" + yoloFWSelect.SelectionBoxItem.ToString() + "_rootfs.fhx";
+            if (yoloFWSelect.SelectedIndex == 3)
+            {
+                filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + yoloFWDateSelector.SelectionBoxItem.ToString() + "_nonassert_appsigned_lbi_rootfs_secure_signed.fhx";
+            }
             string fullpath = YOLOWEBSITE + selection + filename;
+            
             yoloLogs("Downloading " + fullpath);
             yoloInstallButton.IsEnabled = false;
             yoloInstallButton.Content = "working...";
@@ -114,11 +100,17 @@ namespace PitCrewUltimateByDerekHearst
             yoloInstallButton.IsEnabled = true;
             yoloInstallButton.Content = "Download & Install";
         }
-
-
+        #endregion
+        #region Dune Firmware
         //Dune
         const string DUNEWEBSITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-        private async void grabDuneRevison(object sender, EventArgs e)
+        private void duneLogs(string x)
+        {
+
+
+            duneTBLogs.Text = duneTBLogs.Text + "\n" + x;
+        }
+        private async void grabDuneRevison()
         {
             if(duneVSelect.Items.Count != 0)
             {
@@ -173,7 +165,8 @@ namespace PitCrewUltimateByDerekHearst
             Settings.Default.Save();
         }
 
-        //Firmware download / install 
+        #endregion
+        #region Shared Functions
         private async Task downloadFile(string fullpath, string filename)
         {
             
@@ -210,20 +203,19 @@ namespace PitCrewUltimateByDerekHearst
         private async Task usbSendFirmware(string filename)
         {
             fwLogs("Sending firmware to printer");
-            
             usbsend.StartInfo.FileName = "\\\\jedibdlbroker.boi.rd.hpicorp.net\\DevScratch\\Derek\\1AUpdates\\USBSend.exe";
             usbsend.StartInfo.Arguments = filename;
             usbsend.StartInfo.CreateNoWindow = true;
             usbsend.Start();
             await usbsend.WaitForExitAsync();
-            System.IO.File.Delete(filename);
+            File.Delete(filename);
             if(usbsend.ExitCode == 0)
             {
-                fwLogs("Firmware upgrade success!");
+                MessageBox.Show("Firmware upgrade success!");
             }
             else
             {
-                fwLogs("Firmware upgrade error / canceled");
+                MessageBox.Show("Firmware upgrade error / canceled");
             }
             
             
@@ -239,37 +231,61 @@ namespace PitCrewUltimateByDerekHearst
 
             }
         }
+        private void fwLogs(string x)
+        {
+            yoloLogs(x);
+            duneLogs(x);
+        }
+        #endregion
+        #endregion
+        #region Printing tab 
+        string PrintFileToSend = @"C:\Users\HearstDe\Desktop\USBSend\1pg_Default_AnyType.ps";
 
-
-        //END FIRMWARE 
-
-
- 
-
-
-
-        // PRINT BOX    
-        private void printerIP_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-            var myRegex = Regex.Match(printerIP.Text, regexmatch);
+            var myRegex = Regex.Match(PrinterIp.Text, regexmatch);
             if (myRegex.Success)
             {
-                printerIP.Background = System.Windows.Media.Brushes.LightGreen;
+                PrinterIp.Background = System.Windows.Media.Brushes.LightGreen;
             }
             else
             {
-                printerIP.Background = System.Windows.Media.Brushes.PaleVioletRed;
+                PrinterIp.Background = System.Windows.Media.Brushes.PaleVioletRed;
             }
-
         }
-
+        
         private async void SendBy9100(object sender, RoutedEventArgs e)
         {
-            var printer = new PrintJobHandler();
-            await printer.sendPrint9100(printerIP.Text);
+            byte[] data = File.ReadAllBytes(PrintFileToSend);
+            TcpClient client = new TcpClient();
+            try
+            {
+                client.Connect(Settings.Default.PrinterIp, 9100);
+            }
+            catch
+            {
+                System.Windows.MessageBox.Show("Incorrect IP");
+                return;
+            }
+            NetworkStream stream = client.GetStream();
+            await stream.WriteAsync(data, 0, data.Length);
+            client.Close();
+        }
+
+
+
+
+
+
+        #endregion
+
+        private void SaveDefaults(object sender, RoutedEventArgs e)
+        {
 
         }
+
+        
     }
 }
     
