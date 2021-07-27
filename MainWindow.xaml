@@ -53,7 +53,7 @@
 
                         </Grid>
                         <Grid Grid.Row="1">
-                            <Button Content="Test Connections" Click="testConnections_Click"/>
+                            
                         </Grid>
                     </Grid>
                     

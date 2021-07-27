@@ -21,7 +21,7 @@ namespace PrintTool
         }
 
         #region Startup
-        private async void StartupTasks(object sender, EventArgs e)
+        private void StartupTasks(object sender, EventArgs e)
         {
             if (checkHPStatus())
             {
@@ -98,20 +98,21 @@ namespace PrintTool
         #region Connections Tab
         private void SaveDefaults(object sender, RoutedEventArgs e)
         {
-            File.WriteAllText("ConnectionConfig/"+ modelEntry.Text, ipEntry.Text + " " + ipDartEntry.Text + " " + bashCom.Text);
+            File.WriteAllText("ConnectionConfig/"+ modelEntry.Text, modelEntry.Text + " " +ipEntry.Text + " " + ipDartEntry.Text + " " + bashCom.Text);
             AddSavedConnectionConfig();
         }
         private void LoadDefaults(object sender, RoutedEventArgs e)
         {
-            var temp = File.ReadAllText("ConnectionConfig" + SavedConnectionConfigs.SelectedItem.ToString()).Split(' ');
-            
-            ipEntry.Text = temp[0];
-            ipDartEntry.Text = temp[1];
-            bashCom.Text = temp[2];
+            var temp = File.ReadAllText(SavedConnectionConfigs.SelectedItem.ToString()).Split(' ');
+            modelEntry.Text = temp[0];
+            ipEntry.Text = temp[1];
+            ipDartEntry.Text = temp[2];
+            bashCom.Text = temp[3];
         }
         private void AddSavedConnectionConfig()
         {
-            var filenames = Directory.GetFiles(".");
+            var filenames = Directory.GetFiles("./ConnectionConfig");
+            SavedConnectionConfigs.Items.Clear();
             foreach (string filename in filenames)
             {
                 SavedConnectionConfigs.Items.Add(filename);
@@ -384,7 +385,5 @@ namespace PrintTool
 
 
         #endregion
-
-        
     }
 }
