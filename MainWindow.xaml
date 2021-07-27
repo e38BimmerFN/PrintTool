@@ -15,48 +15,34 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <GroupBox Header="Connections" Grid.Column="0">
-                    <Grid>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height=".75*"/>
-                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Label Content="Printer model ->" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right"/>
-                            <TextBox Name="modelEntry" Text="" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"/>
+                        <Label Content="Printer model ->" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right"/>
+                        <TextBox Name="modelEntry" Text="" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"/>
 
-                            <Label Content="IP of the printer  ->" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"/>
-                            <TextBox Name="ipEntry" Text="255.255.255.255" Grid.Row="1" Grid.Column="2" TextChanged="PrinterIPBox" VerticalAlignment="Center" />
+                        <Label Content="IP of the printer  ->" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"/>
+                        <TextBox Name="ipEntry" Text="255.255.255.255" Grid.Row="1" Grid.Column="2" TextChanged="PrinterIPBox" VerticalAlignment="Center" />
 
-                            <CheckBox Name="dartEnabled" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <Label Content="Dart ip ->" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"/>
-                            <TextBox Name="ipDartEntry" Text="255.255.255.255" Grid.Row="2" Grid.Column="2" TextChanged="DartIPBox" VerticalAlignment="Center"/>
-
-                            <CheckBox Name="bashEnabled" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <Label Content="Bash com port ->" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
-                            <ComboBox Name="bashCom" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center">
-
-                            </ComboBox>
-
-
-                        </Grid>
-                        <Grid Grid.Row="1">
-                            
-                        </Grid>
+                        <CheckBox Name="dartEnabled" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Label Content="Dart ip ->" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"/>
+                        <TextBox Name="ipDartEntry" Text="255.255.255.255" Grid.Row="2" Grid.Column="2" TextChanged="DartIPBox" VerticalAlignment="Center"/>
+                        <CheckBox Name="bashEnabled" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Label Content="Bash com port ->" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
+                        <ComboBox Name="bashCom" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center">
+                        </ComboBox>
                     </Grid>
-                    
                 </GroupBox>
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
@@ -79,10 +65,85 @@
         </TabItem>
         <TabItem x:Name="firmwareTab" Header="Firmware">
             <TabControl>
-                <TabItem Header="JEDI">
+                <TabItem Header="JEDI" IsEnabled="False">
                     <Grid>
-                        <ComboBox x:Name="jediYear" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Width="120" SelectedIndex="0"/>
-                        <ComboBox HorizontalAlignment="Left" Margin="10,37,0,0" VerticalAlignment="Top" Width="120"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width=".75*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <GroupBox Header="Firmware Selection" Grid.Column="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height=".8*"/>
+                                    <RowDefinition Height=".2*"/>
+                                </Grid.RowDefinitions>
+                                <TabControl>
+                                    <TabItem Header="Daily Firmware">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height=".2*"/>
+                                                <RowDefinition Height=".2*"/>
+                                                <RowDefinition Height=".2*"/>
+                                                <RowDefinition Height=".3*"/>
+                                                <RowDefinition Height=".2*"/>
+                                                <RowDefinition Height=".3*"/>
+                                                <RowDefinition Height=".25*"/>
+                                                <RowDefinition Height=".25*"/>
+                                                <RowDefinition Height=".5*"/>
+                                            </Grid.RowDefinitions>
+                                            <ComboBox Name="jediYear" SelectedIndex="0" Grid.Row="0"  VerticalAlignment="Center"/>
+                                            <ComboBox Name="jediMonth" SelectedIndex="0" Grid.Row="1"  VerticalAlignment="Center"/>
+                                            <ComboBox Name="jediDay" SelectedIndex="0" Grid.Row="2" VerticalAlignment="Center"/>
+                                            <ComboBox Name="jediProduct" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Stretch"/>
+                                            <ComboBox Name="jediRevison" SelectedIndex="0" Grid.Row="4" VerticalAlignment="Center"/>
+                                            <ComboBox Name="csvSelect" SelectedIndex="0" Grid.Row="6" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                                            <ComboBox Name="jediFWSelect" SelectedIndex="0" Grid.Row="7" VerticalAlignment="Center"/>
+                                        </Grid>
+                                    </TabItem>
+                                    <TabItem Header="Custom Firmware">
+                                        <TextBox x:Name="yoloCustomEntry" Text="Please input here" Height="100" VerticalAlignment="Top"/>
+                                    </TabItem>
+                                </TabControl>
+                                <Button x:Name="yoloInstall" Content="Download &amp; Install" Grid.Row="1"/>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="COM Connection" Grid.Column="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height=".7*"/>
+                                    <RowDefinition Height=".25*"/>
+                                </Grid.RowDefinitions>
+                                <GroupBox Header="Output" Grid.Row="0">
+                                    <ScrollViewer>
+                                        <TextBox x:Name="yoloOutput" FontFamily="Consolas"/>
+                                    </ScrollViewer>
+                                </GroupBox>
+                                <GroupBox Header="Tools" Grid.Row="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <Button Content="ESCAPE" Grid.Column="0" Grid.Row="0"/>
+                                        <Button Content="CTRL + F" Grid.Column="1" Grid.Row="0"/>
+                                        <Button Content="Reboot" Grid.Column="2" Grid.Row="0"/>
+                                        <Button Content="Reset" Grid.Column="3" Grid.Row="0"/>
+
+                                        <Button Content="Part clean 0" Grid.Column="0" Grid.Row="1"/>
+                                        <Button Content="Clean NVRam" Grid.Column="1" Grid.Row="1"/>
+                                        <Button Content="Get IP" Grid.Column="2" Grid.Row="1"/>
+                                        <Button Content="netExec" Grid.Column="3" Grid.Row="1"/>
+                                    </Grid>
+                                </GroupBox>
+                                
+                            </Grid>
+                        </GroupBox>
                     </Grid>
                 </TabItem>
                 <TabItem Header="Yolo">
@@ -124,7 +185,7 @@
                         </GroupBox>
                         <GroupBox Header="Logs"  Grid.Column="1">
                             <ScrollViewer>
-                                <TextBox x:Name="yoloTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="10"/>
+                                <TextBox x:Name="yoloTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="10" FontFamily="Consolas"/>
                             </ScrollViewer>
                         </GroupBox>
                     </Grid>
@@ -158,16 +219,12 @@
                         </GroupBox>
                         <GroupBox Header="Logs" Grid.Column="1">
                             <ScrollViewer>
-                                <TextBox x:Name="duneTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="8" FontFamily="Agency FB"/>
+                                <TextBox x:Name="duneTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="14" FontFamily="Consolas"/>
                             </ScrollViewer>
                         </GroupBox>
-                            
-                        
-                        
                     </Grid>
                 </TabItem>
             </TabControl>
-
         </TabItem>
         <TabItem x:Name="logTab" Header="Logs">
             <TabControl>
@@ -181,9 +238,51 @@
         </TabItem>
         <TabItem Header="Print">
             <Grid>
-                <Border BorderThickness="1" BorderBrush="Black" Margin="474,10,10,10">
-                    <Button Content="Send File by 9100" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,9,0,0" Width="290" Click="SendBy9100"/>
-                </Border>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width=".25*"/>
+                </Grid.ColumnDefinitions>
+                
+                <GroupBox Header="Printing Options" Grid.Column="0">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                            
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                            
+                        </Grid.RowDefinitions>
+                        <GroupBox Header="Pages &amp; Copies">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Label Content="Pages : " Grid.Column="0"/>
+                                <TextBox x:Name="printPages" Grid.Column="1"/>
+                                <Label Content="Copies : " Grid.Column="2"/>
+                                <TextBox x:Name="printCopies" Grid.Column="3"/>
+                            </Grid>
+                        </GroupBox>
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="Sending Options" Grid.Column="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Button Content="Send File by 9100" Click="printSend9100Button" Grid.Row="0"/>
+                        <Button Content="Send VIA USB" Click="printSendUSBButton" Grid.Row="1"/>
+                    </Grid>
+                </GroupBox>
             </Grid>
         </TabItem>
         <TabItem Header="Tests">

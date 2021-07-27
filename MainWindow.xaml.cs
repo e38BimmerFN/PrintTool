@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Net.NetworkInformation;
+
 
 
 namespace PrintTool
@@ -68,7 +68,7 @@ namespace PrintTool
         }
         private void checkExePath()
         {
-            if(System.Reflection.Assembly.GetExecutingAssembly().Location.ToString() == @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\")
+            if(System.Reflection.Assembly.GetExecutingAssembly().Location.Contains( @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\"))
             {
                 var result = MessageBox.Show("This program will now install itself into its own folder in the path C:/Users/" + Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/", "Please click yes or no", MessageBoxButton.OKCancel);
                 if(result == MessageBoxResult.Cancel)
@@ -125,7 +125,38 @@ namespace PrintTool
                 Directory.CreateDirectory("ConnectionConfig");
             }          
         }
-        
+
+        private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
+            var myRegex = Regex.Match(ipEntry.Text, regexmatch);
+            if (myRegex.Success)
+            {
+                ipEntry.Background = System.Windows.Media.Brushes.LightGreen;
+            }
+            else
+            {
+                ipEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+            }
+            Settings.Default.PrinterIp = ipEntry.Text;
+            Settings.Default.Save();
+        }
+        private void DartIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
+            var myRegex = Regex.Match(ipDartEntry.Text, regexmatch);
+            if (myRegex.Success)
+            {
+                ipDartEntry.Background = System.Windows.Media.Brushes.LightGreen;
+            }
+            else
+            {
+                ipDartEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+            }
+            Settings.Default.DartIp = ipDartEntry.Text;
+
+        }
+
         #endregion
         #region Firmware Tab
         #region Jedi Firmware
@@ -329,45 +360,28 @@ namespace PrintTool
         #region Printing tab 
         string PrintFileToSend = @"C:\Users\HearstDe\Desktop\USBSend\1pg_Default_AnyType.ps";
 
-        private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private async Task<string> printGeneratePrint()
         {
-            string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-            var myRegex = Regex.Match(ipEntry.Text, regexmatch);
-            if (myRegex.Success)
-            {
-                ipEntry.Background = System.Windows.Media.Brushes.LightGreen;      
-            }
-            else
-            {
-                ipEntry.Background = System.Windows.Media.Brushes.PaleVioletRed; 
-            }
-            Settings.Default.PrinterIp = ipEntry.Text;
-            Settings.Default.Save();
+            return "temp";
         }
-        private void DartIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        
+        private async void printSend9100Button(object sender, RoutedEventArgs e)
         {
-            string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-            var myRegex = Regex.Match(ipDartEntry.Text, regexmatch);
-            if (myRegex.Success)
-            {               
-                ipDartEntry.Background = System.Windows.Media.Brushes.LightGreen;
-            }
-            else
-            {
-                ipDartEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
-            }
-            Settings.Default.DartIp = ipDartEntry.Text;
-            
+            await printSendIP(ipEntry.Text, await printGeneratePrint());
+        }
+
+        private async void printSendUSBButton(object sender, RoutedEventArgs e)
+        {
+            await printSendIP(ipEntry.Text, await printGeneratePrint());
         }
 
 
-
-        private async void SendBy9100(object sender, RoutedEventArgs e)
+        private async Task printSendIP(string ip, string file)
         {
-            byte[] data= new byte[0];
+            byte[] data = new byte[0];
             try
             {
-                data = File.ReadAllBytes(PrintFileToSend);
+                data = File.ReadAllBytes(file);
             }
             catch
             {
@@ -375,24 +389,35 @@ namespace PrintTool
                 return;
             }
             
-            TcpClient client = new TcpClient();
             try
             {
-                client.Connect(Settings.Default.PrinterIp, 9100);
+                TcpClient client = new TcpClient();
+                client.Connect(ip, 9100);
+                NetworkStream stream = client.GetStream();
+                await stream.WriteAsync(data, 0, data.Length);
+                client.Close();
             }
             catch
             {
-                System.Windows.MessageBox.Show("Incorrect IP");
+                MessageBox.Show("Incorrect IP");
                 return;
             }
-            NetworkStream stream = client.GetStream();
-            await stream.WriteAsync(data, 0, data.Length);
-            client.Close();
+            
+
+            return;
         }
+        private async Task printSendUSB(string file)
+        {
+            Process usbsend = new();
+            usbsend.StartInfo.FileName = "USBSend.exe";
+            usbsend.StartInfo.Arguments = file;
+            usbsend.StartInfo.CreateNoWindow = true;
+            usbsend.Start();            
+            await usbsend.WaitForExitAsync();
 
-
-
-
+            return;
+        }
+        
 
 
 
@@ -401,5 +426,7 @@ namespace PrintTool
 
 
         #endregion
+
+
     }
 }
