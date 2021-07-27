@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Drawing.Printing;
 
 
 
@@ -322,7 +323,7 @@ namespace PrintTool
         private async Task usbSendFirmware(string filename)
         {
             fwLogs("Sending firmware to printer");
-            usbsend.StartInfo.FileName = "\\\\jedibdlbroker.boi.rd.hpicorp.net\\DevScratch\\Derek\\1AUpdates\\USBSend.exe";
+            usbsend.StartInfo.FileName = "USBSend.exe";
             usbsend.StartInfo.Arguments = filename;
             usbsend.StartInfo.CreateNoWindow = true;
             usbsend.Start();
@@ -358,24 +359,26 @@ namespace PrintTool
         #endregion
         #endregion
         #region Printing tab 
-        string PrintFileToSend = @"C:\Users\HearstDe\Desktop\USBSend\1pg_Default_AnyType.ps";
+        string PrintFileToSend = @"C:\Users\HearstDe\Documents\PrintStuff\edits.ps";
 
         private async Task<string> printGeneratePrint()
         {
-            return "temp";
+
+            char escapeCharacter = (char)27;
+            return PrintFileToSend;
         }
         
+
+
+
         private async void printSend9100Button(object sender, RoutedEventArgs e)
         {
             await printSendIP(ipEntry.Text, await printGeneratePrint());
         }
-
         private async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
             await printSendIP(ipEntry.Text, await printGeneratePrint());
         }
-
-
         private async Task printSendIP(string ip, string file)
         {
             byte[] data = new byte[0];
@@ -414,9 +417,10 @@ namespace PrintTool
             usbsend.StartInfo.CreateNoWindow = true;
             usbsend.Start();            
             await usbsend.WaitForExitAsync();
-
+            
             return;
         }
+        
         
 
 
