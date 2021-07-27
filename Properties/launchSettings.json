@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PrintTool": {
+      "commandName": "Project",
+      "authenticationMode": "None"
+    }
+  }
+}

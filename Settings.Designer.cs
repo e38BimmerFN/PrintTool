@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PitCrewUltimateByDerekHearst {
+namespace PrintTool {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

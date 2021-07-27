@@ -1,7 +1,7 @@
-﻿<Application x:Class="DerekHearstAllInOne.App"
+﻿<Application x:Class="PrintTool.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DerekHearstAllInOne"
+             xmlns:local="clr-namespace:PrintTool"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

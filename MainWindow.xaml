@@ -1,21 +1,80 @@
-﻿<Window x:Class="PitCrewUltimateByDerekHearst.MainWindow"
+﻿<Window x:Class="PrintTool.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PitCrewUltimateByDerekHearst"
+        xmlns:local="clr-namespace:PrintTool"
         mc:Ignorable="d"
-        Title="PitCrew Ultimate by Derek Hearst" Height="500" Width="800" ContentRendered="StartupTasks" ResizeMode="NoResize" SizeToContent="Manual">
+        Title="PrintTool by Derek Hearst" Height="512" Width="839" ContentRendered="StartupTasks" ResizeMode="CanResize" SizeToContent="Manual" Closing="EndTask">
 
     <TabControl>
         <TabItem Header="Connections">
-            <Grid >
-                <Border BorderThickness="1" BorderBrush="Black" Margin="483,10,10,10">
-                    <Grid >
-                        <Button Content="Save Defaults" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="40" Width="115" Click="SaveDefaults" FontSize="16"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="0.75*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <GroupBox Header="Connections" Grid.Column="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height=".75*"/>
+                            <RowDefinition Height="auto" />
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Label Content="Printer model ->" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right"/>
+                            <TextBox Name="modelEntry" Text="" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"/>
+
+                            <Label Content="IP of the printer  ->" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"/>
+                            <TextBox Name="ipEntry" Text="255.255.255.255" Grid.Row="1" Grid.Column="2" TextChanged="PrinterIPBox" VerticalAlignment="Center" />
+
+                            <CheckBox Name="dartEnabled" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Label Content="Dart ip ->" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"/>
+                            <TextBox Name="ipDartEntry" Text="255.255.255.255" Grid.Row="2" Grid.Column="2" TextChanged="DartIPBox" VerticalAlignment="Center"/>
+
+                            <CheckBox Name="bashEnabled" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Label Content="Bash com port ->" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
+                            <ComboBox Name="bashCom" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center">
+
+                            </ComboBox>
+
+
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Button Content="Test Connections" Click="testConnections_Click"/>
+                        </Grid>
                     </Grid>
-                </Border>
-                <TextBox x:Name="PrinterIp" HorizontalAlignment="Left" Margin="107,116,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+                    
+                </GroupBox>
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height=".1*"/>
+                    </Grid.RowDefinitions>
+                    <GroupBox Header="Saved Configs" Grid.Row="0">
+                        <ListBox Name="SavedConnectionConfigs"/>
+                    </GroupBox>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Save" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="0" Click="SaveDefaults"/>
+                        <Button Content="Load" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="1" Click="LoadDefaults"/>
+                    </Grid>
+                </Grid>
             </Grid>
         </TabItem>
         <TabItem x:Name="firmwareTab" Header="Firmware">

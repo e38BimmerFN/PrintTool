@@ -8,10 +8,10 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Net.NetworkInformation;
 
 
-
-namespace PitCrewUltimateByDerekHearst
+namespace PrintTool
 {
     public partial class MainWindow : Window
     {
@@ -20,28 +20,45 @@ namespace PitCrewUltimateByDerekHearst
             InitializeComponent();
         }
 
+        #region Startup
         private async void StartupTasks(object sender, EventArgs e)
         {
-            if (File.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\1AUpdates\PitCrewUltimate\version.txt"))
+            if (checkHPStatus())
             {
+                checkForUpdates();
                 grabYoloFirmware();
                 grabDuneRevison();
                 checkForUpdates();
+                checkExePath();
+            }
+            setDefaults();
+            AddSavedConnectionConfig();
+            
+            
+        }
+        private void setDefaults()
+        {
+            ipEntry.Text = Settings.Default.PrinterIp;
+            ipDartEntry.Text = Settings.Default.DartIp;
+        }
+        private bool checkHPStatus()
+        {
+            if (File.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\1AUpdates\PitCrewUltimate\version.txt"))
+            {
+                return true;
             }
             else
             {
                 MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
                 firmwareTab.IsEnabled = false;
                 logTab.IsEnabled = false;
+                return false;
             }
-
-            PrinterIp.Text = Settings.Default.PrinterIp;
-
         }
         private void checkForUpdates()
         {
 
-            StreamReader sr = File.OpenText("\\\\jedibdlbroker.boi.rd.hpicorp.net\\DevScratch\\Derek\\1AUpdates\\PitCrewUltimate\\version.txt");
+            StreamReader sr = File.OpenText(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\1AUpdates\PrintTool\version.txt");
 
             decimal version = decimal.Parse(sr.ReadLine());
             if (Settings.Default.Version < version)
@@ -49,7 +66,60 @@ namespace PitCrewUltimateByDerekHearst
                 MessageBox.Show("Please update this tool");
             }
         }
+        private void checkExePath()
+        {
+            if(System.Reflection.Assembly.GetExecutingAssembly().Location.ToString() == @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\")
+            {
+                var result = MessageBox.Show("This program will now install itself into its own folder in the path C:/Users/" + Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/", "Please click yes or no", MessageBoxButton.OKCancel);
+                if(result == MessageBoxResult.Cancel)
+                {
+                    MessageBox.Show("Exiting.");
+                    this.Close();
+                }
+                if (Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/")){
+                    File.Copy(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\PrintTool.ext", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/PrintTool.exe");
+                }
+                else
+                {
+                    Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/");
+                    File.Copy(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\PrintTool.ext", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/PrintTool.exe");
 
+                }
+            }
+        }
+
+
+        private void EndTask(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Settings.Default.Save();
+        }
+
+        #endregion
+        #region Connections Tab
+        private void SaveDefaults(object sender, RoutedEventArgs e)
+        {
+            File.WriteAllText("ConnectionConfig/"+ modelEntry.Text, ipEntry.Text + " " + ipDartEntry.Text + " " + bashCom.Text);
+            AddSavedConnectionConfig();
+        }
+        private void LoadDefaults(object sender, RoutedEventArgs e)
+        {
+            var temp = File.ReadAllText("ConnectionConfig" + SavedConnectionConfigs.SelectedItem.ToString()).Split(' ');
+            
+            ipEntry.Text = temp[0];
+            ipDartEntry.Text = temp[1];
+            bashCom.Text = temp[2];
+        }
+        private void AddSavedConnectionConfig()
+        {
+            var filenames = Directory.GetFiles(".");
+            foreach (string filename in filenames)
+            {
+                SavedConnectionConfigs.Items.Add(filename);
+            }
+           
+        }
+        
+        #endregion
         #region Firmware Tab
         #region Jedi Firmware
         const string JEDIPATH = "\\\\jedibdlserver.boi.rd.hpicorp.net\\JediSystems\\Published\\DailyBuilds\\25s\\2021";
@@ -255,16 +325,35 @@ namespace PitCrewUltimateByDerekHearst
         private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-            var myRegex = Regex.Match(PrinterIp.Text, regexmatch);
+            var myRegex = Regex.Match(ipEntry.Text, regexmatch);
             if (myRegex.Success)
             {
-                PrinterIp.Background = System.Windows.Media.Brushes.LightGreen;
+                ipEntry.Background = System.Windows.Media.Brushes.LightGreen;      
             }
             else
             {
-                PrinterIp.Background = System.Windows.Media.Brushes.PaleVioletRed;
+                ipEntry.Background = System.Windows.Media.Brushes.PaleVioletRed; 
             }
+            Settings.Default.PrinterIp = ipEntry.Text;
+            Settings.Default.Save();
         }
+        private void DartIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
+            var myRegex = Regex.Match(ipDartEntry.Text, regexmatch);
+            if (myRegex.Success)
+            {               
+                ipDartEntry.Background = System.Windows.Media.Brushes.LightGreen;
+            }
+            else
+            {
+                ipDartEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+            }
+            Settings.Default.DartIp = ipDartEntry.Text;
+            
+        }
+
+
 
         private async void SendBy9100(object sender, RoutedEventArgs e)
         {
@@ -289,13 +378,13 @@ namespace PitCrewUltimateByDerekHearst
 
 
 
+
+
+
+
+
         #endregion
 
-        private void SaveDefaults(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-
+        
     }
 }
