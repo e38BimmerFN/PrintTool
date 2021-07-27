@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.IO.Ports;
-using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows;
 
 
 
@@ -36,13 +34,13 @@ namespace PitCrewUltimateByDerekHearst
                 firmwareTab.IsEnabled = false;
                 logTab.IsEnabled = false;
             }
-  
+
             PrinterIp.Text = Settings.Default.PrinterIp;
-            
+
         }
         private void checkForUpdates()
         {
-       
+
             StreamReader sr = File.OpenText("\\\\jedibdlbroker.boi.rd.hpicorp.net\\DevScratch\\Derek\\1AUpdates\\PitCrewUltimate\\version.txt");
 
             decimal version = decimal.Parse(sr.ReadLine());
@@ -93,10 +91,10 @@ namespace PitCrewUltimateByDerekHearst
             }
 
         }
-         
+
         private async void yoloUpdateButton(object sender, RoutedEventArgs e)
         {
-            
+
             string selection = yoloProductSelection.SelectionBoxItem.ToString() + "/" + yoloFWDateSelector.SelectionBoxItem.ToString() + "/" + yoloFWSelect.SelectionBoxItem.ToString() + "/";
             string filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + yoloFWDateSelector.SelectionBoxItem.ToString() + "_" + yoloFWSelect.SelectionBoxItem.ToString() + "_rootfs.fhx";
             if (yoloFWSelect.SelectedIndex == 3)
@@ -104,7 +102,7 @@ namespace PitCrewUltimateByDerekHearst
                 filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + yoloFWDateSelector.SelectionBoxItem.ToString() + "_nonassert_appsigned_lbi_rootfs_secure_signed.fhx";
             }
             string fullpath = YOLOWEBSITE + selection + filename;
-            
+
             yoloLogs("Downloading " + fullpath);
             yoloInstallButton.IsEnabled = false;
             yoloInstallButton.Content = "working...";
@@ -125,18 +123,18 @@ namespace PitCrewUltimateByDerekHearst
         }
         private async void grabDuneRevison()
         {
-            if(duneVSelect.Items.Count != 0)
+            if (duneVSelect.Items.Count != 0)
             {
                 return;
             }
             duneLogs("Grabbing firmware");
             duneVSelect.Items.Clear();
             duneVSelect.Items.Add(Settings.Default.DuneLastFW);
-            string websiteData = await downloadSite(DUNEWEBSITE+ "?C=M;O=D");
+            string websiteData = await downloadSite(DUNEWEBSITE + "?C=M;O=D");
             string regexPattern = "\\d[.]\\d[.]\\d[.]\\d\\d\\d\\d.";
             Regex myPattern = new Regex(regexPattern);
             var matches = myPattern.Matches(websiteData);
-            for(int i =0; i<30; i++)
+            for (int i = 0; i < 30; i++)
             {
                 duneVSelect.Items.Add(matches[i].Value);
             }
@@ -149,7 +147,7 @@ namespace PitCrewUltimateByDerekHearst
             string regexPattern = "(?<=bdl\\/\">)(.*)(?=<\\/a)";
             Regex myPattern = new Regex(regexPattern);
             var matches = myPattern.Matches(websiteData);
-            foreach(Match match in matches)
+            foreach (Match match in matches)
             {
                 duneHWModelBox.Items.Add(match.Value);
             }
@@ -165,7 +163,7 @@ namespace PitCrewUltimateByDerekHearst
             string regexPattern = "(?<=fhx\">)boot_Ulbi_URootfs(.*)(?=<\\/a)";
             Regex myPattern = new Regex(regexPattern);
             var matches = myPattern.Matches(websiteData);
-            string filename =matches.First().ToString();
+            string filename = matches.First().ToString();
             string fullpath = path + filename;
             duneLogs("Downloading " + filename);
             duneInstallButton.IsEnabled = false;
@@ -182,7 +180,7 @@ namespace PitCrewUltimateByDerekHearst
         #region Shared Functions
         private async Task downloadFile(string fullpath, string filename)
         {
-            
+
             WebClient client = new WebClient();
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(downloadProgress);
             await client.DownloadFileTaskAsync(fullpath, filename);
@@ -210,7 +208,7 @@ namespace PitCrewUltimateByDerekHearst
             double bytesIn = double.Parse(e.BytesReceived.ToString());
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
             double percentage = bytesIn / totalBytes * 100;
-            
+
         }
         Process usbsend = new Process();
         private async Task usbSendFirmware(string filename)
@@ -222,7 +220,7 @@ namespace PitCrewUltimateByDerekHearst
             usbsend.Start();
             await usbsend.WaitForExitAsync();
             File.Delete(filename);
-            if(usbsend.ExitCode == 0)
+            if (usbsend.ExitCode == 0)
             {
                 MessageBox.Show("Firmware upgrade success!");
             }
@@ -230,8 +228,8 @@ namespace PitCrewUltimateByDerekHearst
             {
                 MessageBox.Show("Firmware upgrade error / canceled");
             }
-            
-            
+
+
         }
         private void usbSendDestroy(object sender, RoutedEventArgs e)
         {
@@ -267,7 +265,7 @@ namespace PitCrewUltimateByDerekHearst
                 PrinterIp.Background = System.Windows.Media.Brushes.PaleVioletRed;
             }
         }
-        
+
         private async void SendBy9100(object sender, RoutedEventArgs e)
         {
             byte[] data = File.ReadAllBytes(PrintFileToSend);
@@ -298,7 +296,6 @@ namespace PitCrewUltimateByDerekHearst
 
         }
 
-        
+
     }
 }
-    
