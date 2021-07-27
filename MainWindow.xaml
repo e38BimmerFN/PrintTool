@@ -18,7 +18,7 @@
                 <TextBox x:Name="PrinterIp" HorizontalAlignment="Left" Margin="107,116,0,0" Text="TextBox" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
             </Grid>
         </TabItem>
-        <TabItem Header="Firmware">
+        <TabItem x:Name="firmwareTab" Header="Firmware">
             <TabControl>
                 <TabItem Header="JEDI">
                     <Grid>
@@ -68,7 +68,7 @@
             </TabControl>
 
         </TabItem>
-        <TabItem Header="Logs">
+        <TabItem x:Name="logTab" Header="Logs">
             <TabControl>
                 <TabItem Header="Log Upload">
                     <Grid/>

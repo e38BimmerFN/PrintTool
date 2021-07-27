@@ -24,14 +24,27 @@ namespace PitCrewUltimateByDerekHearst
 
         private async void StartupTasks(object sender, EventArgs e)
         {
-            checkForUpdates();
+            if (File.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\1AUpdates\PitCrewUltimate\version.txt"))
+            {
+                grabYoloFirmware();
+                grabDuneRevison();
+                checkForUpdates();
+            }
+            else
+            {
+                MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
+                firmwareTab.IsEnabled = false;
+                logTab.IsEnabled = false;
+            }
+  
             PrinterIp.Text = Settings.Default.PrinterIp;
-            grabYoloFirmware();
-            grabDuneRevison();
+            
         }
         private void checkForUpdates()
         {
+       
             StreamReader sr = File.OpenText("\\\\jedibdlbroker.boi.rd.hpicorp.net\\DevScratch\\Derek\\1AUpdates\\PitCrewUltimate\\version.txt");
+
             decimal version = decimal.Parse(sr.ReadLine());
             if (Settings.Default.Version < version)
             {

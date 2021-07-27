@@ -10,9 +10,7 @@
     <Product>PitCrewUltimate</Product>
     <Authors>Derek Hearst</Authors>
     <Company>derekhearst.com</Company>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>DerekKeyfile.pfx</AssemblyOriginatorKeyFile>
-    <DelaySign>false</DelaySign>
+
     <AssemblyName>PitCrewUltimateByDerekHearst</AssemblyName>
     <RootNamespace>PitCrewUltimateByDerekHearst</RootNamespace>
   </PropertyGroup>
