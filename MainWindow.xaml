@@ -56,9 +56,11 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Button Content="Save" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="0" Click="SaveDefaults"/>
                         <Button Content="Load" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="1" Click="LoadDefaults"/>
+                        <Button Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="2" Click="DefaultsDelete"/>
                     </Grid>
                 </Grid>
             </Grid>
@@ -242,20 +244,35 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width=".25*"/>
                 </Grid.ColumnDefinitions>
-                
                 <GroupBox Header="Printing Options" Grid.Column="0">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="auto"/>
-                            
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
                             <RowDefinition Height="*"/>
-                            
+                            <RowDefinition Height="auto"/>
                         </Grid.RowDefinitions>
-                        <GroupBox Header="Pages &amp; Copies">
+                        <GroupBox Header="File Type" Grid.Row="0" Grid.Column="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <RadioButton Content="POSTSCRIPT" IsChecked="True" Name="psButton" GroupName="filetype" Grid.Column="0" />
+                                <RadioButton Content="PCL" IsChecked="False" Name="pclButton" GroupName="filetype" Grid.Column="1"/>
+                                <RadioButton Content="ESCP" IsChecked="False" Name="escpButton" GroupName="filetype" Grid.Column="2"/>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Pages &amp; Copies" Grid.Row="1" Grid.Column="0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto"/>
@@ -264,11 +281,60 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Label Content="Pages : " Grid.Column="0"/>
-                                <TextBox x:Name="printPages" Grid.Column="1"/>
+                                <TextBox x:Name="printPages" Text="1" Grid.Column="1" VerticalAlignment="Center"/>
                                 <Label Content="Copies : " Grid.Column="2"/>
-                                <TextBox x:Name="printCopies" Grid.Column="3"/>
+                                <TextBox x:Name="printCopies" Text="1" Grid.Column="3" VerticalAlignment="Center"/>
                             </Grid>
                         </GroupBox>
+                        <GroupBox Header="Duplexing" Grid.Row="2" Grid.Column="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <RadioButton Content="Simplex" IsChecked="True" Name="simplexButton" GroupName="duplexmode" Grid.Column="0"/>
+                                <RadioButton Content="Duplex LE" IsChecked="False" Name="duplexLEButton" GroupName="duplexmode" Grid.Column="1"/>
+                                <RadioButton Content="Duplex SE" IsChecked="False" Name="duplexSEButton" GroupName="duplexmode" Grid.Column="2"/>
+                            </Grid>
+                        </GroupBox>
+                        
+                        
+                        <GroupBox Header="Source Tray" Grid.Row="0" Grid.Column="1">
+                            <ComboBox Name="printSourceTray" SelectedIndex="0">
+                                <ComboBoxItem Content=""/>
+                                <ComboBoxItem Content="TRAY1"/>
+                                <ComboBoxItem Content="TRAY2"/>
+                                <ComboBoxItem Content="TRAY3"/>
+                                <ComboBoxItem Content="TRAY4"/>
+                                <ComboBoxItem Content="TRAY5"/>
+                            </ComboBox>
+                        </GroupBox>
+                        <GroupBox Header="Output Tray" Grid.Row="1" Grid.Column="1">
+                            <ComboBox Name="printOutputTray" SelectedIndex="0">
+                                <ComboBoxItem Content=""/>
+                                <ComboBoxItem Content="UPPER"/>
+                                <ComboBoxItem Content="LOWER"/>
+                                <ComboBoxItem Content="OPTIONALOUTPUTBIN1"/>
+                                <ComboBoxItem Content="OPTIONALOUTPUTBIN2"/>
+                                <ComboBoxItem Content="OPTIONALOUTPUTBIN3"/>
+                                <ComboBoxItem Content="OPTIONALOUTPUTBIN4"/>
+                            </ComboBox>
+                        </GroupBox>
+                        <GroupBox Header="Paper Type" Grid.Row="2" Grid.Column="1">
+                            <ComboBox Name ="paperTypeSelection" SelectedIndex="0">
+                                <ComboBoxItem Content="LETTER"/>
+                                <ComboBoxItem Content="A4"/>
+                                <ComboBoxItem Content="LEGAL"/>
+                                <ComboBoxItem Content="EXECUTIVE"/>
+                                <ComboBoxItem Content="A5"/>
+                            </ComboBox>
+                        </GroupBox>
+
+
+                        
+
+
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="Sending Options" Grid.Column="1">
@@ -279,7 +345,7 @@
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <Button Content="Send File by 9100" Click="printSend9100Button" Grid.Row="0"/>
+                        <Button Content="Send VIA AppSocket / 9100" Click="printSend9100Button" Grid.Row="0"/>
                         <Button Content="Send VIA USB" Click="printSendUSBButton" Grid.Row="1"/>
                     </Grid>
                 </GroupBox>

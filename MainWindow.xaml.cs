@@ -8,7 +8,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Drawing.Printing;
+
 
 
 
@@ -33,7 +33,7 @@ namespace PrintTool
                 checkExePath();
             }
             setDefaults();
-            AddSavedConnectionConfig();
+            ConnectionConfigRefresh();
             
             
         }
@@ -99,8 +99,12 @@ namespace PrintTool
         #region Connections Tab
         private void SaveDefaults(object sender, RoutedEventArgs e)
         {
+            if (modelEntry.Text == "")
+            {
+                MessageBox.Show("Please select something");
+            }
             File.WriteAllText("ConnectionConfig/"+ modelEntry.Text, modelEntry.Text + " " +ipEntry.Text + " " + ipDartEntry.Text + " " + bashCom.Text);
-            AddSavedConnectionConfig();
+            ConnectionConfigRefresh();
         }
         private void LoadDefaults(object sender, RoutedEventArgs e)
         {
@@ -110,7 +114,9 @@ namespace PrintTool
             ipDartEntry.Text = temp[2];
             bashCom.Text = temp[3];
         }
-        private void AddSavedConnectionConfig()
+
+
+        private void ConnectionConfigRefresh()
         {
             try
             {
@@ -125,6 +131,15 @@ namespace PrintTool
             {
                 Directory.CreateDirectory("ConnectionConfig");
             }          
+        }
+
+
+        private void DefaultsDelete(object sender, RoutedEventArgs e)
+        {
+            string path = SavedConnectionConfigs.SelectedItem.ToString();
+            File.Delete(path);
+            ConnectionConfigRefresh();
+
         }
 
         private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -359,26 +374,120 @@ namespace PrintTool
         #endregion
         #endregion
         #region Printing tab 
-        string PrintFileToSend = @"C:\Users\HearstDe\Documents\PrintStuff\edits.ps";
-
-        private async Task<string> printGeneratePrint()
-        {
-
-            char escapeCharacter = (char)27;
-            return PrintFileToSend;
-        }
-        
-
-
-
+        #region UI
         private async void printSend9100Button(object sender, RoutedEventArgs e)
         {
-            await printSendIP(ipEntry.Text, await printGeneratePrint());
+            await printSendIP(ipEntry.Text, await printGenerator());
         }
         private async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
-            await printSendIP(ipEntry.Text, await printGeneratePrint());
+            await printSendIP(ipEntry.Text, await printGenerator());
+
         }
+        
+
+        #endregion
+
+        private async Task<string> printGenerator()
+        {
+            string filename = "temp.ps";
+            string jobname = "\"PrintTool Selection Send\"";
+            int pages = int.Parse(printPages.Text);
+            string start = await PJLStart(jobname);
+            string middle = await printGeneratorCaller(pages);
+            string end = await PJLEnd(jobname);
+
+            
+            string alltogether =  start +  middle + end;
+            if (File.Exists(filename)) { File.Delete(filename); }
+            StreamWriter tempFile = File.CreateText(filename);
+            tempFile.Write(alltogether);
+            tempFile.Close();
+            return filename;
+            
+            
+        }
+
+        private async Task<string> PJLStart(string jobname)
+        {
+            
+            string duplexOnOrOff = "OFF";
+            string duplexBinding = "SHORTEDGE";
+
+            if(duplexLEButton.IsChecked == true || duplexSEButton.IsChecked == true) { duplexOnOrOff = "ON"; }
+            if (duplexLEButton.IsChecked == true) { duplexBinding = "LONGEDGE"; }
+            string pjlPart = "";
+            char escapeCharacter = (char)27;
+            string escapeSequence = escapeCharacter + "%-12345X";
+            pjlPart = pjlPart + escapeSequence + "@PJL\r\n"
+                + "@PJL RESET\r\n"
+                + "@PJL JOB NAME = " + jobname + "\r\n"
+                + "@PJL SET JOBNAME = " + jobname + "\r\n"
+                + "@PJL SET DUPLEX = " + duplexOnOrOff + "\r\n"
+                + "@PJL SET BINDING = " + duplexBinding + "\r\n"
+                + "@PJL SET COPIES = " + printCopies.Text + "\r\n"
+                + "@PJL SET PAPER = " + paperTypeSelection.Text + "\r\n"
+                + "@PJL SET OUTBIN = " + printOutputTray.Text + "\r\n"
+                + "@PJL SET MEDIASOURCE = " + printSourceTray.Text+"\r\n";
+            return pjlPart;
+        }
+
+        private async Task<string> PJLEnd(string jobname)
+        {
+            char escapeCharacter = (char)27;
+            string escapeSequence = escapeCharacter + "%-12345X";
+            string endpart = escapeSequence + "@PJL\r\n"
+                + "@PJL EOJ NAME = " + jobname +"\r\n"
+                + escapeSequence+"\r\n";
+
+            return endpart;
+        }
+
+        private async Task<string> printGeneratorCaller(int pages)
+        {
+            string output = "";
+            if (psButton.IsChecked == true)
+            {
+                output = await printCreatePS(pages);
+            }
+            else if (pclButton.IsChecked == true)
+            {
+                output = await printCreatePCL(pages);
+            }
+            else if (escpButton.IsChecked == true)
+            {
+                output = await printCreateESCP(pages);
+            }
+            return output;
+        }
+
+        private async Task<string> printCreatePCL(int pages)
+        {   
+            return "";
+        }
+        private async Task<string> printCreatePS(int pages)
+        {
+            string output = "@PJL ENTER LANGUAGE=POSTSCRIPT \r\n" + "/Times-Roman findfont 14 scalefont setfont \r\n";
+
+            for(int i =0; i<pages; i++)
+            {
+                output = output
+                    + "clippath stroke\r\n"
+                    + "50 200 moveto\r\n"
+                    + "(PrintTool by Derek Hearst) show\r\n"
+                    + "50 180 moveto \r\n"
+                    + "( Page number = " + i+1 + " ) show\r\n"
+                    + "showpage\r\n";
+
+            }
+            return output;
+        }
+
+        private async Task<string> printCreateESCP(int pages)
+        {
+            return "";
+        }
+
         private async Task printSendIP(string ip, string file)
         {
             byte[] data = new byte[0];
@@ -420,17 +529,9 @@ namespace PrintTool
             
             return;
         }
-        
-        
-
-
-
-
-
-
 
         #endregion
 
-
+        
     }
 }
