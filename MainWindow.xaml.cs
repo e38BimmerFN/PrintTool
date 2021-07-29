@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
+using HtmlAgilityPack;
 
 
 
@@ -28,10 +29,11 @@ namespace PrintTool
             if (checkHPStatus())
             {
                 checkForUpdates();
-                grabYoloFirmware();
-                grabDuneRevison();
+                firmwareYoloVersionUpdate();
+                firmwareDuneVersionUpdate();
                 checkForUpdates();
                 checkExePath();
+               
             }
             setDefaults();
             ConnectionConfigRefresh();
@@ -102,10 +104,21 @@ namespace PrintTool
         private void EndTask(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Settings.Default.Save();
+            try
+            {
+                usbsend.Kill();
+            }
+            catch { }
         }
 
         #endregion
         #region Connections Tab
+
+        private void connectionsEnableSerial_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         private void SaveDefaults(object sender, RoutedEventArgs e)
         {
             if (modelEntry.Text == "")
@@ -125,21 +138,13 @@ namespace PrintTool
 
 
         private void ConnectionConfigRefresh()
-        {
-            try
+        {          
+            string[] filenames = Directory.GetFiles("Data/Connections");
+            SavedConnectionConfigs.Items.Clear();
+            foreach (string filename in filenames)
             {
-                
-                string[] filenames = Directory.GetFiles("Data/Connections");
-                SavedConnectionConfigs.Items.Clear();
-                foreach (string filename in filenames)
-                {
-                    SavedConnectionConfigs.Items.Add(filename);
-                }
-            }
-            catch
-            {
-                Directory.CreateDirectory("ConnectionConfig");
-            }          
+                SavedConnectionConfigs.Items.Add(filename);
+            }   
         }
 
 
@@ -190,53 +195,33 @@ namespace PrintTool
         {
             foreach (string f in Directory.GetDirectories(JEDIPATH))
             {
-                yoloFWDateSelector.Items.Clear();
-                yoloFWDateSelector.Items.Add(f.Remove(0, JEDIPATH.Length));
+                firmwareYoloVersions.Items.Clear();
+                firmwareYoloVersions.Items.Add(f.Remove(0, JEDIPATH.Length));
             }
         }
         #endregion
         #region Yolo Firmware
         const string YOLOWEBSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
-        List<string> yoloFWList = new List<string>();
-        private void yoloLogs(string x)
+
+        private async void firmwareYoloVersionUpdate()
         {
-
-            yoloTBLogs.Text = yoloTBLogs.Text + "\n" + x;
-
+            firmwareYoloVersions.Items.Clear();
+            string website = YOLOWEBSITE + yoloProductSelection.SelectionBoxItem.ToString() + "/?C=M;O=D";
+            List<string> results = await downloadWebsiteIndex(website);            
+            foreach(string result in results) { firmwareYoloVersions.Items.Add(result); }
         }
 
-        private async void grabYoloFirmware()
-        {
-            yoloFWList.Clear();
-            string sitetograbstring = YOLOWEBSITE + yoloProductSelection.SelectionBoxItem.ToString() + "/?C=M;O=D";
-            string data = await downloadSite(sitetograbstring);
-            string pattern = "[\"]001[.]\\d\\d\\d\\d.";
-            Regex myPattern = new Regex(pattern);
-            foreach (Match match in myPattern.Matches(data))
-            {
-                string matchoc = match.Value.Substring(1);
-                yoloFWList.Add(matchoc);
-            }
-
-            for (int i = 0; i < yoloFWList.Count; i++)
-            {
-                yoloFWDateSelector.Items.Add(yoloFWList[i]);
-            }
-
-        }
-
-        private async void yoloUpdateButton(object sender, RoutedEventArgs e)
+        private async void firmwareYoloSendVersion(object sender, RoutedEventArgs e)
         {
 
-            string selection = yoloProductSelection.SelectionBoxItem.ToString() + "/" + yoloFWDateSelector.SelectionBoxItem.ToString() + "/" + yoloFWSelect.SelectionBoxItem.ToString() + "/";
-            string filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + yoloFWDateSelector.SelectionBoxItem.ToString() + "_" + yoloFWSelect.SelectionBoxItem.ToString() + "_rootfs.fhx";
+            string selection = yoloProductSelection.SelectionBoxItem.ToString() + "/" + firmwareYoloVersions.SelectionBoxItem.ToString() + "/" + yoloFWSelect.SelectionBoxItem.ToString() + "/";
+            string filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + firmwareYoloVersions.SelectionBoxItem.ToString() + "_" + yoloFWSelect.SelectionBoxItem.ToString() + "_rootfs.fhx";
             if (yoloFWSelect.SelectedIndex == 3)
             {
-                filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + yoloFWDateSelector.SelectionBoxItem.ToString() + "_nonassert_appsigned_lbi_rootfs_secure_signed.fhx";
+                filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + firmwareYoloVersions.SelectionBoxItem.ToString() + "_nonassert_appsigned_lbi_rootfs_secure_signed.fhx";
             }
             string fullpath = YOLOWEBSITE + selection + filename;
-
-            yoloLogs("Downloading " + fullpath);
+            pgLog("Downloading " + fullpath);
             yoloInstallButton.IsEnabled = false;
             yoloInstallButton.Content = "working...";
             await downloadFile(fullpath, filename);
@@ -248,111 +233,119 @@ namespace PrintTool
         #region Dune Firmware
         //Dune
         const string DUNEWEBSITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-        private void duneLogs(string x)
+        private async void firmwareDuneVersionUpdate()
         {
-
-
-            duneTBLogs.Text = duneTBLogs.Text + "\n" + x;
-        }
-        private async void grabDuneRevison()
-        {
-            if (duneVSelect.Items.Count != 0)
+            if (firmwareDuneVersions.Items.Count != 0)
             {
                 return;
-            }
-            duneLogs("Grabbing firmware");
-            duneVSelect.Items.Clear();
-            duneVSelect.Items.Add(Settings.Default.DuneLastFW);
-            string websiteData = await downloadSite(DUNEWEBSITE + "?C=M;O=D");
-            string regexPattern = "\\d[.]\\d[.]\\d[.]\\d\\d\\d\\d.";
-            Regex myPattern = new Regex(regexPattern);
-            var matches = myPattern.Matches(websiteData);
-            for (int i = 0; i < 30; i++)
+            } 
+            firmwareDuneVersions.Items.Clear();
+            firmwareDuneVersions.Items.Add(Settings.Default.DuneLastFW);
+            List<string> versions = await downloadWebsiteIndex(DUNEWEBSITE+"/?C=M;O=D");
+            foreach(string version in versions)
             {
-                duneVSelect.Items.Add(matches[i].Value);
+                firmwareDuneVersions.Items.Add(version);
             }
-            duneLogs("Grabbed " + matches.Count + " versions, But only showing 30.");
+            
         }
-        private async void grabDuneProduct(object sender, EventArgs e)
+
+        private async void firmwareDuneModelUpdate(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            duneHWModelBox.Items.Clear();
-            string websiteData = await downloadSite(DUNEWEBSITE + duneVSelect.Text);
-            string regexPattern = "(?<=bdl\\/\">)(.*)(?=<\\/a)";
-            Regex myPattern = new Regex(regexPattern);
-            var matches = myPattern.Matches(websiteData);
-            foreach (Match match in matches)
+            firmwareDuneModels.Items.Clear();
+            List<string> models = await downloadWebsiteIndex(DUNEWEBSITE + firmwareDuneVersions.Text);
+            foreach (string model in models)
             {
-                duneHWModelBox.Items.Add(match.Value);
+                firmwareDuneModels.Items.Add(model);
             }
-            if (duneHWModelBox.Items.Count == 0)
+            if (firmwareDuneModels.Items.Count == 0)
             {
-                duneLogs("Found no models, check that version is correct");
+                MessageBox.Show("Found no models, check that version is correct");
             }
         }
-        private async void duneUpdateButton(object sender, RoutedEventArgs e)
+
+        private async void firmwareDuneUpdate(object sender, RoutedEventArgs e)
         {
-            string path = DUNEWEBSITE + duneVSelect.Text + "/" + duneHWModelBox.SelectionBoxItem.ToString() + "/";
-            string websiteData = await downloadSite(path);
+            string path = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";
+            List<string> websiteData = await downloadWebsiteIndex(path);
             string regexPattern = "(?<=fhx\">)boot_Ulbi_URootfs(.*)(?=<\\/a)";
             Regex myPattern = new Regex(regexPattern);
             var matches = myPattern.Matches(websiteData);
             string filename = matches.First().ToString();
             string fullpath = path + filename;
-            duneLogs("Downloading " + filename);
             duneInstallButton.IsEnabled = false;
             duneInstallButton.Content = "working...";
             await downloadFile(fullpath, filename);
             await usbSendFirmware(filename);
             duneInstallButton.IsEnabled = true;
             duneInstallButton.Content = "Download & Install";
-            Settings.Default.DuneLastFW = duneVSelect.Text;
+            Settings.Default.DuneLastFW = firmwareDuneVersions.Text;
             Settings.Default.Save();
         }
 
         #endregion
         #region Shared Functions
+
+        
+
         private async Task downloadFile(string fullpath, string filename)
         {
-
+            pgLog("Downloading " + fullpath + filename);
             WebClient client = new WebClient();
             client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(downloadProgress);
+            client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(downloadDone);
             await client.DownloadFileTaskAsync(fullpath, filename);
-            fwLogs("Download success!");
+            pgLog("Download success.");
         }
-        private async Task<string> downloadSite(string website)
+
+        private async Task<List<string>> downloadWebsiteIndex(string website)
         {
-            string result = "";
+            List<string> results = new();
+            string websiteData = "";
+            Regex myPattern = new Regex("(?<=\\/\" >)(.*)(?=<\\/ a >)");
             try
             {
                 WebClient client = new WebClient();
-                client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(downloadProgress);
-                result = await client.DownloadStringTaskAsync(website);
+                websiteData = await client.DownloadStringTaskAsync(website);
             }
             catch
             {
-                MessageBox.Show("Error. Site invalid");
-                return "Error";
+                MessageBox.Show("Error: Specified site is invalid.");
+                pgLog("Error: Specified site is invalid.");
             }
-
-            return result;
+            MatchCollection matches = myPattern.Matches(websiteData);
+            foreach(Match match in matches)
+            {
+                results.Add(match.Value);
+            }
+            results.RemoveAt(0);
+            return results;
         }
         private void downloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {
             double bytesIn = double.Parse(e.BytesReceived.ToString());
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
             double percentage = bytesIn / totalBytes * 100;
-
+            applicaitonProgressBar.Value = percentage;
+        }
+        private void downloadDone(object sender, DownloadDataCompletedEventArgs e)
+        {
+            applicaitonProgressBar.Value = 0;
         }
         Process usbsend = new Process();
         private async Task usbSendFirmware(string filename)
         {
-            fwLogs("Sending firmware to printer");
+            pgLog("Sending firmware to printer");
             usbsend.StartInfo.FileName = "USBSend.exe";
             usbsend.StartInfo.Arguments = filename;
             usbsend.StartInfo.CreateNoWindow = true;
+            usbsend.StartInfo.RedirectStandardOutput = true;
             usbsend.Start();
-            await usbsend.WaitForExitAsync();
-            File.Delete(filename);
+
+            while (usbsend.HasExited == false)
+            {
+                pgLog(await usbsend.StandardOutput.ReadLineAsync());
+            }
+              
             if (usbsend.ExitCode == 0)
             {
                 MessageBox.Show("Firmware upgrade success!");
@@ -361,8 +354,7 @@ namespace PrintTool
             {
                 MessageBox.Show("Firmware upgrade error / canceled");
             }
-
-
+            File.Delete(filename);
         }
         private void usbSendDestroy(object sender, RoutedEventArgs e)
         {
@@ -374,11 +366,6 @@ namespace PrintTool
             {
 
             }
-        }
-        private void fwLogs(string x)
-        {
-            yoloLogs(x);
-            duneLogs(x);
         }
         #endregion
         #endregion
@@ -482,10 +469,12 @@ namespace PrintTool
             {
                 output = output
                     + "clippath stroke\r\n"
-                    + "50 200 moveto\r\n"
-                    + "(PrintTool by Derek Hearst) show\r\n"
-                    + "50 180 moveto \r\n"
-                    + "( Page number = " + i+1 + " ) show\r\n"
+                    + "15 60 moveto\r\n"
+                    + "(PrintTool) show\r\n"
+                    + "20 40 moveto \r\n"
+                    + "( Page number = " + (i+1) + " ) show\r\n"
+                     + "20 20 moveto \r\n"
+                    + "( Source PC name  = " + Environment.MachineName + " ) show\r\n"
                     + "showpage\r\n";
 
             }
@@ -533,18 +522,19 @@ namespace PrintTool
             usbsend.StartInfo.FileName = "USBSend.exe";
             usbsend.StartInfo.Arguments = file;
             usbsend.StartInfo.CreateNoWindow = true;
-            usbsend.Start();            
-            await usbsend.WaitForExitAsync();
-            
-            return;
+            usbsend.Start();        
         }
 
 
         #endregion
-
-        private void connectionsEnableSerial_Checked(object sender, RoutedEventArgs e)
+        #region Shared Tasks
+        private void pgLog(string log)
         {
-
+            ApplicationLogs.AppendText("[" + DateTime.Now.ToShortTimeString() + "] "+log + "\n");
         }
+
+        #endregion
+
+        
     }
 }
