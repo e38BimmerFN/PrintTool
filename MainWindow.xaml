@@ -14,55 +14,116 @@
                     <ColumnDefinition Width="0.75*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <GroupBox Header="Connections" Grid.Column="0">
+                <GroupBox Header="Connection Setup" Grid.Column="0">
                     <Grid Grid.Row="0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
-                        <Label Content="Printer model ->" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right"/>
-                        <TextBox Name="modelEntry" Text="" Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"/>
+                        <GroupBox Header="Model" Grid.Row="0">
+                            <ComboBox Name="modelEntry" IsEditable="True"/>
+                        </GroupBox>
+                        <GroupBox Header="IP Addresses" Grid.Row="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+                                <GroupBox Header="Printer IP" Grid.Row="0" BorderBrush="{x:Null}">
+                                    <TextBox Name="connectionsIpPrinterEntry" Text="" TextChanged="PrinterIPBox" />
+                                </GroupBox>
+                                <GroupBox Header="Dart IP" Grid.Row="2" BorderBrush="{x:Null}">
+                                    <TextBox Name="connectionsIpDartEntry" Text="" TextChanged="PrinterIPBox" />
+                                </GroupBox>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Shell" Grid.Row="2">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="auto"/>
+                                    <RowDefinition Height="auto"/>
+                                </Grid.RowDefinitions>
+                                <GroupBox Header="Connection Type" Grid.Row="0" BorderBrush="{x:Null}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <RadioButton Content="None" GroupName="connectionsShellType" Grid.Column="0"/>
+                                        <RadioButton Content="Serial" GroupName="connectionsShellType" Grid.Column="1"/>
+                                        <RadioButton Content="Dart" GroupName="connectionsShellType" Grid.Column="2"/>
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox Header="Serial " Grid.Row="1" >
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <GroupBox Header="Bash" Grid.Column="0" BorderBrush="{x:Null}">
+                                            <ComboBox Name="BashSelect"/>
+                                        </GroupBox>
+                                        <GroupBox Header="Sirus" Grid.Column="1" BorderBrush="{x:Null}">
+                                            <ComboBox Name="SirusSelect"/>
+                                        </GroupBox>
+                                        <GroupBox Header="Optional" Grid.Column="2" BorderBrush="{x:Null}">
+                                            <ComboBox Name="OptSelect"/>
+                                        </GroupBox>
+                                    </Grid>
+                                </GroupBox>
+                                <GroupBox Header="Dart " Grid.Row="2" >
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <GroupBox Header="Bash port" Grid.Column="0" BorderBrush="{x:Null}">
+                                            <TextBox x:Name="Port1" Text="5000"/>
+                                        </GroupBox>
+                                        <GroupBox Header="OPT Port 1" Grid.Column="1" BorderBrush="{x:Null}">
+                                            <TextBox x:Name="Port2" Text="5000"/>
+                                        </GroupBox>
+                                        <GroupBox Header="OPT Port 2" Grid.Column="2" BorderBrush="{x:Null}">
+                                            <TextBox x:Name="Port3" Text="5000"/>
+                                        </GroupBox>
+                                    </Grid>
+                                </GroupBox>
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Serial Preview" Grid.Row="3">
+                            <TextBlock x:Name="connectionsSerialPreview"/>
 
-                        <Label Content="IP of the printer  ->" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"/>
-                        <TextBox Name="ipEntry" Text="255.255.255.255" Grid.Row="1" Grid.Column="2" TextChanged="PrinterIPBox" VerticalAlignment="Center" />
-
-                        <CheckBox Name="dartEnabled" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Label Content="Dart ip ->" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right"/>
-                        <TextBox Name="ipDartEntry" Text="255.255.255.255" Grid.Row="2" Grid.Column="2" TextChanged="DartIPBox" VerticalAlignment="Center"/>
-                        <CheckBox Name="bashEnabled" Grid.Row="3" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <Label Content="Bash com port ->" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right"/>
-                        <ComboBox Name="bashCom" Grid.Row="3" Grid.Column="2" VerticalAlignment="Center">
-                        </ComboBox>
+                        </GroupBox>
                     </Grid>
                 </GroupBox>
-                <Grid Grid.Column="1">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height=".1*"/>
-                    </Grid.RowDefinitions>
-                    <GroupBox Header="Saved Configs" Grid.Row="0">
-                        <ListBox Name="SavedConnectionConfigs"/>
-                    </GroupBox>
-                    <Grid Grid.Row="1">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button Content="Save" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="0" Click="SaveDefaults"/>
-                        <Button Content="Load" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="1" Click="LoadDefaults"/>
-                        <Button Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="2" Click="DefaultsDelete"/>
+                <GroupBox Header="Saved Connections" Grid.Column="1">
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height=".1*"/>
+                        </Grid.RowDefinitions>
+                        <ListBox Name="SavedConnectionConfigs" Grid.Row="0"/>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="Save" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="0" Click="SaveDefaults"/>
+                            <Button Content="Load" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="1" Click="LoadDefaults"/>
+                            <Button Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="2" Click="DefaultsDelete"/>
+                        </Grid>
                     </Grid>
-                </Grid>
+                </GroupBox>
+                
             </Grid>
         </TabItem>
         <TabItem x:Name="firmwareTab" Header="Firmware">
@@ -143,7 +204,7 @@
                                         <Button Content="netExec" Grid.Column="3" Grid.Row="1"/>
                                     </Grid>
                                 </GroupBox>
-                                
+
                             </Grid>
                         </GroupBox>
                     </Grid>
@@ -298,8 +359,8 @@
                                 <RadioButton Content="Duplex SE" IsChecked="False" Name="duplexSEButton" GroupName="duplexmode" Grid.Column="2"/>
                             </Grid>
                         </GroupBox>
-                        
-                        
+
+
                         <GroupBox Header="Source Tray" Grid.Row="0" Grid.Column="1">
                             <ComboBox Name="printSourceTray" SelectedIndex="0">
                                 <ComboBoxItem Content=""/>
@@ -332,7 +393,7 @@
                         </GroupBox>
 
 
-                        
+
 
 
                     </Grid>

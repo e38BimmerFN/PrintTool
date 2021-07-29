@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Xml;
 
 
 
@@ -34,13 +35,21 @@ namespace PrintTool
             }
             setDefaults();
             ConnectionConfigRefresh();
+            createSubFolders();
+            
             
             
         }
+        private void createSubFolders()
+        {
+            Directory.CreateDirectory("Data/Connections");
+            Directory.CreateDirectory("Data/Logs/Temp");
+            Directory.CreateDirectory("Data/Logs/Captured");
+        }
         private void setDefaults()
         {
-            ipEntry.Text = Settings.Default.PrinterIp;
-            ipDartEntry.Text = Settings.Default.DartIp;
+            connectionsIpPrinterEntry.Text = Settings.Default.PrinterIp;
+            connectionsIpDartEntry.Text = Settings.Default.DartIp;
         }
         private bool checkHPStatus()
         {
@@ -69,7 +78,7 @@ namespace PrintTool
         }
         private void checkExePath()
         {
-            if(System.Reflection.Assembly.GetExecutingAssembly().Location.Contains( @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\"))
+            if(Directory.GetCurrentDirectory() .Contains( @"\DevScratch\Derek\PrintTool\"))
             {
                 var result = MessageBox.Show("This program will now install itself into its own folder in the path C:/Users/" + Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/", "Please click yes or no", MessageBoxButton.OKCancel);
                 if(result == MessageBoxResult.Cancel)
@@ -102,25 +111,25 @@ namespace PrintTool
             if (modelEntry.Text == "")
             {
                 MessageBox.Show("Please select something");
+                return;
             }
-            File.WriteAllText("ConnectionConfig/"+ modelEntry.Text, modelEntry.Text + " " +ipEntry.Text + " " + ipDartEntry.Text + " " + bashCom.Text);
+// TODO Write this
             ConnectionConfigRefresh();
         }
         private void LoadDefaults(object sender, RoutedEventArgs e)
         {
-            var temp = File.ReadAllText(SavedConnectionConfigs.SelectedItem.ToString()).Split(' ');
-            modelEntry.Text = temp[0];
-            ipEntry.Text = temp[1];
-            ipDartEntry.Text = temp[2];
-            bashCom.Text = temp[3];
+
         }
+     
+// TODO Write this
 
 
         private void ConnectionConfigRefresh()
         {
             try
             {
-                string[] filenames = Directory.GetFiles("./ConnectionConfig");
+                
+                string[] filenames = Directory.GetFiles("Data/Connections");
                 SavedConnectionConfigs.Items.Clear();
                 foreach (string filename in filenames)
                 {
@@ -145,31 +154,31 @@ namespace PrintTool
         private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-            var myRegex = Regex.Match(ipEntry.Text, regexmatch);
+            var myRegex = Regex.Match(connectionsIpPrinterEntry.Text, regexmatch);
             if (myRegex.Success)
             {
-                ipEntry.Background = System.Windows.Media.Brushes.LightGreen;
+                connectionsIpPrinterEntry.Background = System.Windows.Media.Brushes.LightGreen;
             }
             else
             {
-                ipEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+                connectionsIpPrinterEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
             }
-            Settings.Default.PrinterIp = ipEntry.Text;
+            Settings.Default.PrinterIp = connectionsIpPrinterEntry.Text;
             Settings.Default.Save();
         }
         private void DartIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-            var myRegex = Regex.Match(ipDartEntry.Text, regexmatch);
+            var myRegex = Regex.Match(connectionsIpDartEntry.Text, regexmatch);
             if (myRegex.Success)
             {
-                ipDartEntry.Background = System.Windows.Media.Brushes.LightGreen;
+                connectionsIpDartEntry.Background = System.Windows.Media.Brushes.LightGreen;
             }
             else
             {
-                ipDartEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+                connectionsIpDartEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
             }
-            Settings.Default.DartIp = ipDartEntry.Text;
+            Settings.Default.DartIp = connectionsIpDartEntry.Text;
 
         }
 
@@ -377,11 +386,11 @@ namespace PrintTool
         #region UI
         private async void printSend9100Button(object sender, RoutedEventArgs e)
         {
-            await printSendIP(ipEntry.Text, await printGenerator());
+            await printSendIP(connectionsIpPrinterEntry.Text, await printGenerator());
         }
         private async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
-            await printSendIP(ipEntry.Text, await printGenerator());
+            await printSendIP(connectionsIpPrinterEntry.Text, await printGenerator());
 
         }
         
@@ -530,8 +539,12 @@ namespace PrintTool
             return;
         }
 
+
         #endregion
 
-        
+        private void connectionsEnableSerial_Checked(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
