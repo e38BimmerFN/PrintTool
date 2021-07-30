@@ -7,8 +7,10 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Net.NetworkInformation;
 
+using SharpIpp.Model;
+using SharpIpp.Exceptions;
+using SharpIpp;
 
 
 
@@ -22,7 +24,7 @@ namespace PrintTool
         }
 
         #region Startup
-        private void StartupTasks(object sender, EventArgs e)
+        private async void StartupTasks(object sender, EventArgs e)
         {
             if (checkHPStatus())
             {
@@ -36,9 +38,14 @@ namespace PrintTool
             setDefaults();
             connectionsConfigRefresh();
             createSubFolders();
-            
-            
-            
+
+           
+            SharpIppClient client = new();
+            var printerUri = new Uri("ipp://192.168.0.234:631");
+            var request = new GetPrinterAttributesRequest { PrinterUri = printerUri };
+            var response = await client.GetPrinterAttributesAsync(request);
+
+            pgLog(response.ToString());
         }
         private void createSubFolders()
         {
