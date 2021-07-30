@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Xml;
-using HtmlAgilityPack;
+using System.Net.NetworkInformation;
 
 
 
@@ -36,7 +34,7 @@ namespace PrintTool
                
             }
             setDefaults();
-            ConnectionConfigRefresh();
+            connectionsConfigRefresh();
             createSubFolders();
             
             
@@ -101,7 +99,7 @@ namespace PrintTool
         }
 
 
-        private void EndTask(object sender, System.ComponentModel.CancelEventArgs e)
+        private void EndTasks(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Settings.Default.Save();
             try
@@ -114,49 +112,8 @@ namespace PrintTool
         #endregion
         #region Connections Tab
 
-        private void connectionsEnableSerial_Checked(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void SaveDefaults(object sender, RoutedEventArgs e)
-        {
-            if (modelEntry.Text == "")
-            {
-                MessageBox.Show("Please select something");
-                return;
-            }
-// TODO Write this
-            ConnectionConfigRefresh();
-        }
-        private void LoadDefaults(object sender, RoutedEventArgs e)
-        {
-
-        }
-     
-// TODO Write this
-
-
-        private void ConnectionConfigRefresh()
-        {          
-            string[] filenames = Directory.GetFiles("Data/Connections");
-            SavedConnectionConfigs.Items.Clear();
-            foreach (string filename in filenames)
-            {
-                SavedConnectionConfigs.Items.Add(filename);
-            }   
-        }
-
-
-        private void DefaultsDelete(object sender, RoutedEventArgs e)
-        {
-            string path = SavedConnectionConfigs.SelectedItem.ToString();
-            File.Delete(path);
-            ConnectionConfigRefresh();
-
-        }
-
-        private void PrinterIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        #region UI Logic
+        private void connectionsPrinterIPCheck(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
             var myRegex = Regex.Match(connectionsIpPrinterEntry.Text, regexmatch);
@@ -171,7 +128,7 @@ namespace PrintTool
             Settings.Default.PrinterIp = connectionsIpPrinterEntry.Text;
             Settings.Default.Save();
         }
-        private void DartIPBox(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void connectionsDartIPCheck(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
             var myRegex = Regex.Match(connectionsIpDartEntry.Text, regexmatch);
@@ -186,6 +143,87 @@ namespace PrintTool
             Settings.Default.DartIp = connectionsIpDartEntry.Text;
 
         }
+        private void connnectionsTypeClick(object sender, RoutedEventArgs e)
+        {
+            if(connectionsTypeNone.IsChecked == true) { connectionsSerialGroup.Visibility=Visibility.Collapsed; connectionsDartGroup.Visibility=Visibility.Collapsed;}
+            else if (connectionsTypeSerial.IsChecked == true) { connectionsSerialGroup.Visibility = Visibility.Visible; connectionsDartGroup.Visibility = Visibility.Collapsed; }
+            else {  connectionsSerialGroup.Visibility = Visibility.Collapsed; connectionsDartGroup.Visibility = Visibility.Visible; }
+        }
+        private void connectionsSaveDefaults(object sender, RoutedEventArgs e)
+        {
+            if (connectionsModel.Text == "")
+            {
+                MessageBox.Show("Please select something");
+                return;
+            }
+            string dataToSave =
+                  connectionsModel.Text + ","
+                + connectionsIpPrinterEntry.Text + ","
+                + connectionsIpDartEntry.Text + ","
+                + connectionsTypeNone.IsChecked + ","
+                + connectionsTypeSerial.IsChecked + ","
+                + connectionsTypeDart.IsChecked + ","
+                + connectionsSerialGroup.Visibility.ToString() + ","
+                + connectionsDartGroup.Visibility.ToString() + ","
+                + connectionsBashSelect.Text + ","
+                + connectionsSirusSelect.Text + ","
+                + connectionsOptSelect.Text + ","
+                + connectionsPort1.Text + ","
+                + connectionsPort2.Text + ","
+                + connectionsPort3.Text;
+            StreamWriter myFile = File.CreateText("Data/Connections/"+connectionsModel.Text);
+            myFile.WriteLine(dataToSave);
+            myFile.Close();
+            connectionsConfigRefresh();
+        }
+
+        private void LoadDefaults(object sender, RoutedEventArgs e)
+        {
+            List<string> data = new(File.ReadAllText(SavedConnectionConfigs.SelectedItem.ToString()).Split(","));
+
+            connectionsModel.Text = data[0];
+            connectionsIpPrinterEntry.Text = data[1];
+            connectionsIpDartEntry.Text = data[2];
+            connectionsTypeNone.IsChecked = bool.Parse(data[3]);
+            connectionsTypeSerial.IsChecked = bool.Parse(data[4]);
+            connectionsTypeDart.IsChecked = bool.Parse(data[5]);
+            connectionsBashSelect.Text = data[8];
+            connectionsSirusSelect.Text = data[9];
+            connectionsOptSelect.Text = data[10];
+            connectionsPort1.Text = data[11];
+            connectionsPort2.Text = data[12];
+            connectionsPort3.Text = data[13];
+
+        }
+        private void DefaultsDelete(object sender, RoutedEventArgs e)
+        {
+            string path = SavedConnectionConfigs.SelectedItem.ToString();
+            File.Delete(path);
+            connectionsConfigRefresh();
+
+        }
+
+        #endregion
+
+
+
+        // TODO Write this
+
+
+        private void connectionsConfigRefresh()
+        {          
+            string[] filenames = Directory.GetFiles("Data/Connections");
+            SavedConnectionConfigs.Items.Clear();
+            foreach (string filename in filenames)
+            {
+                SavedConnectionConfigs.Items.Add(filename);
+            }   
+        }
+
+
+        
+
+        
 
         #endregion
         #region Firmware Tab
@@ -224,8 +262,8 @@ namespace PrintTool
             pgLog("Downloading " + fullpath);
             yoloInstallButton.IsEnabled = false;
             yoloInstallButton.Content = "working...";
-            await downloadFile(fullpath, filename);
-            await usbSendFirmware(filename);
+            await firmwareDownloadFile(fullpath, filename);
+            await firmwareUSBSend(filename);
             yoloInstallButton.IsEnabled = true;
             yoloInstallButton.Content = "Download & Install";
         }
@@ -265,38 +303,35 @@ namespace PrintTool
 
         private async void firmwareDuneUpdate(object sender, RoutedEventArgs e)
         {
-            string path = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";
-            List<string> websiteData = await downloadWebsiteIndex(path);
-            string regexPattern = "(?<=fhx\">)boot_Ulbi_URootfs(.*)(?=<\\/a)";
-            Regex myPattern = new Regex(regexPattern);
-            var matches = myPattern.Matches(websiteData);
-            string filename = matches.First().ToString();
-            string fullpath = path + filename;
+            string website = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";
+            List<string> packages = await downloadWebsiteIndex(website);
+            string filename = "";
+            foreach(string package in packages)
+            {
+                if (package.Contains("boot_Ulbi_URootfs")) { filename = package; }
+            }
+            
+            string fullpath = website + filename;
             duneInstallButton.IsEnabled = false;
             duneInstallButton.Content = "working...";
-            await downloadFile(fullpath, filename);
-            await usbSendFirmware(filename);
+            await firmwareDownloadFile(fullpath, filename);
+            await firmwareUSBSend(filename);
             duneInstallButton.IsEnabled = true;
             duneInstallButton.Content = "Download & Install";
             Settings.Default.DuneLastFW = firmwareDuneVersions.Text;
-            Settings.Default.Save();
         }
 
         #endregion
-        #region Shared Functions
-
-        
-
-        private async Task downloadFile(string fullpath, string filename)
+        #region Shared Functions        
+        private async Task firmwareDownloadFile(string fullpath, string filename)
         {
             pgLog("Downloading " + fullpath + filename);
             WebClient client = new WebClient();
-            client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(downloadProgress);
-            client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(downloadDone);
+            client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(downloadProgressHandler);
+            client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(downloadEndHandler);
             await client.DownloadFileTaskAsync(fullpath, filename);
             pgLog("Download success.");
         }
-
         private async Task<List<string>> downloadWebsiteIndex(string website)
         {
             List<string> results = new();
@@ -319,20 +354,8 @@ namespace PrintTool
             }
             results.RemoveAt(0);
             return results;
-        }
-        private void downloadProgress(object sender, DownloadProgressChangedEventArgs e)
-        {
-            double bytesIn = double.Parse(e.BytesReceived.ToString());
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
-            double percentage = bytesIn / totalBytes * 100;
-            applicaitonProgressBar.Value = percentage;
-        }
-        private void downloadDone(object sender, DownloadDataCompletedEventArgs e)
-        {
-            applicaitonProgressBar.Value = 0;
-        }
-        Process usbsend = new Process();
-        private async Task usbSendFirmware(string filename)
+        }  
+        private async Task firmwareUSBSend(string filename)
         {
             pgLog("Sending firmware to printer");
             usbsend.StartInfo.FileName = "USBSend.exe";
@@ -356,7 +379,7 @@ namespace PrintTool
             }
             File.Delete(filename);
         }
-        private void usbSendDestroy(object sender, RoutedEventArgs e)
+        private void firmwareUSBDestroy(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -527,11 +550,25 @@ namespace PrintTool
 
 
         #endregion
+
         #region Shared Tasks
         private void pgLog(string log)
         {
             ApplicationLogs.AppendText("[" + DateTime.Now.ToShortTimeString() + "] "+log + "\n");
         }
+
+        private void downloadProgressHandler(object sender, DownloadProgressChangedEventArgs e)
+        {
+            double bytesIn = double.Parse(e.BytesReceived.ToString());
+            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
+            double percentage = bytesIn / totalBytes * 100;
+            applicaitonProgressBar.Value = percentage;
+        }
+        private void downloadEndHandler(object sender, DownloadDataCompletedEventArgs e)
+        {
+            applicaitonProgressBar.Value = 0;
+        }
+        Process usbsend = new Process();
 
         #endregion
 
