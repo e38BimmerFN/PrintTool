@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="DuneLastFW" Type="System.String" Scope="User">
-      <Value Profile="(Default)">6.1.0.1743/</Value>
+      <Value Profile="(Default)">6.1.0.1753/</Value>
     </Setting>
-    <Setting Name="Version" Type="System.Decimal" Scope="User">
-      <Value Profile="(Default)">1.01</Value>
+    <Setting Name="Version" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">102</Value>
     </Setting>
     <Setting Name="PrinterIp" Type="System.String" Scope="User">
       <Value Profile="(Default)">15.86.118.9</Value>

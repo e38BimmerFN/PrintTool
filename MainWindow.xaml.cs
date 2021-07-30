@@ -29,29 +29,32 @@ namespace PrintTool
             if (checkHPStatus())
             {
                 checkForUpdates();
-                firmwareYoloVersionUpdate();
-                firmwareDuneVersionUpdate();
-                checkForUpdates();
+                firmwareYoloUpdateRevisons();
+                firmwareDuneUpdateRevisons();
+                
                 checkExePath();
                
             }
+            createSubFolders();
             setDefaults();
             connectionsConfigRefresh();
-            createSubFolders();
+            printSavedJobsRefresh();
 
-           
-            SharpIppClient client = new();
-            var printerUri = new Uri("ipp://192.168.0.234:631");
-            var request = new GetPrinterAttributesRequest { PrinterUri = printerUri };
-            var response = await client.GetPrinterAttributesAsync(request);
 
-            pgLog(response.ToString());
+
+            //SharpIppClient client = new();
+            //var printerUri = new Uri("ipp://192.168.0.234:631");
+            //var request = new GetPrinterAttributesRequest { PrinterUri = printerUri };
+            //var response = await client.GetPrinterAttributesAsync(request);
+
+            //pgLog(response.ToString());
         }
         private void createSubFolders()
         {
             Directory.CreateDirectory("Data/Connections");
             Directory.CreateDirectory("Data/Logs/Temp");
             Directory.CreateDirectory("Data/Logs/Captured");
+            Directory.CreateDirectory("Data/Jobs/");
         }
         private void setDefaults()
         {
@@ -75,33 +78,47 @@ namespace PrintTool
         private void checkForUpdates()
         {
 
-            StreamReader sr = File.OpenText(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\@Shared\PrintToolVersion.txt");
+            StreamReader sr = File.OpenText(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt");
 
-            decimal version = decimal.Parse(sr.ReadLine());
+            int version =  int.Parse(sr.ReadLine());
+            sr.Close();
             if (Settings.Default.Version < version)
             {
-                MessageBox.Show("Please update this tool");
+                MessageBox.Show(@"Please update this tool, navigate to \DevScratch\Derek\PrintTool and run the executable.");
             }
         }
         private void checkExePath()
         {
-            if(Directory.GetCurrentDirectory() .Contains( @"\DevScratch\Derek\PrintTool\"))
+            
+            if(Directory.GetCurrentDirectory().Contains( @"\DevScratch\Derek\PrintTool"))
             {
-                var result = MessageBox.Show("This program will now install itself into its own folder in the path C:/Users/" + Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/", "Please click yes or no", MessageBoxButton.OKCancel);
+                var result = MessageBox.Show("This program will now install itself into : " + Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\", "Please click yes or no", MessageBoxButton.OKCancel);
                 if(result == MessageBoxResult.Cancel)
                 {
                     MessageBox.Show("Exiting.");
                     this.Close();
                 }
-                if (Directory.Exists(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/")){
-                    File.Copy(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\PrintTool.ext", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/PrintTool.exe");
-                }
-                else
+                string copyfrompath = @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\";
+                
+                string copytopath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\";
+                Directory.CreateDirectory(copytopath);
+                List<string> filestoCopy = new();
+                
+                filestoCopy.Add("PrintTool.exe");
+                filestoCopy.Add("USBSend.exe");
+                foreach(string file in filestoCopy) 
                 {
-                    Directory.CreateDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/");
-                    File.Copy(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\PrintTool.ext", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "PrintTool/PrintTool.exe");
-
+                    if (File.Exists(copytopath + file)) { File.Delete(copytopath + file); }
+                    File.Copy(copyfrompath + file, copytopath + file); 
                 }
+                MessageBox.Show("Sucessfully installed. now closing.");
+                Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\");
+                Process.Start(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\PrintTool.exe");
+                this.Close();
+                
+                
+
+
             }
         }
 
@@ -213,10 +230,6 @@ namespace PrintTool
         #endregion
 
 
-
-        // TODO Write this
-
-
         private void connectionsConfigRefresh()
         {          
             string[] filenames = Directory.GetFiles("Data/Connections");
@@ -226,11 +239,11 @@ namespace PrintTool
                 SavedConnectionConfigs.Items.Add(filename);
             }   
         }
-
-
         
 
-        
+
+
+
 
         #endregion
         #region Firmware Tab
@@ -240,30 +253,28 @@ namespace PrintTool
         {
             foreach (string f in Directory.GetDirectories(JEDIPATH))
             {
-                firmwareYoloVersions.Items.Clear();
-                firmwareYoloVersions.Items.Add(f.Remove(0, JEDIPATH.Length));
+                firmwareYoloVersion.Items.Clear();
+                firmwareYoloVersion.Items.Add(f.Remove(0, JEDIPATH.Length));
             }
         }
         #endregion
         #region Yolo Firmware
         const string YOLOWEBSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
-
-        private async void firmwareYoloVersionUpdate()
+        private async void firmwareYoloUpdateRevisons()
         {
-            firmwareYoloVersions.Items.Clear();
-            string website = YOLOWEBSITE + yoloProductSelection.SelectionBoxItem.ToString() + "/?C=M;O=D";
+            firmwareYoloVersion.Items.Clear();
+            string website = YOLOWEBSITE + firmwareYoloProduct.SelectionBoxItem + "/?C=M;O=D";
             List<string> results = await downloadWebsiteIndex(website);            
-            foreach(string result in results) { firmwareYoloVersions.Items.Add(result); }
+            foreach(string result in results) { firmwareYoloVersion.Items.Add(result); }
         }
-
         private async void firmwareYoloSendVersion(object sender, RoutedEventArgs e)
         {
 
-            string selection = yoloProductSelection.SelectionBoxItem.ToString() + "/" + firmwareYoloVersions.SelectionBoxItem.ToString() + "/" + yoloFWSelect.SelectionBoxItem.ToString() + "/";
-            string filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + firmwareYoloVersions.SelectionBoxItem.ToString() + "_" + yoloFWSelect.SelectionBoxItem.ToString() + "_rootfs.fhx";
-            if (yoloFWSelect.SelectedIndex == 3)
+            string selection = firmwareYoloProduct.SelectionBoxItem + "/" + firmwareYoloVersion.SelectionBoxItem + "/" + firmwareYoloDist.SelectionBoxItem + "/";
+            string filename = firmwareYoloProduct.SelectionBoxItem + "_" + firmwareYoloVersion.SelectionBoxItem + "_" + firmwareYoloDist.SelectionBoxItem + "_rootfs.fhx";
+            if (firmwareYoloDist.SelectedIndex == 3)
             {
-                filename = yoloProductSelection.SelectionBoxItem.ToString() + "_" + firmwareYoloVersions.SelectionBoxItem.ToString() + "_nonassert_appsigned_lbi_rootfs_secure_signed.fhx";
+                filename = firmwareYoloProduct.SelectionBoxItem.ToString() + "_" + firmwareYoloVersion.SelectionBoxItem.ToString() + "_nonassert_appsigned_lbi_rootfs_secure_signed.fhx";
             }
             string fullpath = YOLOWEBSITE + selection + filename;
             pgLog("Downloading " + fullpath);
@@ -274,41 +285,94 @@ namespace PrintTool
             yoloInstallButton.IsEnabled = true;
             yoloInstallButton.Content = "Download & Install";
         }
+        private async void firmwareYoloUnsecureB_Click(object sender, RoutedEventArgs e)
+        {
+            firmwareYoloUnsecureB.IsEnabled = false;
+            firmwareYoloUnsecureB.Content = "Working";
+            string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
+            List<string> results = await downloadWebsiteIndex(website);
+            string filename = "";
+            if (firmwareYoloProduct.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
+            else { foreach (string result in results) { if (result.Contains("lochsa")) { filename = result; } } }
+            await firmwareDownloadFile(website, filename);
+            await firmwareUSBSend(filename);
+            firmwareYoloUnsecureB.IsEnabled = true;
+            firmwareYoloUnsecureB.Content = "Convert to unsecure";
+        }
+        private async void firmwareYoloSecureB_Click(object sender, RoutedEventArgs e)
+        {
+            firmwareYoloSecureB.IsEnabled = false;
+            firmwareYoloSecureB.Content = "Working";
+            string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_secure/";
+            List<string> results = await downloadWebsiteIndex(website);
+            string filename = "";
+            if(firmwareYoloProduct.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
+            else { foreach (string result in results) { if (result.Contains("locsha")) { filename = result; } } }
+            await firmwareDownloadFile(website, filename);
+            await firmwareUSBSend(filename);
+            firmwareYoloSecureB.IsEnabled = true;
+            firmwareYoloSecureB.Content = "Convert to secured";
+        }
         #endregion
         #region Dune Firmware
         //Dune
         const string DUNEWEBSITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-        private async void firmwareDuneVersionUpdate()
+
+
+
+
+        private async void firmwareDuneModels_DropDownOpened(object sender, EventArgs e)
         {
-            if (firmwareDuneVersions.Items.Count != 0)
-            {
-                return;
-            } 
-            firmwareDuneVersions.Items.Clear();
+            await firmwareDuneUpdateModels();
+        }
+
+        private async void firmwareDunePackages_DropDownOpened(object sender, EventArgs e)
+        {
+            await firmwareDuneUpdatePackages();
+        }
+
+
+
+
+        private async Task firmwareDuneUpdateRevisons()
+        {
             firmwareDuneVersions.Items.Add(Settings.Default.DuneLastFW);
-            List<string> versions = await downloadWebsiteIndex(DUNEWEBSITE+"/?C=M;O=D");
+            List<string> versions = await downloadWebsiteIndex(DUNEWEBSITE + "/?C=M;O=D");
             foreach(string version in versions)
             {
                 firmwareDuneVersions.Items.Add(version);
             }
+            await firmwareDuneUpdateModels();
             
         }
 
-        private async void firmwareDuneModelUpdate(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async Task firmwareDuneUpdateModels()
         {
+            if (firmwareDuneVersions.Text == "") { return; }
+            List<string> models = await downloadWebsiteIndex(DUNEWEBSITE + firmwareDuneVersions.Text + "/");
+            if (models.Count == 0) { MessageBox.Show("Version doesn't exist "); return; }
             firmwareDuneModels.Items.Clear();
-            List<string> models = await downloadWebsiteIndex(DUNEWEBSITE + firmwareDuneVersions.Text);
+      
             foreach (string model in models)
             {
                 firmwareDuneModels.Items.Add(model);
             }
-            if (firmwareDuneModels.Items.Count == 0)
+            await firmwareDuneUpdatePackages();
+   
+        }
+        private async Task firmwareDuneUpdatePackages()
+        {
+            firmwareDunePackages.Items.Clear();
+            List<string> dunePackage = await downloadWebsiteIndex(DUNEWEBSITE + firmwareDuneVersions.Text + firmwareDuneModels.Text);
+            foreach (string package in dunePackage)
             {
-                MessageBox.Show("Found no models, check that version is correct");
+                if (package.Contains("fhx")) { firmwareDunePackages.Items.Add(package); }
             }
         }
+        
+   
 
-        private async void firmwareDuneUpdate(object sender, RoutedEventArgs e)
+        private async void firmwareDuneSend(object sender, RoutedEventArgs e)
         {
             string website = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";
             List<string> packages = await downloadWebsiteIndex(website);
@@ -342,8 +406,12 @@ namespace PrintTool
         private async Task<List<string>> downloadWebsiteIndex(string website)
         {
             List<string> results = new();
+            List<string> resultsPartial = new();
             string websiteData = "";
-            Regex myPattern = new Regex("(?<=\\/\" >)(.*)(?=<\\/ a >)");
+            string patternA = "(?<=<a href=\")(.*)(?=\\/a><\\/td>)";
+            string patternText = "(?<=\">)(.*)(?=<)";
+            Regex regexATag = new Regex(patternA);
+            Regex regexText = new Regex(patternText);
             try
             {
                 WebClient client = new WebClient();
@@ -354,12 +422,19 @@ namespace PrintTool
                 MessageBox.Show("Error: Specified site is invalid.");
                 pgLog("Error: Specified site is invalid.");
             }
-            MatchCollection matches = myPattern.Matches(websiteData);
-            foreach(Match match in matches)
-            {
-                results.Add(match.Value);
-            }
+            MatchCollection matches = regexATag.Matches(websiteData);
+            foreach (Match match in matches) { resultsPartial.Add(match.Value); }
+            foreach (string match in resultsPartial) { results.Add(regexText.Match(match).Value); }
+            
             results.RemoveAt(0);
+            
+            int resultstokeep = 100;
+            try { results.RemoveRange(resultstokeep, results.Count- resultstokeep); }
+            catch { }
+            if (results.Count == 0)
+            {
+                results.Add("Found no listings for current selection.");
+            }
             return results;
         }  
         private async Task firmwareUSBSend(string filename)
@@ -410,9 +485,38 @@ namespace PrintTool
             await printSendIP(connectionsIpPrinterEntry.Text, await printGenerator());
 
         }
-        
+
+        private async void printSaveJob_Click(object sender, RoutedEventArgs e)
+        {
+            File.Copy(await printGenerator(), @"Data\Jobs\" + printNameJob.Text);
+            printSavedJobsRefresh();
+        }
+
+        private void printDeteleJob_Click(object sender, RoutedEventArgs e)
+        {
+            File.Delete(printSavedJobs.SelectedItem.ToString());
+            printSavedJobsRefresh();
+        }
+
+        private async void printSendJob_Click(object sender, RoutedEventArgs e)
+        {
+            if(printSavedJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
+            await printSendIP(connectionsIpPrinterEntry.Text, printSavedJobs.SelectedItem.ToString());
+        }
 
         #endregion
+
+        private void printSavedJobsRefresh()
+        {
+            printSavedJobs.Items.Clear();
+            string[] filenames = Directory.GetFiles(@"Data\Jobs\");
+            foreach (string filename in filenames)
+            {
+                printSavedJobs.Items.Add(filename);
+            }
+            
+
+        }
 
         private async Task<string> printGenerator()
         {
@@ -532,7 +636,7 @@ namespace PrintTool
             try
             {
                 TcpClient client = new TcpClient();
-                client.Connect(ip, 9100);
+                await client.ConnectAsync(ip, 9100);
                 NetworkStream stream = client.GetStream();
                 await stream.WriteAsync(data, 0, data.Length);
                 client.Close();
@@ -576,6 +680,16 @@ namespace PrintTool
             applicaitonProgressBar.Value = 0;
         }
         Process usbsend = new Process();
+
+
+
+
+
+
+
+
+
+
 
         #endregion
 

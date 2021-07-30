@@ -12,7 +12,7 @@ namespace PrintTool {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "17.0.1.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -25,7 +25,7 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("6.1.0.1743/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("6.1.0.1753/")]
         public string DuneLastFW {
             get {
                 return ((string)(this["DuneLastFW"]));
@@ -37,10 +37,10 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("1.01")]
-        public decimal Version {
+        [global::System.Configuration.DefaultSettingValueAttribute("102")]
+        public int Version {
             get {
-                return ((decimal)(this["Version"]));
+                return ((int)(this["Version"]));
             }
             set {
                 this["Version"] = value;
