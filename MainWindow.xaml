@@ -217,8 +217,9 @@
                     <TabItem Header="Yolo">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width=".5*"/>
                                 <ColumnDefinition Width=".75*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width=".25*"/>
                             </Grid.ColumnDefinitions>
                             <GroupBox Header="Firmware Select" Grid.Column="0">
                                 <Grid>
@@ -251,10 +252,16 @@
                                     <Button Content="Cancel&#xA;" Click="firmwareUSBDestroy" Grid.Row="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
                                 </Grid>
                             </GroupBox>
-                            <GroupBox Header="Logs"  Grid.Column="1">
-                                <ScrollViewer>
-                                    <TextBox x:Name="yoloTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="10" FontFamily="Consolas"/>
-                                </ScrollViewer>
+                            <GroupBox Header="Special Functions"  Grid.Column="2">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Button x:Name="firmwareYoloSecureB" Content="Convert to secured" Grid.Row="0"/>
+                                    <Button x:Name="firmwareYoloUnsecureB" Content="Convert to unsecured" Grid.Row="1"/>
+                                </Grid>
                             </GroupBox>
                         </Grid>
                     </TabItem>
@@ -284,11 +291,12 @@
                                     <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareDuneUpdate" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                                     <Button Content="Cancel" Click="firmwareUSBDestroy" Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                                 </Grid>
+                                
                             </GroupBox>
-                            <GroupBox Header="Logs" Grid.Column="1">
-                                <ScrollViewer>
-                                    <TextBox x:Name="duneTBLogs" Text="" TextWrapping="Wrap" IsReadOnly="True"  FontSize="14" FontFamily="Consolas"/>
-                                </ScrollViewer>
+                            <GroupBox Header="Special Functions" Grid.Column="1">
+                                <Grid>
+                                   
+                                </Grid>
                             </GroupBox>
                         </Grid>
                     </TabItem>
