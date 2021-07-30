@@ -35,6 +35,7 @@ namespace PrintTool
                 checkExePath();
                
             }
+            MessageBox.Show("This program is in alpha, report any errors or changes you want made to derek.hearst@hp.com");
             createSubFolders();
             setDefaults();
             connectionsConfigRefresh();
@@ -63,7 +64,7 @@ namespace PrintTool
         }
         private bool checkHPStatus()
         {
-            if (File.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\@Shared\PrintToolVersion.txt"))
+            if (Directory.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\"))
             {
                 return true;
             }
@@ -203,6 +204,7 @@ namespace PrintTool
 
         private void LoadDefaults(object sender, RoutedEventArgs e)
         {
+            if(SavedConnectionConfigs.SelectedItem == "" || SavedConnectionConfigs.SelectedItem == null) { MessageBox.Show("Please select item"); }
             List<string> data = new(File.ReadAllText(SavedConnectionConfigs.SelectedItem.ToString()).Split(","));
 
             connectionsModel.Text = data[0];
@@ -317,23 +319,20 @@ namespace PrintTool
         #region Dune Firmware
         //Dune
         const string DUNEWEBSITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-
-
-
-
+        const string DUNEUTILITY = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
+        private async void firmwareDuneVersions_DropDownOpened(object sender, EventArgs e)
+        {
+            firmwareDuneModels.Items.Clear();
+            firmwareDunePackages.Items.Clear();
+        }
         private async void firmwareDuneModels_DropDownOpened(object sender, EventArgs e)
         {
             await firmwareDuneUpdateModels();
         }
-
         private async void firmwareDunePackages_DropDownOpened(object sender, EventArgs e)
         {
             await firmwareDuneUpdatePackages();
         }
-
-
-
-
         private async Task firmwareDuneUpdateRevisons()
         {
             firmwareDuneVersions.Items.Add(Settings.Default.DuneLastFW);
@@ -345,7 +344,6 @@ namespace PrintTool
             await firmwareDuneUpdateModels();
             
         }
-
         private async Task firmwareDuneUpdateModels()
         {
             if (firmwareDuneVersions.Text == "") { return; }
@@ -369,19 +367,28 @@ namespace PrintTool
                 if (package.Contains("fhx")) { firmwareDunePackages.Items.Add(package); }
             }
         }
-        
-   
+
+        private void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void firmewareDuneSecure_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void firmewareDuneReset_Click(object sender, RoutedEventArgs e)
+        {
+            // todo WORK ONM THIS
+        }
+
+
 
         private async void firmwareDuneSend(object sender, RoutedEventArgs e)
         {
-            string website = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";
-            List<string> packages = await downloadWebsiteIndex(website);
-            string filename = "";
-            foreach(string package in packages)
-            {
-                if (package.Contains("boot_Ulbi_URootfs")) { filename = package; }
-            }
-            
+            string website = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";           
+            string filename = firmwareDunePackages.Text;
             string fullpath = website + filename;
             duneInstallButton.IsEnabled = false;
             duneInstallButton.Content = "working...";
@@ -691,8 +698,9 @@ namespace PrintTool
 
 
 
+
         #endregion
 
-        
+       
     }
 }

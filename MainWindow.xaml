@@ -259,8 +259,8 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    <Button x:Name="firmwareYoloSecureB" Content="Convert to secured" Grid.Row="0" Click="firmwareYoloSecureB_Click"/>
-                                    <Button x:Name="firmwareYoloUnsecureB" Content="Convert to unsecured" Grid.Row="1" Click="firmwareYoloUnsecureB_Click"/>
+                                    <Button x:Name="firmwareYoloSecureB" Content="Secure Device" Grid.Row="0" Click="firmwareYoloSecureB_Click" Background="#FFFAAFAC"/>
+                                    <Button x:Name="firmwareYoloUnsecureB" Content="Unsecure Device" Grid.Row="1" Click="firmwareYoloUnsecureB_Click" Background="#FFC8EDA4"/>
                                 </Grid>
                             </GroupBox>
                         </Grid>
@@ -268,8 +268,9 @@
                     <TabItem Header="DUNE">
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width=".5*"/>
                                 <ColumnDefinition Width=".75*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width=".25*"/>
                             </Grid.ColumnDefinitions>
                             <GroupBox Header="Firmware Select" Grid.Column="0">
                                 <Grid>
@@ -290,14 +291,22 @@
                                     <ComboBox x:Name="firmwareDuneModels"  Grid.Row="3" VerticalAlignment="Center" DropDownOpened="firmwareDuneModels_DropDownOpened" />
                                     <Label Content="Select Package" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     <ComboBox x:Name="firmwareDunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center" DropDownOpened="firmwareDunePackages_DropDownOpened"/>
-                                    <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareDuneSend" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                                    <Button Content="Cancel" Click="firmwareUSBDestroy" Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                                    <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareDuneSend" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="#FFC8EDA4"/>
+                                    <Button Content="Cancel" Click="firmwareUSBDestroy" Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="#FFE27C7C"/>
                                 </Grid>
                                 
                             </GroupBox>
-                            <GroupBox Header="Special Functions" Grid.Column="1">
+                            <GroupBox Header="Special Functions" Grid.Column="2">
                                 <Grid>
-                                   
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Button x:Name="firmewareDuneReset" Content="Reset Firmware" Grid.Row="0" Click="firmewareDuneReset_Click" Background="#FF9FBCE7"/>
+                                    <Button x:Name="firmewareDuneSecure" Content="Secure Device" Grid.Row="1" Click="firmewareDuneSecure_Click" Background="#FFDD9090"/>
+                                    <Button x:Name="firmewareDuneUnsecure" Content="Unsecure Device" Grid.Row="2" Click="firmewareDuneUnsecure_Click" Background="#FFC4E7AE"/>
+                                    
                                 </Grid>
                             </GroupBox>
                         </Grid>

@@ -37,7 +37,7 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("102")]
+        [global::System.Configuration.DefaultSettingValueAttribute("103")]
         public int Version {
             get {
                 return ((int)(this["Version"]));
