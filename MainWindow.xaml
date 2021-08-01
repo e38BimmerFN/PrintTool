@@ -5,8 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PrintTool"
         mc:Ignorable="d"
-        Title="PrintTool by Derek Hearst" Height="830" Width="1014" ContentRendered="StartupTasks" ResizeMode="CanResize" SizeToContent="Manual" Closing="EndTasks">
+        Title="PrintTool by Derek Hearst" Height="972" Width="1174" ContentRendered="StartupTasks" ResizeMode="CanResize" SizeToContent="Manual" Closing="EndTasks">
+
     <Grid>
+
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height=".5*"/>
@@ -217,40 +219,70 @@
                     <TabItem Header="Yolo">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width=".5*"/>
+                                <ColumnDefinition Width=".75*"/>
                                 <ColumnDefinition Width=".75*"/>
                                 <ColumnDefinition Width=".25*"/>
                             </Grid.ColumnDefinitions>
                             <GroupBox Header="Firmware Select" Grid.Column="0">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".50*"/>
-                                        <RowDefinition Height=".20*"/>
-                                        <RowDefinition Height=".20*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height=".1*"/>
+                                        <RowDefinition Height=".1*"/>
                                     </Grid.RowDefinitions>
-                                    <Label Content="Select your product." Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="firmwareYoloProduct" SelectedIndex="1" IsReadOnly="True" Grid.Row="1" VerticalAlignment="Center">
-                                        <ComboBoxItem Content="yoshino_dist"/>
-                                        <ComboBoxItem Content="lochsa_dist"/>
-                                    </ComboBox>
-                                    <Label Content="Select Firmware" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="firmwareYoloVersion" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center"/>
-                                    <Label Content="Selection your firmware version." Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="firmwareYoloDist" SelectedIndex="0" Grid.Row="5" HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                                        <ComboBoxItem Content="assert"/>
-                                        <ComboBoxItem Content="nonassert"/>
-                                        <ComboBoxItem Content="signable_assert"/>
-                                        <ComboBoxItem Content="nonassert/signed"/>
-                                    </ComboBox>
-                                    <Button x:Name="yoloInstallButton" Content="Download &amp; send" Click="firmwareYoloSendVersion" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-                                    <Button Content="Cancel&#xA;" Click="firmwareUSBDestroy" Grid.Row="8" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                                    <TabControl Grid.Row="0">
+                                        <TabItem Header="Daily" >
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="*"/>
+
+                                                </Grid.RowDefinitions>
+                                                <Label Content="Select your product." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="firmwareYoloProduct" SelectedIndex="1" IsReadOnly="True" Grid.Row="1" VerticalAlignment="Center">
+                                                    <ComboBoxItem Content="yoshino_dist"/>
+                                                    <ComboBoxItem Content="lochsa_dist"/>
+                                                </ComboBox>
+                                                <Label Content="Select Firmware" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="firmwareYoloVersion" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" SelectionChanged="firmwareYoloVersion_SelectionChanged"/>
+                                                <Label Content="Selection your firmware version." Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="firmwareYoloDist" SelectedIndex="0" Grid.Row="5" VerticalAlignment="Center">
+                                                    <ComboBoxItem Content="assert"/>
+                                                    <ComboBoxItem Content="nonassert"/>
+                                                    <ComboBoxItem Content="signable_assert"/>
+                                                    <ComboBoxItem Content="nonassert/signed"/>
+                                                </ComboBox>
+                                                <Label Content="Select Package" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox Name="firmwareYoloPackage" Grid.Row="7"/>
+
+                                            </Grid>
+                                        </TabItem>
+                                        <TabItem Header="Custom">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                </Grid.RowDefinitions>
+                                                <Label Content="Please enter link to firmware" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <TextBox x:Name="firmwareYoloCustomEntry" Grid.Row="1" TextChanged="firmwareYoloCustomEntry_TextChanged"/>
+                                                <Label Content="Please select firmware package" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox Name="firmwareYoloCustomPackage" Grid.Row="3"/>
+                                            </Grid>
+                                        </TabItem>
+
+                                    </TabControl>
+                                    <Button x:Name="yoloInstallButton" Content="Download &amp; send" Click="firmwareYoloSendFirmware_click" Grid.Row="1" Background="#7F00FF00"/>
+                                    <Button Content="Cancel" Click="firmwareUSBDestroy" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#7FFF0000"/>
                                 </Grid>
+
                             </GroupBox>
                             <GroupBox Header="Special Functions"  Grid.Column="2">
                                 <Grid>
@@ -259,8 +291,8 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    <Button x:Name="firmwareYoloSecureB" Content="Secure Device" Grid.Row="0" Click="firmwareYoloSecureB_Click" Background="#FFFAAFAC"/>
-                                    <Button x:Name="firmwareYoloUnsecureB" Content="Unsecure Device" Grid.Row="1" Click="firmwareYoloUnsecureB_Click" Background="#FFC8EDA4"/>
+                                    <Button x:Name="firmwareYoloSecureB" Content="Secure Device" Grid.Row="0" Click="firmwareYoloSecureB_Click" Background="#7FFF0000"/>
+                                    <Button x:Name="firmwareYoloUnsecureB" Content="Unsecure Device" Grid.Row="1" Click="firmwareYoloUnsecureB_Click" Background="#7F00FF00"/>
                                 </Grid>
                             </GroupBox>
                         </Grid>
@@ -268,33 +300,54 @@
                     <TabItem Header="DUNE">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width=".5*"/>
+                                <ColumnDefinition Width="0.75*"/>
                                 <ColumnDefinition Width=".75*"/>
                                 <ColumnDefinition Width=".25*"/>
                             </Grid.ColumnDefinitions>
                             <GroupBox Header="Firmware Select" Grid.Column="0">
                                 <Grid>
                                     <Grid.RowDefinitions>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".25*"/>
-                                        <RowDefinition Height=".50*"/>
-                                        <RowDefinition Height=".20*"/>
-                                        <RowDefinition Height=".20*"/>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height=".1*"/>
+                                        <RowDefinition Height=".1*"/>
                                     </Grid.RowDefinitions>
-                                    <Label Content="Select firmware Version" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="firmwareDuneVersions" IsEditable="True"  Grid.Row="1"  VerticalAlignment="Center" DropDownOpened="firmwareDuneVersions_DropDownOpened"/>
-                                    <Label Content="Select Hardware Model" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="firmwareDuneModels"  Grid.Row="3" VerticalAlignment="Center" DropDownOpened="firmwareDuneModels_DropDownOpened" />
-                                    <Label Content="Select Package" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    <ComboBox x:Name="firmwareDunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center" DropDownOpened="firmwareDunePackages_DropDownOpened"/>
-                                    <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareDuneSend" Grid.Row="7" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="#FFC8EDA4"/>
-                                    <Button Content="Cancel" Click="firmwareUSBDestroy" Grid.Row="8" HorizontalAlignment="Stretch" VerticalAlignment="Center" Background="#FFE27C7C"/>
+                                    <TabControl Grid.Row="0">
+                                        <TabItem Header="Daily" Name="firmwareYoloDailyTab">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                </Grid.RowDefinitions>
+                                                <Label Content="Select firmware Version" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="firmwareDuneVersions" IsEditable="True"  Grid.Row="1"  VerticalAlignment="Center" DropDownOpened="firmwareDuneVersions_DropDownOpened"/>
+                                                <Label Content="Select Hardware Model" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="firmwareDuneModels"  Grid.Row="3" VerticalAlignment="Center" DropDownOpened="firmwareDuneModels_DropDownOpened" />
+                                                <Label Content="Select Package" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="firmwareDunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center" DropDownOpened="firmwareDunePackages_DropDownOpened"/>
+                                            </Grid>
+                                        </TabItem>
+                                        <TabItem Header="Custom" Name="firmwareDuneCustomTab">
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".25*"/>
+                                                </Grid.RowDefinitions>
+                                                <TextBox x:Name="firmwareDuneCustomEntry" Grid.Row="0"/>
+                                                <Label Content="Please select firmware package" Grid.Row="1"/>
+                                                <ComboBox Name="firmwareDuneCustomPackage" Grid.Row="2"/>
+                                            </Grid>
+
+                                        </TabItem>
+                                    </TabControl>
+                                    <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareDuneSend" Grid.Row="1" Background="#7F00FF00"/>
+                                    <Button Content="Cancel" Click="firmwareUSBDestroy" Grid.Row="2" Background="#7FFF0000"/>
                                 </Grid>
-                                
                             </GroupBox>
                             <GroupBox Header="Special Functions" Grid.Column="2">
                                 <Grid>
@@ -303,10 +356,10 @@
                                         <RowDefinition Height="*"/>
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
-                                    <Button x:Name="firmewareDuneReset" Content="Reset Firmware" Grid.Row="0" Click="firmewareDuneReset_Click" Background="#FF9FBCE7"/>
-                                    <Button x:Name="firmewareDuneSecure" Content="Secure Device" Grid.Row="1" Click="firmewareDuneSecure_Click" Background="#FFDD9090"/>
-                                    <Button x:Name="firmewareDuneUnsecure" Content="Unsecure Device" Grid.Row="2" Click="firmewareDuneUnsecure_Click" Background="#FFC4E7AE"/>
-                                    
+                                    <Button x:Name="firmewareDuneReset" Content="Reset Firmware" Grid.Row="0" Click="firmewareDuneReset_Click" Background="#7F0000FF"/>
+                                    <Button x:Name="firmewareDuneSecure" Content="Secure Device" Grid.Row="1" Click="firmewareDuneSecure_Click" Background="#7FFF0000"/>
+                                    <Button x:Name="firmewareDuneUnsecure" Content="Unsecure Device" Grid.Row="2" Click="firmewareDuneUnsecure_Click" Background="#7F00FF00"/>
+
                                 </Grid>
                             </GroupBox>
                         </Grid>
@@ -434,8 +487,8 @@
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                           
-                            
+
+
                             <Button Content="Send VIA AppSocket / 9100" Click="printSend9100Button" Grid.Row="1"/>
                             <Button Content="Send VIA USB" Click="printSendUSBButton" Grid.Row="2"/>
                         </Grid>
@@ -452,12 +505,12 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <ListBox x:Name="printSavedJobs" Grid.Row="0" Grid.ColumnSpan="4"/>
-                            <TextBox x:Name="printNameJob" Text="Name Job Here" Grid.Row="1" Grid.Column="0"/> 
-                            <Button x:Name="printSaveJob" Content="Save Job" Grid.Row="1" Grid.Column="1" Background="#FFA5D3FF" Click="printSaveJob_Click"/>
-                            <Button x:Name="printDeteleJob" Content="Delete Job" Grid.Row="1" Grid.Column="2" Background="#FFF1AEAE" Click="printDeteleJob_Click"/>
-                            <Button x:Name="printSendJob" Content="Send Job via Appsocket" Grid.Row="3" Grid.Column="3" Background="#FFC7EA8C" Click="printSendJob_Click"/>
+                            <TextBox x:Name="printNameJob" Text="Name Job Here" Grid.Row="1" Grid.Column="0"/>
+                            <Button x:Name="printSaveJob" Content="Save Job" Grid.Row="1" Grid.Column="1" Background="#7F0000FF" Click="printSaveJob_Click"/>
+                            <Button x:Name="printDeteleJob" Content="Delete Job" Grid.Row="1" Grid.Column="2" Background="#7FFF0000" Click="printDeteleJob_Click"/>
+                            <Button x:Name="printSendJob" Content="Send Job via Appsocket" Grid.Row="3" Grid.Column="3" Background="#7F00FF00" Click="printSendJob_Click"/>
                         </Grid>
                     </GroupBox>
                 </Grid>
@@ -468,9 +521,30 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <GroupBox Header="Application Logs" Grid.Row="1">
-            <TextBox x:Name="ApplicationLogs" IsReadOnly="True"/>
-        </GroupBox>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <GroupBox Header="Application" Grid.Column="0">
+                <TextBox x:Name="logsBottomApp"/>
+            </GroupBox>
+            <GroupBox Header="Com1" Grid.Column="2">
+                <TextBox x:Name="logsBottomBash"/>
+            </GroupBox>
+            <GroupBox Header="Print Status" Grid.Column="4">
+                <TextBox x:Name="logsBottomUSBSend"/>
+            </GroupBox>
+
+
+            <GridSplitter Grid.Column="1" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Center" Width="5"/>
+            <GridSplitter Grid.Column="3" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Center" Width="5"/>
+
+
+        </Grid>
         <ProgressBar x:Name="applicaitonProgressBar" Grid.Row="2"/>
     </Grid>
 </Window>
