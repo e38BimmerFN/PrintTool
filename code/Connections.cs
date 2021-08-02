@@ -52,15 +52,5 @@ namespace PrintTool
             }
             return data;
         }
-      
-        public static void ConfigRefresh(System.Windows.Controls.ListBox listBox)
-        {
-            string[] filenames = Directory.GetFiles("Data\\Connections");
-            listBox.Items.Clear();
-            foreach (string filename in filenames)
-            {
-                listBox.Items.Add(filename);
-            }
-        }
     }
 }

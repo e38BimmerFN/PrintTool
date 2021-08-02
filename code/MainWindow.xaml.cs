@@ -24,8 +24,11 @@ namespace PrintTool
         }
 
         List<Logger> loggers = new();
+        const string YOLOSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
+        const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
+        const string DUNEUTILITY = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
+        System.Threading.CancellationTokenSource cancelSource = new();
 
-        
         #region Startup
 
         private async void LoadTask(object sender, EventArgs e)
@@ -33,14 +36,16 @@ namespace PrintTool
             await Tasks.runStartUp();
             Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
             Tasks.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
-
             if (Tasks.checkHPStatus())
             {
                 MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
                 firmwareTab.IsEnabled = false;
-                logTab.IsEnabled = false;
             }
-            loggers.Add(new Logger("application"));      
+            else
+            {
+                await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
+            }
+            loggers.Add(new Logger("application"));
         }
 
         private async void ClosingTask(object sender, System.ComponentModel.CancelEventArgs e)
@@ -77,7 +82,7 @@ namespace PrintTool
             items.Add(connectionsPort2.Text);
             items.Add(connectionsPort3.Text);
             Connections.SaveDefaults(items);
-            Tasks.ListBoxRefresh(savedConnections, "Data\\Connections\\");
+            Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
         }
         public void ConnectionsLoadDefaults(object sender, EventArgs e)
         {
@@ -98,8 +103,8 @@ namespace PrintTool
         }
         public void ConnectionsDeleteDefaults(object sender, EventArgs e)
         {
-            Shared.ListBoxDelete(savedConnections);
-            Shared.ListBoxRefresh(savedConnections, "Data\\Connections\\");
+            Tasks.ListBoxDelete(savedConnections);
+            Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
         }
 
         public void connnectionsTypeClick(object sender, RoutedEventArgs e)
@@ -112,114 +117,61 @@ namespace PrintTool
 
         #region Firmware Tab
 
-        #region Jedi Firmware
-        const string JEDIPATH = "\\\\jedibdlserver.boi.rd.hpicorp.net\\JediSystems\\Published\\DailyBuilds\\25s\\2021";
-        public void loadJediFWList(object sender, RoutedEventArgs e)
-        {
-            foreach (string f in Directory.GetDirectories(JEDIPATH))
-            {
-                firmwareYoloVersion.Items.Clear();
-                firmwareYoloVersion.Items.Add(f.Remove(0, JEDIPATH.Length));
-            }
-        }
-        #endregion
-        #region Yolo Firmware
-        const string YOLOWEBSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
-
-        public async void firmwareYoloVersion_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            await firmwareYoloUpdatePackages();
-        }
-        public async void firmwareYoloCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-        {
-            await populateComboBox(firmwareYoloCustomPackage, firmwareYoloCustomEntry.Text);
-        }
-        public async void firmwareYoloSendFirmware_click(object sender, RoutedEventArgs e)
-        {
-            string path="", filename ="";
-
-            if (firmwareYoloDailyTab.IsSelected)
-            {
-                path = firmwareYoloProduct.SelectionBoxItem + "/" + firmwareYoloVersion.SelectionBoxItem + "/" + firmwareYoloDist.SelectionBoxItem + "/";
-                filename = firmwareYoloPackage.Text;
-            }
-            else
-            {
-                path = firmwareYoloCustomEntry.Text;
-                filename = firmwareYoloCustomPackage.Text;
-            }
-            
-            string fullpath = YOLOWEBSITE + path + filename;
-            loggers[0].Log("Downloading " + fullpath);
-            yoloInstallButton.IsEnabled = false;
-            yoloInstallButton.Content = "working...";
-            await firmwareDlSend(fullpath, filename);
-            yoloInstallButton.IsEnabled = true;
-            yoloInstallButton.Content = "Download & Install";
-
-        }
         
-        public async Task firmwareYoloUpdateRevisons()
+
+        private async void YoloUpdateDaily(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            firmwareYoloVersion.Items.Clear();
-            string website = YOLOWEBSITE + firmwareYoloProduct.SelectionBoxItem + "/?C=M;O=D";
-            List<string> results = await downloadWebsiteIndex(website);            
-            foreach(string result in results) { firmwareYoloVersion.Items.Add(result); }
+            await Tasks.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text);
+            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + yoloVersions.Text + yoloDistros.Text);
         }
 
-        public async Task firmwareYoloUpdatePackages()
+
+        public async void YoloUpdateCustom(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            firmwareYoloPackage.Items.Clear();
-            List<string> results = await downloadWebsiteIndex(YOLOWEBSITE + firmwareYoloProduct.SelectionBoxItem + "/" + firmwareYoloVersion.SelectionBoxItem + "/" + firmwareYoloDist.SelectionBoxItem + "/");
-            foreach (string result in results) { firmwareYoloPackage.Items.Add(result); }
+            await Tasks.PopulateComboBox(yoloCustomPackages, firmwareYoloCustomEntry.Text);
         }
 
         public async void firmwareYoloUnsecureB_Click(object sender, RoutedEventArgs e)
         {
-            firmwareYoloUnsecureB.IsEnabled = false;
-            firmwareYoloUnsecureB.Content = "Working";
+            System.Threading.CancellationToken cancelToken = cancelSource.Token;
             string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
-            List<string> results = await downloadWebsiteIndex(website);
+            List<string> results = await Tasks.DownloadWebsiteIndex(website);
             string filename = "";
-            if (firmwareYoloProduct.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
+            if (yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
             else { foreach (string result in results) { if (result.Contains("lochsa")) { filename = result; } } }
-            await firmwareDlSend(website, filename);
-            firmwareYoloUnsecureB.IsEnabled = true;
+            await Firmware.downloadAndSendUSB(filename,website,loggers[0],firmwareYoloSecureB, cancelToken);
             firmwareYoloUnsecureB.Content = "Convert to unsecure";
         }
         public async void firmwareYoloSecureB_Click(object sender, RoutedEventArgs e)
         {
-            firmwareYoloSecureB.IsEnabled = false;
-            firmwareYoloSecureB.Content = "Working";
+            System.Threading.CancellationToken cancelToken = cancelSource.Token;
             string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_secure/";
-            List<string> results = await downloadWebsiteIndex(website);
+            List<string> results = await Tasks.DownloadWebsiteIndex(website);
             string filename = "";
-            if(firmwareYoloProduct.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
+            if(yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
             else { foreach (string result in results) { if (result.Contains("locsha")) { filename = result; } } }
-            await firmwareDlSend(website, filename);
-            
-            firmwareYoloSecureB.IsEnabled = true;
+            await Firmware.downloadAndSendUSB(filename, website, loggers[0], firmwareYoloSecureB, cancelToken);
             firmwareYoloSecureB.Content = "Convert to secured";
         }
-        #endregion
-        #region Dune Firmware
-        //Dune
-        const string DUNEWEBSITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-        const string DUNEUTILITY = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
+       
+        
+        
+        
 
-        #region DuneUI
-        public void firmwareDuneVersions_DropDownOpened(object sender, EventArgs e)
+        
+       
+        
+        
+        private async void DuneUpdateDaily(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            firmwareDuneModels.Items.Clear();
-            firmwareDunePackages.Items.Clear();
+            await Tasks.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
+            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text);
         }
-        public async void firmwareDuneModels_DropDownOpened(object sender, EventArgs e)
+
+
+        public async void DuneUpdateCustom(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            await firmwareDuneUpdateModels();
-        }
-        public async void firmwareDunePackages_DropDownOpened(object sender, EventArgs e)
-        {
-            await firmwareDuneUpdatePackages();
+            await Tasks.PopulateComboBox(duneCustomPackages, firmwareYoloCustomEntry.Text);
         }
 
         public void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
@@ -236,167 +188,73 @@ namespace PrintTool
         {
             // todo WORK ONM THIS
         }
-        #endregion Dune UI
-        public async Task firmwareDuneUpdateRevisons()
-        { 
-            await populateComboBox(firmwareDuneVersions,DUNEWEBSITE + "/?C=M;O=D");
-            await firmwareDuneUpdateModels();
-            
-        }
-        public async Task firmwareDuneUpdateModels()
-        {
-            if (firmwareDuneVersions.Text == "") { return; }
-            await populateComboBox(firmwareDuneModels, DUNEWEBSITE + firmwareDuneVersions.Text);
-            if (firmwareDuneModels.Items.Count == 0) { MessageBox.Show("Version doesn't exist "); return; }
-            await firmwareDuneUpdatePackages();
-   
-        }
-        public async Task firmwareDuneUpdatePackages()
-        {
-            await populateComboBox(firmwareDunePackages, DUNEWEBSITE + firmwareDuneVersions.Text + firmwareDuneModels.Text);
-            foreach (string package in firmwareDunePackages.Items)
-            {
-                if (package.Contains("fhx")) { firmwareDunePackages.Items.Remove(package); }
-            }
-        }
-        public async void firmwareDuneSend(object sender, RoutedEventArgs e)
-        {
-            string website = "";
-            string filename = "";
-            if (firmwareDuneCustomTab.IsSelected)
-            {
-                 website = firmwareDuneCustomEntry.Text;
-                filename = firmwareDuneCustomPackage.Text;
-            }
-            else
-            {
-                website = DUNEWEBSITE + firmwareDuneVersions.Text + "/" + firmwareDuneModels.Text + "/";
-                filename = firmwareDunePackages.Text;
-            }
-            string fullpath = website + filename;
-            duneInstallButton.IsEnabled = false;
-            duneInstallButton.Content = "working...";
-            await firmwareDlSend(fullpath, filename);
-            duneInstallButton.IsEnabled = true;
-            duneInstallButton.Content = "Download & Install";
-        }
 
-        #endregion
-        #region Shared Functions  
-         
-        public async Task populateComboBox(System.Windows.Controls.ComboBox comboBox, string site)
+
+        
+        
+        public async void firmwareNormalSend(object sender, RoutedEventArgs e)
         {
-            comboBox.Items.Clear();
-            
-            //allowing both http scraping or directory
-            if (site.Contains("http"))
+            System.Threading.CancellationToken cancelToken = cancelSource.Token;
+            if (yoloTab.IsSelected)
             {
-                List<string> results = await downloadWebsiteIndex(site);
-                foreach(string result in results) { comboBox.Items.Add(result + "/"); }
-            }
-            else if(site.Contains(@"\\"))
-            {
-                string[] results = Directory.GetFiles(site);
-                if(results.Length == 0) { comboBox.Items.Add("Nothing found"); }
-                foreach (string result in results){ comboBox.Items.Add(result + "\\"); }
+                if (yoloDailyTab.IsSelected)
+                {
+                    await Firmware.downloadAndSendUSB(yoloPackages.Text, YOLOSITE + yoloProducts.Text + yoloVersions.Text + yoloDistros.Text, loggers[0], yoloInstallButton,cancelToken);
+                }
+                else
+                {
+                    await Firmware.downloadAndSendUSB(yoloCustomPackages.Text, firmwareYoloCustomEntry.Text, loggers[0], yoloInstallButton, cancelToken);
+                }
             }
             else
             {
-                MessageBox.Show(site + " Is not valid");
+                if (duneDailyTab.IsSelected)
+                {
+                    await Firmware.downloadAndSendUSB(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, loggers[0], duneInstallButton, cancelToken);
+                }
+                else
+                {
+                    await Firmware.downloadAndSendUSB(duneCustomPackages.Text, firmwareYoloCustomEntry.Text, loggers[0], duneInstallButton, cancelToken);
+                }
             }
-            
+        }
+           
+        public void firmwareCancel(object sender, RoutedEventArgs e)
+        {
+            cancelSource.Cancel();
         }
         
-        public async Task firmwareDlSend(string filename, string path)
-        {
-            loggers[0].Log("Downloading " + path + filename);
-            WebClient client = new WebClient();
-            client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(downloadProgressHandler);
-            client.DownloadDataCompleted += new DownloadDataCompletedEventHandler(downloadEndHandler);
-            await client.DownloadFileTaskAsync(path, filename);
-            loggers[0].Log("Download success.");
-            loggers[0].Log("Sending firmware to printer");
-            usbsend.StartInfo.FileName = "USBSend.exe";
-            usbsend.StartInfo.Arguments = filename;
-            usbsend.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-            usbsend.StartInfo.RedirectStandardOutput = true;
-            usbsend.Start();
-            await Task.Delay(1000);
-
-            
-            await usbsend.WaitForExitAsync();
-            if (usbsend.ExitCode == 0)
-            {
-                MessageBox.Show("Firmware upgrade success!");
-            }
-            else
-            {
-                MessageBox.Show("Firmware upgrade error / canceled");
-            }
-            File.Delete(filename);
-            try { usbsend.Close(); }
-            catch {}
-        }
-        public async Task logOutput(StreamReader streamReader, System.Windows.Controls.TextBox textBox)
-        {
-            while(streamReader.ReadLine() != null)
-            {
-                textBox.AppendText(await streamReader.ReadLineAsync());
-            }
-        }
-        public async Task<List<string>> downloadWebsiteIndex(string website)
-        {
-            List<string> results = new();
-            List<string> resultsPartial = new();
-            string websiteData = "";
-            string patternA = "(?<=<a href=\")(.*)(?=\\/a><\\/td>)";
-            string patternText = "(?<=\">)(.*)(?=<)";
-            Regex regexATag = new Regex(patternA);
-            Regex regexText = new Regex(patternText);
-            try
-            {
-                WebClient client = new WebClient();
-                websiteData = await client.DownloadStringTaskAsync(website);
-            }
-            catch
-            {
-                MessageBox.Show("Error: Specified site is invalid.");
-                loggers[0].Log("Error: Specified site is invalid.");
-            }
-            MatchCollection matches = regexATag.Matches(websiteData);
-            foreach (Match match in matches) { resultsPartial.Add(match.Value); }
-            foreach (string match in resultsPartial) { results.Add(regexText.Match(match).Value); }
-            
-            results.RemoveAt(0);
-            
-            int resultstokeep = 100;
-            try { results.RemoveRange(resultstokeep, results.Count- resultstokeep); }
-            catch { }
-            if (results.Count == 0)
-            {
-                results.Add("Found no listings for current selection.");
-            }
-            return results;
-        }     
-        public void firmwareUSBDestroy(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                usbsend.Kill();
-            }
-            catch
-            {
-
-            }
-        }
-        #endregion Shared Functions
 
         #endregion Firmware
 
         #region Printing tab 
-        #region UI
-        public async void printSend9100Button(object sender, RoutedEventArgs e)
+        private async Task<List<string>> generateArgs()
         {
+            string sendType = "";
+            if (psButton.IsChecked == true) { sendType = "1"; }
+            if (pclButton.IsChecked == true) { sendType = "2"; }
+            if (escpButton.IsChecked == true) { sendType = "3"; }
+
+            string duplex = "OFF";
+            string duplexMode = "";
+            if (simplexButton.IsChecked == true) { duplex = "ON"; }
+            if (duplexLEButton.IsChecked == true) { duplex = "ON"; duplexMode = "LONGEDGE"; }
+            if (duplexSEButton.IsChecked == true) { duplex = "ON"; duplexMode = "SHORTEDGE"; }
+
+            List<string> args = new();
+            args.Add("temp.ps"); //filename
+            args.Add("PrintTool Selection Send"); //jobname
+            args.Add(sendType); //what language
+            args.Add(printPages.Text); // amoount of pages
+            args.Add(duplex); // duplexing on or off
+            args.Add(duplexMode); //duplexing selection
+            args.Add(paperTypeSelection)
+            return args;
+        }
+
+        public async void printSend9100Button(object sender, RoutedEventArgs e)
+        {           
+
             await printSendIP(connectionsIpPrinterEntry.Text, await printGenerator());
         }
         public async void printSendUSBButton(object sender, RoutedEventArgs e)
@@ -415,12 +273,9 @@ namespace PrintTool
         public void printDeteleJob_Click(object sender, RoutedEventArgs e)
         {
 
-            try
-            {
-                File.Delete(printSavedJobs.SelectedItem.ToString());
-            }
+            Tasks.ListBoxDelete(savedPrintJobs);
             catch { MessageBox.Show("Please select something first"); }
-            printSavedJobsRefresh();
+            Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
         public async void printSendJob_Click(object sender, RoutedEventArgs e)
@@ -431,161 +286,8 @@ namespace PrintTool
 
         #endregion
 
-        public void printSavedJobsRefresh()
-        {
-            printSavedJobs.Items.Clear();
-            string[] filenames = Directory.GetFiles(@"Data\Jobs\");
-            foreach (string filename in filenames)
-            {
-                printSavedJobs.Items.Add(filename);
-            }
-            
-
-        }
-
-        public async Task<string> printGenerator()
-        {
-            string filename = "temp.ps";
-            string jobname = "\"PrintTool Selection Send\"";
-            int pages = int.Parse(printPages.Text);
-            string start = await PJLStart(jobname);
-            string middle = await printGeneratorCaller(pages);
-            string end = await PJLEnd(jobname);
-
-            
-            string alltogether =  start +  middle + end;
-            if (File.Exists(filename)) { File.Delete(filename); }
-            StreamWriter tempFile = File.CreateText(filename);
-            tempFile.Write(alltogether);
-            tempFile.Close();
-            return filename;
-            
-            
-        }
-
-        public async Task<string> PJLStart(string jobname)
-        {
-            
-            string duplexOnOrOff = "OFF";
-            string duplexBinding = "SHORTEDGE";
-
-            if(duplexLEButton.IsChecked == true || duplexSEButton.IsChecked == true) { duplexOnOrOff = "ON"; }
-            if (duplexLEButton.IsChecked == true) { duplexBinding = "LONGEDGE"; }
-            string pjlPart = "";
-            char escapeCharacter = (char)27;
-            string escapeSequence = escapeCharacter + "%-12345X";
-            pjlPart = pjlPart + escapeSequence + "@PJL\r\n"
-                + "@PJL RESET\r\n"
-                + "@PJL JOB NAME = " + jobname + "\r\n"
-                + "@PJL SET JOBNAME = " + jobname + "\r\n"
-                + "@PJL SET DUPLEX = " + duplexOnOrOff + "\r\n"
-                + "@PJL SET BINDING = " + duplexBinding + "\r\n"
-                + "@PJL SET COPIES = " + printCopies.Text + "\r\n"
-                + "@PJL SET PAPER = " + paperTypeSelection.Text + "\r\n"
-                + "@PJL SET OUTBIN = " + printOutputTray.Text + "\r\n"
-                + "@PJL SET MEDIASOURCE = " + printSourceTray.Text+"\r\n";
-            return pjlPart;
-        }
-
-        public async Task<string> PJLEnd(string jobname)
-        {
-            char escapeCharacter = (char)27;
-            string escapeSequence = escapeCharacter + "%-12345X";
-            string endpart = escapeSequence + "@PJL\r\n"
-                + "@PJL EOJ NAME = " + jobname +"\r\n"
-                + escapeSequence+"\r\n";
-
-            return endpart;
-        }
-
-        public async Task<string> printGeneratorCaller(int pages)
-        {
-            string output = "";
-            if (psButton.IsChecked == true)
-            {
-                output = await printCreatePS(pages);
-            }
-            else if (pclButton.IsChecked == true)
-            {
-                output = await printCreatePCL(pages);
-            }
-            else if (escpButton.IsChecked == true)
-            {
-                output = await printCreateESCP(pages);
-            }
-            return output;
-        }
-
-        public async Task<string> printCreatePCL(int pages)
-        {   
-            return "";
-        }
-        public async Task<string> printCreatePS(int pages)
-        {
-            string output = "@PJL ENTER LANGUAGE=POSTSCRIPT \r\n" + "/Times-Roman findfont 14 scalefont setfont \r\n";
-
-            for(int i =0; i<pages; i++)
-            {
-                output = output
-                    + "clippath stroke\r\n"
-                    + "15 60 moveto\r\n"
-                    + "(PrintTool) show\r\n"
-                    + "20 40 moveto \r\n"
-                    + "( Page number = " + (i+1) + " ) show\r\n"
-                     + "20 20 moveto \r\n"
-                    + "( Source PC name  = " + Environment.MachineName + " ) show\r\n"
-                    + "showpage\r\n";
-
-            }
-            return output;
-        }
-
-        public async Task<string> printCreateESCP(int pages)
-        {
-            return "";
-        }
-
-        public async Task printSendIP(string ip, string file)
-        {
-            byte[] data = new byte[0];
-            try
-            {
-                data = File.ReadAllBytes(file);
-            }
-            catch
-            {
-                MessageBox.Show("File read error");
-                return;
-            }
-            
-            try
-            {
-                TcpClient client = new TcpClient();
-                await client.ConnectAsync(ip, 9100);
-                NetworkStream stream = client.GetStream();
-                await stream.WriteAsync(data, 0, data.Length);
-                client.Close();
-            }
-            catch
-            {
-                MessageBox.Show("Incorrect IP");
-                return;
-            }
-            
-
-            return;
-        }
-        public async Task printSendUSB(string file)
-        {
-            Process usbsend = new();
-            usbsend.StartInfo.FileName = "USBSend.exe";
-            usbsend.StartInfo.Arguments = file;
-            usbsend.StartInfo.CreateNoWindow = true;
-            usbsend.Start();        
-        }
-
-
-        #endregion
+        
+        
 
         #region Shared Tasks
         
@@ -618,8 +320,12 @@ namespace PrintTool
 
 
 
+
+
         #endregion
 
-      
+
+
+
     }
 }

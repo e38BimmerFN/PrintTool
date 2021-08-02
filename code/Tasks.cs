@@ -18,10 +18,10 @@ namespace PrintTool
         {
             if (checkHPStatus())
             {
-                checkForUpdates();
-                await firmwareYoloUpdateRevisons();
-                await firmwareDuneUpdateRevisons();
-                checkExePath();
+
+                checkExePath(); 
+                checkForUpdates();   
+                
 
             }
             MessageBox.Show("This program is in alpha, report any errors or changes you want made to derek.hearst@hp.com", "PrintTool");
@@ -43,7 +43,7 @@ namespace PrintTool
                 return false;
             }
         }
-        public static void checkForUpdates()
+        private static void checkForUpdates()
         {
 
             StreamReader sr = File.OpenText(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt");
@@ -55,7 +55,7 @@ namespace PrintTool
                 MessageBox.Show(@"Please update this tool, navigate to \DevScratch\Derek\PrintTool and run the executable.");
             }
         }
-        public static void checkExePath()
+        private static void checkExePath()
         {
 
             if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
@@ -95,6 +95,7 @@ namespace PrintTool
 
         public static void ListBoxDelete(System.Windows.Controls.ListBox listBox)
         {
+            if(listBox.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
             string path = listBox.SelectedItem.ToString();
             File.Delete(path);
         }
@@ -110,21 +111,21 @@ namespace PrintTool
         }
 
         
-        public static async Task populateComboBox(System.Windows.Controls.ComboBox comboBox, string site)
+        public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site)
         {
             comboBox.Items.Clear();
 
             //allowing both http scraping or directory
             if (site.Contains("http"))
             {
-                List<string> results = await downloadWebsiteIndex(site);
+                List<string> results = await DownloadWebsiteIndex(site);
                 foreach (string result in results) { comboBox.Items.Add(result + "/"); }
             }
-            else if (site.Contains(@"\\"))
+            else if (site.Contains(@"\\") || site.Contains(@"C:"))
             {
                 string[] results = Directory.GetFiles(site);
                 if (results.Length == 0) { comboBox.Items.Add("Nothing found"); }
-                foreach (string result in results) { comboBox.Items.Add(result + "\\"); }
+                foreach (string result in results) { comboBox.Items.Add(result.Substring(result.LastIndexOf("\\")) + "\\"); }
             }
             else
             {
@@ -132,7 +133,28 @@ namespace PrintTool
             }
         }
 
-        public static async Task<List<string>> downloadWebsiteIndex(string website)
+        public static async Task<string> downloadFile(string filename, string location)
+        {
+            if (location.Contains("http"))
+            {
+                WebClient webClient = new();
+                await webClient.DownloadFileTaskAsync(location, filename);
+                
+            }
+            else if(location.Contains(@"\\")|| location.Contains(@"C:"))
+            {
+                File.Copy(location + filename, filename);
+            }
+            else
+            {
+                MessageBox.Show("Invalid location");
+                return "";
+            }
+            return filename;
+        }
+
+
+        public static async Task<List<string>> DownloadWebsiteIndex(string website)
         {
             List<string> results = new();
             List<string> resultsPartial = new();
