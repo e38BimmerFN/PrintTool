@@ -31,7 +31,7 @@ namespace PrintTool
 
         #region Startup
 
-        private async void LoadTask(object sender, EventArgs e)
+        private async void LoadTrigger(object sender, EventArgs e)
         {
             await Tasks.runStartUp();
             Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
@@ -48,7 +48,7 @@ namespace PrintTool
             loggers.Add(new Logger("application"));
         }
 
-        private async void ClosingTask(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Tasks.RunEndTasks();
         }
@@ -245,87 +245,49 @@ namespace PrintTool
             args.Add("temp.ps"); //filename
             args.Add("PrintTool Selection Send"); //jobname
             args.Add(sendType); //what language
-            args.Add(printPages.Text); // amoount of pages
+            args.Add(printCopies.Text); // amoount of pages
             args.Add(duplex); // duplexing on or off
             args.Add(duplexMode); //duplexing selection
-            args.Add(paperTypeSelection)
+            args.Add(paperTypeSelection.Text);
+            args.Add(printSourceTray.Text);
+            args.Add(printOutputTray.Text);
+            args.Add(printPages.Text);
+            
             return args;
         }
 
         public async void printSend9100Button(object sender, RoutedEventArgs e)
-        {           
-
-            await printSendIP(connectionsIpPrinterEntry.Text, await printGenerator());
+        {
+            string filename = await Printer.PrintGenerator( await generateArgs());
+            await Printer.SendIP(connectionsIpPrinterEntry.Text, filename);
         }
         public async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
-            await printSendIP(connectionsIpPrinterEntry.Text, await printGenerator());
+            string filename = await Printer.PrintGenerator(await generateArgs());
+            await Printer.SendUSB(filename);
 
         }
 
         public async void printSaveJob_Click(object sender, RoutedEventArgs e)
         {
             if (File.Exists( @"Data\Jobs\"+printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
-            File.Copy(await printGenerator(), @"Data\Jobs\" + printNameJob.Text);
-            printSavedJobsRefresh();
+            File.Copy(await Printer.PrintGenerator(await generateArgs()), @"Data\Jobs\" + printNameJob.Text);
+            Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
         public void printDeteleJob_Click(object sender, RoutedEventArgs e)
         {
-
             Tasks.ListBoxDelete(savedPrintJobs);
-            catch { MessageBox.Show("Please select something first"); }
             Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
         public async void printSendJob_Click(object sender, RoutedEventArgs e)
         {
-            if(printSavedJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-            await printSendIP(connectionsIpPrinterEntry.Text, printSavedJobs.SelectedItem.ToString());
+            if(savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
+            await Printer.SendIP(connectionsIpPrinterEntry.Text, savedPrintJobs.SelectedItem.ToString());
         }
 
         #endregion
-
-        
-        
-
-        #region Shared Tasks
-        
-        public void downloadProgressHandler(object sender, DownloadProgressChangedEventArgs e)
-        {
-            double bytesIn = double.Parse(e.BytesReceived.ToString());
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString());
-            double percentage = bytesIn / totalBytes * 100;
-            applicaitonProgressBar.Value = percentage;
-        }
-        public void downloadEndHandler(object sender, DownloadDataCompletedEventArgs e)
-        {
-            applicaitonProgressBar.Value = 0;
-        }
-        Process usbsend = new Process();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #endregion
-
-
-
 
     }
 }

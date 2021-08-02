@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PrintTool"
         mc:Ignorable="d"
-        Title="PrintTool by Derek Hearst" Height="972" Width="1174" ContentRendered="StartupTasks" ResizeMode="CanResize" SizeToContent="Manual" Closing="EndTasks">
+        Title="PrintTool by Derek Hearst" Height="972" Width="1174" ContentRendered="LoadTrigger" ResizeMode="CanResize" SizeToContent="Manual" Closing="ExitTrigger">
 
     <Grid>
 
@@ -126,7 +126,7 @@
                                 </Grid.ColumnDefinitions>
                                 <Button Content="Save" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="0" Click="ConnectionsSaveDefaults"/>
                                 <Button Content="Load" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Grid.Column="1" Click="ConnectionsLoadDefaults"/>
-                                <Button Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="2" Click="ConnectionsDeleteDefault"/>
+                                <Button Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="2" Click="ConnectionsDeleteDefaults"/>
                             </Grid>
                         </Grid>
                     </GroupBox>
