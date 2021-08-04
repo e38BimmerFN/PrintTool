@@ -17,7 +17,7 @@ namespace PrintTool
             
             string start = await PJLStart(args);
             string lang = "";
-            switch (args[3]){
+            switch (args[2]){
                 case "1":
                     lang = await CreatePS(args);
                     break;
@@ -79,21 +79,28 @@ namespace PrintTool
 
         private static async Task<string> PJLStart(List<string> args)
         {
-            string returnString = "";
+
+            
             char escapeCharacter = (char)27;
-            string escapeSequence = escapeCharacter + @"\%-12345X";
-            returnString = returnString + escapeSequence + "@PJL\r\n"
-                + "@PJL RESET\r\n"
-                + "@PJL JOB NAME = " + args[0]+ "\r\n"
-                + "@PJL SET JOBNAME = " + args[1] + "\r\n"
-                + "@PJL SET COPIES = " + args[4] + "\r\n"
-                + "@PJL SET DUPLEX = " + args[5] + "\r\n"
-                + "@PJL SET BINDING = " + args[6] + "\r\n"
-                + "@PJL SET PAPER = " + args[7] + "\r\n"
-                + "@PJL SET MEDIASOURCE = " + args[8] + "\r\n"
-                + "@PJL SET OUTBIN = " + args[9] + "\r\n";
-                
-            return returnString;
+            string escapeSequence = escapeCharacter + @"%-12345X";
+            List<string> list = new();
+            list.Add(escapeSequence);
+            list.Add("@PJL RESET");
+            list.Add("@PJL JOB NAME = " + args[0]);
+            list.Add("@PJL SET JOBNAME = " + args[1]);
+            list.Add("@PJL SET COPIES = " + args[9]);
+            list.Add("@PJL SET DUPLEX = " + args[4]);
+            if (args[5] != "") { list.Add("@PJL SET BINDING = " + args[5]); }
+            list.Add("@PJL SET PAPER = " + args[6]);
+            if (args[7] != "Default") { list.Add("@PJL SET MEDIASOURCE = " + args[7]); }
+            if (args[8] != "Default") { list.Add("@PJL SET OUTBIN = " + args[8]); }
+
+            string returnstring = "";
+            foreach(string item in list) 
+            {
+                returnstring = returnstring + item + "\r\n";
+            }
+            return returnstring;
         }
 
 
@@ -109,7 +116,7 @@ namespace PrintTool
         {
             string output = "@PJL ENTER LANGUAGE=POSTSCRIPT \r\n" + "/Times-Roman findfont 14 scalefont setfont \r\n";
 
-            for (int i = 0; i < int.Parse(args[10]); i++)
+            for (int i = 0; i < int.Parse(args[3]); i++)
             {
                 output = output
                     + "clippath stroke\r\n"

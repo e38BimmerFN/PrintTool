@@ -25,7 +25,7 @@ namespace PrintTool
         }
         public void Log(string log)
         {
-            string output = "[" + DateTime.Now.ToShortTimeString() + "] " + log;
+            string output = "[" + DateTime.Now.ToShortTimeString() + "] " + log +"\n";
             logOutput.Add(output);
             foreach(TextBox textBox in textBoxes)
             {

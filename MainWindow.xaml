@@ -245,21 +245,21 @@
 
                                                 </Grid.RowDefinitions>
                                                 <Label Content="Select your product." HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloProducts" IsReadOnly="True" Grid.Row="1" VerticalAlignment="Center" SelectionChanged="YoloUpdateDaily">
+                                                <ComboBox x:Name="yoloProducts" IsReadOnly="True"  SelectedIndex="0" Grid.Row="1" VerticalAlignment="Center">
                                                     <ComboBoxItem Content="yoshino_dist"/>
                                                     <ComboBoxItem Content="lochsa_dist"/>
                                                 </ComboBox>
                                                 <Label Content="Select Firmware Version" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloVersions" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" SelectionChanged="YoloUpdateDaily"/>
+                                                <ComboBox x:Name="yoloVersions" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" DropDownOpened="yoloVersions_DropDownOpened" />
                                                 <Label Content="Selection your firmware version." Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloDistros" Grid.Row="5" VerticalAlignment="Center" SelectionChanged="YoloUpdateDaily">
+                                                <ComboBox x:Name="yoloDistros" Grid.Row="5" SelectedIndex="0" VerticalAlignment="Center">
                                                     <ComboBoxItem Content="assert"/>
                                                     <ComboBoxItem Content="nonassert"/>
                                                     <ComboBoxItem Content="signable_assert"/>
                                                     <ComboBoxItem Content="nonassert/signed"/>
                                                 </ComboBox>
                                                 <Label Content="Select Package" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox Name="yoloPackages" Grid.Row="7"/>
+                                                <ComboBox Name="yoloPackages" Grid.Row="7" DropDownOpened="yoloPackages_DropDownOpened"/>
 
                                             </Grid>
                                         </TabItem>
@@ -279,7 +279,7 @@
                                         </TabItem>
 
                                     </TabControl>
-                                    <Button x:Name="yoloInstallButton" Content="Download &amp; send" Click="firmwareNormalSend" Grid.Row="1" Background="#7F00FF00"/>
+                                    <Button x:Name="yoloInstallButton" Content="Download &amp; send" Click="firmwareUSBSend" Grid.Row="1" Background="#7F00FF00"/>
                                     <Button Content="Cancel" Click="firmwareCancel" Grid.Row="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="#7FFF0000"/>
                                 </Grid>
 
@@ -323,11 +323,11 @@
                                                     <RowDefinition Height=".25*"/>
                                                 </Grid.RowDefinitions>
                                                 <Label Content="Select firmware Version" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="duneVersions" IsEditable="True"  Grid.Row="1"  VerticalAlignment="Center" SelectionChanged="DuneUpdateDaily"/>
+                                                <ComboBox x:Name="duneVersions" IsEditable="True"  Grid.Row="1"  VerticalAlignment="Center"/>
                                                 <Label Content="Select Hardware Model" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="duneProducts"  Grid.Row="3" VerticalAlignment="Center" SelectionChanged="DuneUpdateDaily" />
+                                                <ComboBox x:Name="duneProducts"  Grid.Row="3" VerticalAlignment="Center" DropDownOpened="duneProducts_DropDownOpened" />
                                                 <Label Content="Select Package" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="dunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="dunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center" DropDownOpened="dunePackages_DropDownOpened"/>
                                             </Grid>
                                         </TabItem>
                                         <TabItem Header="Custom" Name="duneCustomTab">
@@ -338,14 +338,14 @@
                                                     <RowDefinition Height=".25*"/>
                                                     <RowDefinition Height=".25*"/>
                                                 </Grid.RowDefinitions>
-                                                <TextBox x:Name="firmwareDuneCustomEntry" Grid.Row="0" TextChanged="DuneUpdateCustom"/>
+                                                <TextBox x:Name="firmwareDuneCustomEntry" Grid.Row="0"/>
                                                 <Label Content="Please select firmware package" Grid.Row="1"/>
-                                                <ComboBox Name="duneCustomPackages" Grid.Row="2"/>
+                                                <ComboBox Name="duneCustomPackages" Grid.Row="2" DropDownOpened="duneCustomPackages_DropDownOpened"/>
                                             </Grid>
 
                                         </TabItem>
                                     </TabControl>
-                                    <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareNormalSend" Grid.Row="1" Background="#7F00FF00"/>
+                                    <Button x:Name="duneInstallButton" Content="Download &amp; Install" Click="firmwareUSBSend" Grid.Row="1" Background="#7F00FF00"/>
                                     <Button Content="Cancel" Click="firmwareCancel" Grid.Row="2" Background="#7FFF0000"/>
                                 </Grid>
                             </GroupBox>

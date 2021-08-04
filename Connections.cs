@@ -38,19 +38,20 @@ namespace PrintTool
             {
                 myFile.WriteLine(entry);
             }
+            myFile.Close();
         }
 
         public static List<string> LoadDefaults(System.Windows.Controls.ListBox listBox)
-        {   
-            if (listBox.SelectedItem == null) { MessageBox.Show("Please select item"); }
-
+        {
             List<string> data = new();
+            if (listBox.SelectedItem == null) { MessageBox.Show("Please select item"); return data; }
             StreamReader myFile = File.OpenText(listBox.SelectedItem.ToString());
             while(myFile.EndOfStream == false)
             {
                 data.Add(myFile.ReadLine());
             }
             return data;
+            myFile.Close();
         }
     }
 }

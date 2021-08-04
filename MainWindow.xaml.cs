@@ -36,7 +36,7 @@ namespace PrintTool
             await Tasks.runStartUp();
             Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
             Tasks.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
-            if (Tasks.checkHPStatus())
+            if (!Tasks.checkHPStatus())
             {
                 MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
                 firmwareTab.IsEnabled = false;
@@ -46,6 +46,8 @@ namespace PrintTool
                 await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
             }
             loggers.Add(new Logger("application"));
+            loggers[0].AddTextBox(logsBottomApp);
+            
         }
 
         private async void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
@@ -87,6 +89,7 @@ namespace PrintTool
         public void ConnectionsLoadDefaults(object sender, EventArgs e)
         {
             List<string> data = Connections.LoadDefaults(savedConnections);
+            if (data.Count == 0) { return; }
 
             connectionsModel.Text = data[0];
             connectionsIpPrinterEntry.Text = data[1];
@@ -94,12 +97,12 @@ namespace PrintTool
             connectionsTypeNone.IsChecked = bool.Parse(data[3]);
             connectionsTypeSerial.IsChecked = bool.Parse(data[4]);
             connectionsTypeDart.IsChecked = bool.Parse(data[5]);
-            connectionsBashSelect.Text = data[8];
-            connectionsSirusSelect.Text = data[9];
-            connectionsOptSelect.Text = data[10];
-            connectionsPort1.Text = data[11];
-            connectionsPort2.Text = data[12];
-            connectionsPort3.Text = data[13];
+            connectionsBashSelect.Text = data[6];
+            connectionsSirusSelect.Text = data[7];
+            connectionsOptSelect.Text = data[8];
+            connectionsPort1.Text = data[9];
+            connectionsPort2.Text = data[10];
+            connectionsPort3.Text = data[11];
         }
         public void ConnectionsDeleteDefaults(object sender, EventArgs e)
         {
@@ -117,17 +120,22 @@ namespace PrintTool
 
         #region Firmware Tab
 
-        
-
-        private async void YoloUpdateDaily(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private async void yoloVersions_DropDownOpened(object sender, EventArgs e)
         {
-            await Tasks.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text);
-            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + yoloVersions.Text + yoloDistros.Text);
+            await Tasks.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text + "/?C=M;O=D");
+        }
+
+        private async void yoloPackages_DropDownOpened(object sender, EventArgs e)
+        {
+            if(yoloVersions.Text == "") { return; }
+            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D");
         }
 
 
         public async void YoloUpdateCustom(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
+            await Task.Delay(100);
+            if(yoloCustomEntry.Text == "" || yoloCustomEntry.Text.EndsWith("\\") == false) { return; }
             await Tasks.PopulateComboBox(yoloCustomPackages, firmwareYoloCustomEntry.Text);
         }
 
@@ -153,26 +161,25 @@ namespace PrintTool
             await Firmware.downloadAndSendUSB(filename, website, loggers[0], firmwareYoloSecureB, cancelToken);
             firmwareYoloSecureB.Content = "Convert to secured";
         }
-       
-        
-        
-        
 
-        
-       
-        
-        
-        private async void DuneUpdateDaily(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+
+
+
+
+        private async void duneProducts_DropDownOpened(object sender, EventArgs e)
         {
             await Tasks.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
-            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text);
         }
 
-
-        public async void DuneUpdateCustom(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private async void dunePackages_DropDownOpened(object sender, EventArgs e)
         {
-            await Tasks.PopulateComboBox(duneCustomPackages, firmwareYoloCustomEntry.Text);
+            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D");
         }
+
+        private async void duneCustomPackages_DropDownOpened(object sender, EventArgs e)
+        {
+            await Tasks.PopulateComboBox(duneCustomPackages, firmwareDuneCustomEntry.Text);
+        }        
 
         public void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
         {
@@ -192,14 +199,14 @@ namespace PrintTool
 
         
         
-        public async void firmwareNormalSend(object sender, RoutedEventArgs e)
+        public async void firmwareUSBSend(object sender, RoutedEventArgs e)
         {
             System.Threading.CancellationToken cancelToken = cancelSource.Token;
             if (yoloTab.IsSelected)
             {
                 if (yoloDailyTab.IsSelected)
                 {
-                    await Firmware.downloadAndSendUSB(yoloPackages.Text, YOLOSITE + yoloProducts.Text + yoloVersions.Text + yoloDistros.Text, loggers[0], yoloInstallButton,cancelToken);
+                    await Firmware.downloadAndSendUSB(yoloPackages.Text, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/", loggers[0], yoloInstallButton,cancelToken);
                 }
                 else
                 {
@@ -237,7 +244,7 @@ namespace PrintTool
 
             string duplex = "OFF";
             string duplexMode = "";
-            if (simplexButton.IsChecked == true) { duplex = "ON"; }
+            if (simplexButton.IsChecked == true) { duplex = "OFF"; }
             if (duplexLEButton.IsChecked == true) { duplex = "ON"; duplexMode = "LONGEDGE"; }
             if (duplexSEButton.IsChecked == true) { duplex = "ON"; duplexMode = "SHORTEDGE"; }
 
@@ -245,13 +252,13 @@ namespace PrintTool
             args.Add("temp.ps"); //filename
             args.Add("PrintTool Selection Send"); //jobname
             args.Add(sendType); //what language
-            args.Add(printCopies.Text); // amoount of pages
+            args.Add(printPages.Text); // copies of pages
             args.Add(duplex); // duplexing on or off
             args.Add(duplexMode); //duplexing selection
             args.Add(paperTypeSelection.Text);
             args.Add(printSourceTray.Text);
             args.Add(printOutputTray.Text);
-            args.Add(printPages.Text);
+            args.Add(printCopies.Text);
             
             return args;
         }
@@ -264,6 +271,7 @@ namespace PrintTool
         public async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
             string filename = await Printer.PrintGenerator(await generateArgs());
+            Task.Delay(50);
             await Printer.SendUSB(filename);
 
         }
@@ -287,7 +295,10 @@ namespace PrintTool
             await Printer.SendIP(connectionsIpPrinterEntry.Text, savedPrintJobs.SelectedItem.ToString());
         }
 
+
+
         #endregion
 
+       
     }
 }

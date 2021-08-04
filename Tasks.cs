@@ -119,7 +119,7 @@ namespace PrintTool
             if (site.Contains("http"))
             {
                 List<string> results = await DownloadWebsiteIndex(site);
-                foreach (string result in results) { comboBox.Items.Add(result + "/"); }
+                foreach (string result in results) { comboBox.Items.Add(result); }
             }
             else if (site.Contains(@"\\") || site.Contains(@"C:"))
             {
@@ -129,7 +129,7 @@ namespace PrintTool
             }
             else
             {
-                MessageBox.Show(site + " Is not valid");
+                comboBox.Items.Add("Invalid Selection");
             }
         }
 
@@ -138,7 +138,12 @@ namespace PrintTool
             if (location.Contains("http"))
             {
                 WebClient webClient = new();
+                webClient.Headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+                webClient.Headers.Add(HttpRequestHeader.Cookie, "_ga=GA1.2.272164230.1623710775");
+                webClient.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
+                
                 await webClient.DownloadFileTaskAsync(location, filename);
+                return filename;
                 
             }
             else if(location.Contains(@"\\")|| location.Contains(@"C:"))
@@ -150,7 +155,7 @@ namespace PrintTool
                 MessageBox.Show("Invalid location");
                 return "";
             }
-            return filename;
+            return "";
         }
 
 

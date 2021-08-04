@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace PrintTool.code {
+namespace PrintTool {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
@@ -37,7 +37,7 @@ namespace PrintTool.code {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("102")]
+        [global::System.Configuration.DefaultSettingValueAttribute("103")]
         public int Version {
             get {
                 return ((int)(this["Version"]));
@@ -49,25 +49,13 @@ namespace PrintTool.code {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("15.86.118.9")]
-        public string PrinterIp {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastConfig {
             get {
-                return ((string)(this["PrinterIp"]));
+                return ((string)(this["LastConfig"]));
             }
             set {
-                this["PrinterIp"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("15.86.118.1")]
-        public string DartIp {
-            get {
-                return ((string)(this["DartIp"]));
-            }
-            set {
-                this["DartIp"] = value;
+                this["LastConfig"] = value;
             }
         }
     }
