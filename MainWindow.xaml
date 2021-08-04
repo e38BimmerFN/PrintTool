@@ -245,22 +245,21 @@
 
                                                 </Grid.RowDefinitions>
                                                 <Label Content="Select your product." HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloProducts" IsReadOnly="True"  SelectedIndex="0" Grid.Row="1" VerticalAlignment="Center">
+                                                <ComboBox x:Name="yoloProducts" IsReadOnly="True"  SelectedIndex="0" Grid.Row="1" VerticalAlignment="Center" SelectionChanged="yoloProducts_SelectionChanged">
                                                     <ComboBoxItem Content="yoshino_dist"/>
                                                     <ComboBoxItem Content="lochsa_dist"/>
                                                 </ComboBox>
                                                 <Label Content="Select Firmware Version" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloVersions" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" DropDownOpened="yoloVersions_DropDownOpened" />
+                                                <ComboBox x:Name="yoloVersions" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" SelectionChanged="yoloVersions_SelectionChanged" />
                                                 <Label Content="Selection your firmware version." Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloDistros" Grid.Row="5" SelectedIndex="0" VerticalAlignment="Center">
+                                                <ComboBox x:Name="yoloDistros" Grid.Row="5" SelectedIndex="0" VerticalAlignment="Center" SelectionChanged="yoloDistros_SelectionChanged">
                                                     <ComboBoxItem Content="assert"/>
                                                     <ComboBoxItem Content="nonassert"/>
                                                     <ComboBoxItem Content="signable_assert"/>
                                                     <ComboBoxItem Content="nonassert/signed"/>
                                                 </ComboBox>
                                                 <Label Content="Select Package" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox Name="yoloPackages" Grid.Row="7" DropDownOpened="yoloPackages_DropDownOpened"/>
-
+                                                <ComboBox Name="yoloPackages" Grid.Row="7" SelectedIndex="1"/>
                                             </Grid>
                                         </TabItem>
                                         <TabItem Name="yoloCustomTab" Header="Custom">

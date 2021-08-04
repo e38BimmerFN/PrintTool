@@ -50,8 +50,9 @@ namespace PrintTool
             {
                 data.Add(myFile.ReadLine());
             }
-            return data;
             myFile.Close();
+            return data;
+            
         }
     }
 }

@@ -14,7 +14,7 @@ namespace PrintTool
     {
         
 
-        public static async Task runStartUp()
+        public static void runStartUp()
         {
             if (checkHPStatus())
             {
@@ -111,21 +111,24 @@ namespace PrintTool
         }
 
         
-        public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site)
+        public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "")
         {
             comboBox.Items.Clear();
 
             //allowing both http scraping or directory
             if (site.Contains("http"))
             {
-                List<string> results = await DownloadWebsiteIndex(site);
+                List<string> results = await DownloadWebsiteIndex(site,filter);
                 foreach (string result in results) { comboBox.Items.Add(result); }
             }
             else if (site.Contains(@"\\") || site.Contains(@"C:"))
             {
                 string[] results = Directory.GetFiles(site);
-                if (results.Length == 0) { comboBox.Items.Add("Nothing found"); }
-                foreach (string result in results) { comboBox.Items.Add(result.Substring(result.LastIndexOf("\\")) + "\\"); }
+                if (results.Length == 0) { comboBox.Items.Add("Nothing found");  return; }
+                foreach (string result in results) 
+                {
+                    comboBox.Items.Add(result.Substring(result.LastIndexOf("\\"))); 
+                }
             }
             else
             {
@@ -138,28 +141,25 @@ namespace PrintTool
             if (location.Contains("http"))
             {
                 WebClient webClient = new();
-                webClient.Headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-                webClient.Headers.Add(HttpRequestHeader.Cookie, "_ga=GA1.2.272164230.1623710775");
-                webClient.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
                 
-                await webClient.DownloadFileTaskAsync(location, filename);
+                await webClient.DownloadFileTaskAsync(location + filename, filename);
                 return filename;
                 
             }
             else if(location.Contains(@"\\")|| location.Contains(@"C:"))
             {
                 File.Copy(location + filename, filename);
+                return filename;
             }
             else
             {
                 MessageBox.Show("Invalid location");
                 return "";
             }
-            return "";
         }
 
 
-        public static async Task<List<string>> DownloadWebsiteIndex(string website)
+        public static async Task<List<string>> DownloadWebsiteIndex(string website, string filter ="")
         {
             List<string> results = new();
             List<string> resultsPartial = new();
@@ -176,20 +176,22 @@ namespace PrintTool
             catch
             {
                 MessageBox.Show("Error: Specified site is invalid.");
+                return results;
             }
             MatchCollection matches = regexATag.Matches(websiteData);
             foreach (Match match in matches) { resultsPartial.Add(match.Value); }
             foreach (string match in resultsPartial) { results.Add(regexText.Match(match).Value); }
-
             results.RemoveAt(0);
-
+            if(filter != "")
+            {
+                foreach (string match in results) 
+                { 
+                    if (!match.EndsWith(filter)) { results.Remove(match); } 
+                }
+            }
             int resultstokeep = 100;
             try { results.RemoveRange(resultstokeep, results.Count - resultstokeep); }
             catch { }
-            if (results.Count == 0)
-            {
-                results.Add("Found no listings for current selection.");
-            }
             return results;
         }
 

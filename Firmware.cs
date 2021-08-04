@@ -33,10 +33,10 @@ namespace PrintTool
             logger.Log("Sending firmware to printer");
             usbsend.StartInfo.FileName = "USBSend.exe";
             usbsend.StartInfo.Arguments = filename;
-            usbsend.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+            usbsend.StartInfo.CreateNoWindow = true;
             usbsend.StartInfo.RedirectStandardOutput = true;
+            usbsend.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>  { logger.Log(e.Data); });
             usbsend.Start();
-            logger.AddOutputStream(usbsend.StandardOutput);
             await usbsend.WaitForExitAsync(token);
             if (usbsend.ExitCode == 0)
             {

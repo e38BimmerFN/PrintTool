@@ -33,7 +33,7 @@ namespace PrintTool
 
         private async void LoadTrigger(object sender, EventArgs e)
         {
-            await Tasks.runStartUp();
+            Tasks.runStartUp();
             Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
             Tasks.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
             if (!Tasks.checkHPStatus())
@@ -50,7 +50,7 @@ namespace PrintTool
             
         }
 
-        private async void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
+        private void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Tasks.RunEndTasks();
         }
@@ -120,16 +120,28 @@ namespace PrintTool
 
         #region Firmware Tab
 
-        private async void yoloVersions_DropDownOpened(object sender, EventArgs e)
+        private async void yoloProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            await Task.Delay(100);
             await Tasks.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text + "/?C=M;O=D");
         }
 
-        private async void yoloPackages_DropDownOpened(object sender, EventArgs e)
+        private async void yoloVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if(yoloVersions.Text == "") { return; }
+            await Task.Delay(100);
+            if (yoloVersions.Text == "") { return; }
             await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D");
         }
+
+        private async void yoloDistros_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            await Task.Delay(100);
+            if(yoloVersions.Text == "") { return; }
+            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D");
+
+        }
+
+       
 
 
         public async void YoloUpdateCustom(object sender, System.Windows.Controls.TextChangedEventArgs e)
@@ -173,25 +185,27 @@ namespace PrintTool
 
         private async void dunePackages_DropDownOpened(object sender, EventArgs e)
         {
-            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D");
+            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D","fhx");
         }
 
         private async void duneCustomPackages_DropDownOpened(object sender, EventArgs e)
         {
-            await Tasks.PopulateComboBox(duneCustomPackages, firmwareDuneCustomEntry.Text);
-        }        
+            await Tasks.PopulateComboBox(duneCustomPackages, firmwareDuneCustomEntry.Text, "fhx");
+        }   
+        
 
-        public void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
+
+        private void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
-        public void firmewareDuneSecure_Click(object sender, RoutedEventArgs e)
+        private void firmewareDuneSecure_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
-        public void firmewareDuneReset_Click(object sender, RoutedEventArgs e)
+        private void firmewareDuneReset_Click(object sender, RoutedEventArgs e)
         {
             // todo WORK ONM THIS
         }
@@ -199,7 +213,7 @@ namespace PrintTool
 
         
         
-        public async void firmwareUSBSend(object sender, RoutedEventArgs e)
+        private async void firmwareUSBSend(object sender, RoutedEventArgs e)
         {
             System.Threading.CancellationToken cancelToken = cancelSource.Token;
             if (yoloTab.IsSelected)
@@ -226,7 +240,7 @@ namespace PrintTool
             }
         }
            
-        public void firmwareCancel(object sender, RoutedEventArgs e)
+        private void firmwareCancel(object sender, RoutedEventArgs e)
         {
             cancelSource.Cancel();
         }
@@ -235,7 +249,7 @@ namespace PrintTool
         #endregion Firmware
 
         #region Printing tab 
-        private async Task<List<string>> generateArgs()
+        private List<string> generateArgs()
         {
             string sendType = "";
             if (psButton.IsChecked == true) { sendType = "1"; }
@@ -263,33 +277,32 @@ namespace PrintTool
             return args;
         }
 
-        public async void printSend9100Button(object sender, RoutedEventArgs e)
+        private async void printSend9100Button(object sender, RoutedEventArgs e)
         {
-            string filename = await Printer.PrintGenerator( await generateArgs());
+            string filename = Printer.PrintGenerator(generateArgs());
             await Printer.SendIP(connectionsIpPrinterEntry.Text, filename);
         }
-        public async void printSendUSBButton(object sender, RoutedEventArgs e)
+        private async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
-            string filename = await Printer.PrintGenerator(await generateArgs());
-            Task.Delay(50);
+            string filename = Printer.PrintGenerator(generateArgs());
             await Printer.SendUSB(filename);
 
         }
 
-        public async void printSaveJob_Click(object sender, RoutedEventArgs e)
+        private void printSaveJob_Click(object sender, RoutedEventArgs e)
         {
             if (File.Exists( @"Data\Jobs\"+printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
-            File.Copy(await Printer.PrintGenerator(await generateArgs()), @"Data\Jobs\" + printNameJob.Text);
+            File.Copy(Printer.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
             Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
-        public void printDeteleJob_Click(object sender, RoutedEventArgs e)
+        private void printDeteleJob_Click(object sender, RoutedEventArgs e)
         {
             Tasks.ListBoxDelete(savedPrintJobs);
             Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
-        public async void printSendJob_Click(object sender, RoutedEventArgs e)
+        private async void printSendJob_Click(object sender, RoutedEventArgs e)
         {
             if(savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
             await Printer.SendIP(connectionsIpPrinterEntry.Text, savedPrintJobs.SelectedItem.ToString());
@@ -297,8 +310,9 @@ namespace PrintTool
 
 
 
+
         #endregion
 
-       
+      
     }
 }

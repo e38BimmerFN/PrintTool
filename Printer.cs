@@ -12,24 +12,24 @@ namespace PrintTool
     class Printer
     {
         
-        public static async Task<string> PrintGenerator(List<string> args)
+        public static string PrintGenerator(List<string> args)
         {
             
-            string start = await PJLStart(args);
+            string start = PJLStart(args);
             string lang = "";
             switch (args[2]){
                 case "1":
-                    lang = await CreatePS(args);
+                    lang =  CreatePS(args);
                     break;
                 case "2":
-                    lang = await CreatePCL(args);
+                    lang =  CreatePCL(args);
                     break;
                 case "3":
-                    lang = await CreateESCP(args);
+                    lang =  CreateESCP(args);
                     break;
 
             }
-            string end = await PJLEnd(args);
+            string end = PJLEnd(args);
             string alltogether = start + lang + end;
             if (File.Exists(args[0])) { File.Delete(args[0]); }
             StreamWriter tempFile = File.CreateText(args[0]);
@@ -77,7 +77,7 @@ namespace PrintTool
         }
 
 
-        private static async Task<string> PJLStart(List<string> args)
+        private static string PJLStart(List<string> args)
         {
 
             
@@ -108,11 +108,11 @@ namespace PrintTool
 
         
 
-        private static async Task<string> CreatePCL(List<string> args)
+        private static string CreatePCL(List<string> args)
         {
             return "";
         }
-        private static async Task<string> CreatePS(List<string> args)
+        private static string CreatePS(List<string> args)
         {
             string output = "@PJL ENTER LANGUAGE=POSTSCRIPT \r\n" + "/Times-Roman findfont 14 scalefont setfont \r\n";
 
@@ -132,12 +132,12 @@ namespace PrintTool
             return output;
         }
 
-        private static async Task<string> CreateESCP(List<string> args)
+        private static string CreateESCP(List<string> args)
         {
             return "";
         }
 
-        private static async Task<string> PJLEnd(List<string> args)
+        private static string PJLEnd(List<string> args)
         {
             char escapeCharacter = (char)27;
             string escapeSequence = escapeCharacter + "%-12345X";

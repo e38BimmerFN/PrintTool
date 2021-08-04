@@ -17,8 +17,7 @@ namespace PrintTool
         private List<string> logOutput = new();
         private string logType = "";
         private List<TextBox> textBoxes =new();
-        private StreamReader streamReader;
-        Task taskOutputReader;
+       
         public Logger(string xlogType)
         {
             logType = xlogType;
@@ -45,22 +44,6 @@ namespace PrintTool
         public void AddTextBox(TextBox textBox)
         {
             textBoxes.Add(textBox);
-        }
-
-        public void AddOutputStream(StreamReader output)
-        {
-            
-            streamReader = output;
-            taskOutputReader = new Task(UpdateOutputStream);
-            
-        }
-
-        public async void UpdateOutputStream()
-        {
-            while(streamReader.EndOfStream == false)
-            {
-                Log(await streamReader.ReadLineAsync());
-            }
         }
     }
 }
