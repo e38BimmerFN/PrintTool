@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace DerekHearstAllInOne
+namespace PrintTool
 {
     /// <summary>
     /// Interaction logic for App.xaml

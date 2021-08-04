@@ -119,7 +119,7 @@ namespace PrintTool
         #endregion Connections
 
         #region Firmware Tab
-
+        #region Yolo
         private async void yoloProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             await Task.Delay(100);
@@ -141,15 +141,15 @@ namespace PrintTool
 
         }
 
-       
-
-
-        public async void YoloUpdateCustom(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private async void firmwareYoloCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             await Task.Delay(100);
-            if(yoloCustomEntry.Text == "" || yoloCustomEntry.Text.EndsWith("\\") == false) { return; }
+            if (yoloCustomEntry.Text == "" || !yoloCustomEntry.Text.EndsWith("\\")) { return; }
             await Tasks.PopulateComboBox(yoloCustomPackages, firmwareYoloCustomEntry.Text);
         }
+
+
+       
 
         public async void firmwareYoloUnsecureB_Click(object sender, RoutedEventArgs e)
         {
@@ -174,26 +174,30 @@ namespace PrintTool
             firmwareYoloSecureB.Content = "Convert to secured";
         }
 
+        #endregion Yolo
+        #region Dune
+        
 
-
-
-
-        private async void duneProducts_DropDownOpened(object sender, EventArgs e)
+        private async void duneVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
+            await Task.Delay(100);
+            if (duneVersions.Text == "") { return; }
             await Tasks.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
         }
 
-        private async void dunePackages_DropDownOpened(object sender, EventArgs e)
+        private async void duneProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D","fhx");
+            await Task.Delay(100);
+            if(duneVersions.Text =="" || duneProducts.Text == "") { return; }
+            await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D", "fhx");
         }
 
-        private async void duneCustomPackages_DropDownOpened(object sender, EventArgs e)
+        private async void firmwareDuneCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
+            await Task.Delay(100);
+            if (firmwareDuneCustomEntry.Text == "" || !firmwareDuneCustomEntry.Text.EndsWith("\\")) { return; }
             await Tasks.PopulateComboBox(duneCustomPackages, firmwareDuneCustomEntry.Text, "fhx");
-        }   
-        
-
+        }
 
         private void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
         {
@@ -210,9 +214,9 @@ namespace PrintTool
             // todo WORK ONM THIS
         }
 
+        #endregion Dune
 
-        
-        
+
         private async void firmwareUSBSend(object sender, RoutedEventArgs e)
         {
             System.Threading.CancellationToken cancelToken = cancelSource.Token;
@@ -311,8 +315,10 @@ namespace PrintTool
 
 
 
+
+
         #endregion
 
-      
+        
     }
 }

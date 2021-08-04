@@ -113,8 +113,8 @@ namespace PrintTool
         
         public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "")
         {
+            if(site == "") { return; }
             comboBox.Items.Clear();
-
             //allowing both http scraping or directory
             if (site.Contains("http"))
             {
@@ -162,22 +162,17 @@ namespace PrintTool
         public static async Task<List<string>> DownloadWebsiteIndex(string website, string filter ="")
         {
             List<string> results = new();
+            if (website == "") {results.Add("Invalid"); return results; }
+            
             List<string> resultsPartial = new();
             string websiteData = "";
             string patternA = "(?<=<a href=\")(.*)(?=\\/a><\\/td>)";
             string patternText = "(?<=\">)(.*)(?=<)";
             Regex regexATag = new Regex(patternA);
             Regex regexText = new Regex(patternText);
-            try
-            {
-                WebClient client = new WebClient();
-                websiteData = await client.DownloadStringTaskAsync(website);
-            }
-            catch
-            {
-                MessageBox.Show("Error: Specified site is invalid.");
-                return results;
-            }
+            WebClient client = new WebClient();
+            websiteData = await client.DownloadStringTaskAsync(website);
+           
             MatchCollection matches = regexATag.Matches(websiteData);
             foreach (Match match in matches) { resultsPartial.Add(match.Value); }
             foreach (string match in resultsPartial) { results.Add(regexText.Match(match).Value); }

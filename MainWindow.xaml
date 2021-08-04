@@ -19,7 +19,7 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.75*"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="0.75*"/>
                     </Grid.ColumnDefinitions>
                     <GroupBox Header="Connection Setup" Grid.Column="0">
                         <Grid Grid.Row="0">
@@ -216,7 +216,7 @@
                             </GroupBox>
                         </Grid>
                     </TabItem>
-                    <TabItem Name="yoloTab" Header="Yolo">
+                    <TabItem Name="yoloTab" Header="Yolo" IsSelected="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width=".75*"/>
@@ -271,7 +271,7 @@
                                                     <RowDefinition Height=".25*"/>
                                                 </Grid.RowDefinitions>
                                                 <Label Content="Please enter link to firmware" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <TextBox x:Name="firmwareYoloCustomEntry" Grid.Row="1" TextChanged="YoloUpdateCustom"/>
+                                                <TextBox x:Name="firmwareYoloCustomEntry" Grid.Row="1" TextChanged="firmwareYoloCustomEntry_TextChanged"/>
                                                 <Label Content="Please select firmware package" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 <ComboBox Name="yoloCustomPackages" Grid.Row="3"/>
                                             </Grid>
@@ -322,11 +322,11 @@
                                                     <RowDefinition Height=".25*"/>
                                                 </Grid.RowDefinitions>
                                                 <Label Content="Select firmware Version" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="duneVersions" IsEditable="True"  Grid.Row="1"  VerticalAlignment="Center"/>
+                                                <ComboBox x:Name="duneVersions" IsEditable="True"  Grid.Row="1"  VerticalAlignment="Center" SelectionChanged="duneVersions_SelectionChanged"/>
                                                 <Label Content="Select Hardware Model" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="duneProducts"  Grid.Row="3" VerticalAlignment="Center" DropDownOpened="duneProducts_DropDownOpened" />
+                                                <ComboBox x:Name="duneProducts"  Grid.Row="3" VerticalAlignment="Center" SelectionChanged="duneProducts_SelectionChanged" />
                                                 <Label Content="Select Package" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="dunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center" DropDownOpened="dunePackages_DropDownOpened"/>
+                                                <ComboBox x:Name="dunePackages" SelectedIndex="-1" Grid.Row="5" VerticalAlignment="Center"/>
                                             </Grid>
                                         </TabItem>
                                         <TabItem Header="Custom" Name="duneCustomTab">
@@ -337,9 +337,9 @@
                                                     <RowDefinition Height=".25*"/>
                                                     <RowDefinition Height=".25*"/>
                                                 </Grid.RowDefinitions>
-                                                <TextBox x:Name="firmwareDuneCustomEntry" Grid.Row="0"/>
+                                                <TextBox x:Name="firmwareDuneCustomEntry" Grid.Row="0" TextChanged="firmwareDuneCustomEntry_TextChanged"/>
                                                 <Label Content="Please select firmware package" Grid.Row="1"/>
-                                                <ComboBox Name="duneCustomPackages" Grid.Row="2" DropDownOpened="duneCustomPackages_DropDownOpened"/>
+                                                <ComboBox Name="duneCustomPackages" Grid.Row="2"/>
                                             </Grid>
 
                                         </TabItem>
@@ -524,23 +524,19 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width=".75*"/>
+                
             </Grid.ColumnDefinitions>
             <GroupBox Header="Application" Grid.Column="0">
                 <TextBox x:Name="logsBottomApp"/>
             </GroupBox>
-            <GroupBox Header="Com1" Grid.Column="2">
-                <TextBox x:Name="logsBottomBash"/>
-            </GroupBox>
-            <GroupBox Header="Print Status" Grid.Column="4">
+            <GroupBox Header="Print Status" Grid.Column="2">
                 <TextBox x:Name="logsBottomUSBSend"/>
             </GroupBox>
 
 
             <GridSplitter Grid.Column="1" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Center" Width="5"/>
-            <GridSplitter Grid.Column="3" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Center" Width="5"/>
+            
 
 
         </Grid>
