@@ -6,10 +6,7 @@
       <Value Profile="(Default)">6.1.0.1753/</Value>
     </Setting>
     <Setting Name="Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">103</Value>
-    </Setting>
-    <Setting Name="LastConfig" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
+      <Value Profile="(Default)">105</Value>
     </Setting>
   </Settings>
 </SettingsFile>

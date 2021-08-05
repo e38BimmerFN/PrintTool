@@ -1,31 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Text.RegularExpressions;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Windows;
+using System.Net.Sockets;
+using System.IO;
+
 namespace PrintTool
 {
-    class Printer
+    public class PrintQueue
     {
-        
         public static string PrintGenerator(List<string> args)
         {
-            
             string start = PJLStart(args);
             string lang = "";
-            switch (args[2]){
+            switch (args[2])
+            {
                 case "1":
-                    lang =  CreatePS(args);
+                    lang = CreatePS(args);
                     break;
                 case "2":
-                    lang =  CreatePCL(args);
+                    lang = CreatePCL(args);
                     break;
                 case "3":
-                    lang =  CreateESCP(args);
+                    lang = CreateESCP(args);
                     break;
 
             }
@@ -80,7 +80,7 @@ namespace PrintTool
         private static string PJLStart(List<string> args)
         {
 
-            
+
             char escapeCharacter = (char)27;
             string escapeSequence = escapeCharacter + @"%-12345X";
             List<string> list = new();
@@ -96,17 +96,12 @@ namespace PrintTool
             if (args[8] != "Default") { list.Add("@PJL SET OUTBIN = " + args[8]); }
 
             string returnstring = "";
-            foreach(string item in list) 
+            foreach (string item in list)
             {
                 returnstring = returnstring + item + "\r\n";
             }
             return returnstring;
         }
-
-
-        
-
-        
 
         private static string CreatePCL(List<string> args)
         {
@@ -148,7 +143,9 @@ namespace PrintTool
             return endpart;
         }
 
-        
+
 
     }
+
 }
+

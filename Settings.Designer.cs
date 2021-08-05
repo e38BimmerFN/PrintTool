@@ -37,25 +37,13 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("103")]
+        [global::System.Configuration.DefaultSettingValueAttribute("105")]
         public int Version {
             get {
                 return ((int)(this["Version"]));
             }
             set {
                 this["Version"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastConfig {
-            get {
-                return ((string)(this["LastConfig"]));
-            }
-            set {
-                this["LastConfig"] = value;
             }
         }
     }

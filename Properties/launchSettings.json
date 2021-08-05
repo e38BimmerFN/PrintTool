@@ -2,7 +2,10 @@
   "profiles": {
     "PrintTool": {
       "commandName": "Project",
-      "authenticationMode": "None"
+      "remoteDebugEnabled": false,
+      "authenticationMode": "None",
+      "nativeDebugging": false,
+      "jsWebView2Debugging": false
     }
   }
 }

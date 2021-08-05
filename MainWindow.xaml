@@ -10,114 +10,99 @@
     <Grid>
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="0.75*"/>
             <RowDefinition Height=".5*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <TabControl>
-            <TabItem x:Name="connectionsTab" Header="Connections">
+            <TabItem x:Name="connectionsTab" Header="Printer And Devices">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="0.75*"/>
-                        <ColumnDefinition Width="0.75*"/>
+                        <ColumnDefinition Width="0.4*"/>
                     </Grid.ColumnDefinitions>
-                    <GroupBox Header="Connection Setup" Grid.Column="0">
-                        <Grid Grid.Row="0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <GroupBox Header="Model" Grid.Row="0">
-                                <ComboBox Name="connectionsModel" IsEditable="True"/>
-                            </GroupBox>
-                            <GroupBox Header="IP Addresses" Grid.Row="1">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto"/>
-                                        <RowDefinition Height="auto"/>
-                                    </Grid.RowDefinitions>
-                                    <GroupBox Header="Printer IP" Grid.Row="0" BorderBrush="{x:Null}">
-                                        <TextBox Name="connectionsIpPrinterEntry" Text="" TextChanged="connectionsIpPrinterEntry_TextChanged" />
-                                    </GroupBox>
-                                    <GroupBox Header="Dart IP" Grid.Row="2" BorderBrush="{x:Null}">
-                                        <TextBox Name="connectionsIpDartEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged"/>
-                                    </GroupBox>
-                                </Grid>
-                            </GroupBox>
-                            <GroupBox Header="Shell" Grid.Row="2">
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="auto"/>
-                                        <RowDefinition Height="auto"/>
-                                        <RowDefinition Height="auto"/>
-                                    </Grid.RowDefinitions>
-                                    <GroupBox  Header="Connection Type" Grid.Row="0" BorderBrush="{x:Null}">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <RadioButton x:Name="connectionsTypeNone" Content="None" GroupName="connectionsShellType" Grid.Column="0" Checked="connnectionsTypeClick" />
-                                            <RadioButton x:Name="connectionsTypeSerial"  Content="Serial" GroupName="connectionsShellType" Grid.Column="1" Checked="connnectionsTypeClick"/>
-                                            <RadioButton x:Name="connectionsTypeDart"  Content="Dart" GroupName="connectionsShellType" Grid.Column="2" Checked="connnectionsTypeClick"/>
-                                        </Grid>
-                                    </GroupBox>
-                                    <GroupBox Name="connectionsSerialGroup" Header="Serial " Grid.Row="1" Visibility="Collapsed" >
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <GroupBox Header="Bash" Grid.Column="0" BorderBrush="{x:Null}">
-                                                <ComboBox Name="connectionsBashSelect"/>
-                                            </GroupBox>
-                                            <GroupBox Header="Sirus" Grid.Column="1" BorderBrush="{x:Null}">
-                                                <ComboBox Name="connectionsSirusSelect"/>
-                                            </GroupBox>
-                                            <GroupBox Header="Optional" Grid.Column="2" BorderBrush="{x:Null}">
-                                                <ComboBox Name="connectionsOptSelect"/>
-                                            </GroupBox>
-                                        </Grid>
-                                    </GroupBox>
-                                    <GroupBox Name="connectionsDartGroup"  Header="Dart " Grid.Row="2" Visibility="Collapsed" >
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <GroupBox Header="Bash port" Grid.Column="0" BorderBrush="{x:Null}">
-                                                <TextBox x:Name="connectionsPort1" Text="5000"/>
-                                            </GroupBox>
-                                            <GroupBox Header="OPT Port 1" Grid.Column="1" BorderBrush="{x:Null}">
-                                                <TextBox x:Name="connectionsPort2" Text="5000"/>
-                                            </GroupBox>
-                                            <GroupBox Header="OPT Port 2" Grid.Column="2" BorderBrush="{x:Null}">
-                                                <TextBox x:Name="connectionsPort3" Text="5000"/>
-                                            </GroupBox>
-                                        </Grid>
-                                    </GroupBox>
-                                </Grid>
-                            </GroupBox>
-                            <GroupBox Header="Serial Preview" Grid.Row="3">
-                                <TextBlock x:Name="connectionsSerialPreview"/>
 
-                            </GroupBox>
-                        </Grid>
-                    </GroupBox>
-                    <GroupBox Header="Saved Connections" Grid.Column="1">
+					<Grid Grid.Row="0">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto"/>
+							<RowDefinition Height="*"/>	
+						</Grid.RowDefinitions>
+						<GroupBox Header="Printer Details" Grid.Row="0">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="auto"/>
+									<RowDefinition Height="auto"/>
+									<RowDefinition Height="auto"/>
+									<RowDefinition Height="auto"/>
+								</Grid.RowDefinitions>
+								<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}">
+									<TextBox Name="printerModel" />
+								</GroupBox>
+								<GroupBox Header="Engine Type" Grid.Row="1" BorderBrush="{x:Null}">
+									<TextBox Name="printerEngine" />
+								</GroupBox>
+								<GroupBox Header="Model" Grid.Row="2" BorderBrush="{x:Null}">
+									<TextBox Name="printerID" />
+								</GroupBox>
+								<GroupBox Header="Printer IP" Grid.Row="3" BorderBrush="{x:Null}">
+									<TextBox Name="printerIPEntry" Text="" TextChanged="connectionsIpPrinterEntry_TextChanged" />
+								</GroupBox>
+							</Grid>
+						</GroupBox>
+
+						<GroupBox Header="Addional Devices" Grid.Row="1">
+							<Grid>
+								<Grid.RowDefinitions>
+									<RowDefinition Height="auto"/>
+									<RowDefinition Height="*"/>									
+								</Grid.RowDefinitions>
+								
+								<GroupBox Header="Dart" Grid.Row="0">
+									<Grid>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="1.5*"/>
+											<ColumnDefinition Width="0.3*"/>
+											<ColumnDefinition Width="2*"/>
+										</Grid.ColumnDefinitions>
+										<CheckBox Name="enableDart" Content="Enable Dart" Grid.Column="0" VerticalAlignment="Center"/>
+										<CheckBox Name="enableDartSerial" Content="Enable Dart Serial Connections" Grid.Column="1" VerticalAlignment="Center" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}"/>
+										<Label Content="IP - >" Grid.Column="2" HorizontalAlignment="Right"/>
+										<TextBox Name="dartIPEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged" Grid.Column="3" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}"/>
+									</Grid>									
+								</GroupBox>
+
+								<GroupBox Header="Serial Connections" Grid.Row="1">
+									<Grid>
+										<Grid.RowDefinitions>
+											<RowDefinition Height=".1*"/>
+											<RowDefinition Height=".2*"/>
+											<RowDefinition Height="*"/>											
+										</Grid.RowDefinitions>
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="*"/>
+										</Grid.ColumnDefinitions>
+										<CheckBox Content="Enable Serial Connections" x:Name="serialEnabled" Grid.ColumnSpan="3"/>
+										<ComboBox Name="serial1" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}"/>
+										<ComboBox Name="serial2" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}"/>
+										<ComboBox Name="serial3" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}"/>
+										<TextBox x:Name="serial1Peek" Grid.Row="2" Grid.Column="0" IsReadOnly="True" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}" BorderBrush="Black"/>
+										<TextBox x:Name="serial2Peek" Grid.Row="2" Grid.Column="1" IsReadOnly="True" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}" BorderBrush="Black"/>
+										<TextBox x:Name="serial3Peek" Grid.Row="2" Grid.Column="2" IsReadOnly="True" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}" BorderBrush="Black"/>
+									</Grid>
+								</GroupBox>
+							</Grid>
+						</GroupBox>
+					</Grid>
+					<GroupBox Header="Saved Connections" Grid.Column="1">
                         <Grid Grid.Column="1">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height=".1*"/>
                             </Grid.RowDefinitions>
-                            <ListBox Name="savedConnections" Grid.Row="0"/>
+                            <ListBox Name="savedPrinters" Grid.Row="0"/>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -171,7 +156,7 @@
                                             </Grid>
                                         </TabItem>
                                         <TabItem Header="Custom Firmware">
-                                            <TextBox x:Name="yoloCustomEntry" Text="Please input here" Height="100" VerticalAlignment="Top"/>
+                                            <TextBox x:Name="JediCustomEntry" Text="Please input here" Height="100" VerticalAlignment="Top"/>
                                         </TabItem>
                                     </TabControl>
                                     <Button x:Name="yoloInstall" Content="Download &amp; Install" Grid.Row="1"/>
@@ -252,14 +237,9 @@
                                                 <Label Content="Select Firmware Version" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 <ComboBox x:Name="yoloVersions" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" SelectionChanged="yoloVersions_SelectionChanged" />
                                                 <Label Content="Selection your firmware version." Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox x:Name="yoloDistros" Grid.Row="5" SelectedIndex="0" VerticalAlignment="Center" SelectionChanged="yoloDistros_SelectionChanged">
-                                                    <ComboBoxItem Content="assert"/>
-                                                    <ComboBoxItem Content="nonassert"/>
-                                                    <ComboBoxItem Content="signable_assert"/>
-                                                    <ComboBoxItem Content="nonassert/signed"/>
-                                                </ComboBox>
+                                                <ComboBox x:Name="yoloDistros" Grid.Row="5" SelectedIndex="0" VerticalAlignment="Center" SelectionChanged="yoloDistros_SelectionChanged"/>
                                                 <Label Content="Select Package" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox Name="yoloPackages" Grid.Row="7" SelectedIndex="1"/>
+                                                <ComboBox Name="yoloPackages" Grid.Row="7" SelectedIndex="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                                             </Grid>
                                         </TabItem>
                                         <TabItem Name="yoloCustomTab" Header="Custom">
@@ -271,9 +251,9 @@
                                                     <RowDefinition Height=".25*"/>
                                                 </Grid.RowDefinitions>
                                                 <Label Content="Please enter link to firmware" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <TextBox x:Name="firmwareYoloCustomEntry" Grid.Row="1" TextChanged="firmwareYoloCustomEntry_TextChanged"/>
+                                                <TextBox x:Name="yoloCustomEntry" Grid.Row="1" TextChanged="firmwareYoloCustomEntry_TextChanged"/>
                                                 <Label Content="Please select firmware package" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                                <ComboBox Name="yoloCustomPackages" Grid.Row="3"/>
+                                                <ComboBox Name="yoloCustomPackages" Grid.Row="3" VerticalAlignment="Center"/>
                                             </Grid>
                                         </TabItem>
 
@@ -332,14 +312,16 @@
                                         <TabItem Header="Custom" Name="duneCustomTab">
                                             <Grid>
                                                 <Grid.RowDefinitions>
-                                                    <RowDefinition Height=".25*"/>
-                                                    <RowDefinition Height=".25*"/>
-                                                    <RowDefinition Height=".25*"/>
-                                                    <RowDefinition Height=".25*"/>
+                                                    <RowDefinition Height=".10*"/>
+                                                    <RowDefinition Height=".10*"/>
+                                                    <RowDefinition Height=".10*"/>
+                                                    <RowDefinition Height=".10*"/>
+                                                    <RowDefinition Height=".1*"/>
                                                 </Grid.RowDefinitions>
-                                                <TextBox x:Name="firmwareDuneCustomEntry" Grid.Row="0" TextChanged="firmwareDuneCustomEntry_TextChanged"/>
-                                                <Label Content="Please select firmware package" Grid.Row="1"/>
-                                                <ComboBox Name="duneCustomPackages" Grid.Row="2"/>
+                                                <Label Content="Please enter link to packages" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <TextBox x:Name="duneCustomEntry" Grid.Row="1" TextChanged="firmwareDuneCustomEntry_TextChanged" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                                <Label Content="Please select firmware package" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                <ComboBox Name="duneCustomPackages" Grid.Row="3" VerticalAlignment="Center"/>
                                             </Grid>
 
                                         </TabItem>
@@ -409,7 +391,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <RadioButton Content="POSTSCRIPT" IsChecked="True" Name="psButton" GroupName="filetype" Grid.Column="0" />
-                                    <RadioButton Content="PCL5" IsChecked="False" Name="pclButton" GroupName="filetype" Grid.Column="1"/>
+                                    <RadioButton Content="PCL5" IsChecked="False" Name="pclButton" GroupName="filetype" Grid.Column="1" IsEnabled="False"/>
                                     <RadioButton Content="ESCP" IsChecked="False" Name="escpButton" GroupName="filetype" Grid.Column="2" IsEnabled="False"/>
                                 </Grid>
                             </GroupBox>

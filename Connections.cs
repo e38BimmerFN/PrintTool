@@ -33,7 +33,7 @@ namespace PrintTool
                 MessageBox.Show("Please select something");
                 return;
             }
-            StreamWriter myFile = File.CreateText("Data\\Connections\\" + data[0]);
+            StreamWriter myFile = File.CreateText("Data\\Printers\\" + data[0]);
             foreach(string entry in data)
             {
                 myFile.WriteLine(entry);
@@ -45,7 +45,7 @@ namespace PrintTool
         {
             List<string> data = new();
             if (listBox.SelectedItem == null) { MessageBox.Show("Please select item"); return data; }
-            StreamReader myFile = File.OpenText(listBox.SelectedItem.ToString());
+            StreamReader myFile = File.OpenText("Data\\Printers\\" + listBox.SelectedItem.ToString());
             while(myFile.EndOfStream == false)
             {
                 data.Add(myFile.ReadLine());

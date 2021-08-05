@@ -8,9 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 
-using SharpIpp.Model;
-using SharpIpp.Exceptions;
-using SharpIpp;
 
 
 
@@ -22,8 +19,14 @@ namespace PrintTool
         {
             InitializeComponent();
         }
+       
+        Printer currPrinter = new();
+        Logger appLogs = new("Application");
+        Logger bashLogs = new("Bash");
+        Logger sirusLogs = new("Sirus");
+        Logger optLogs = new("Opt");
 
-        List<Logger> loggers = new();
+
         const string YOLOSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
         const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
         const string DUNEUTILITY = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
@@ -34,7 +37,7 @@ namespace PrintTool
         private async void LoadTrigger(object sender, EventArgs e)
         {
             Tasks.runStartUp();
-            Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
+            Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
             Tasks.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
             if (!Tasks.checkHPStatus())
             {
@@ -45,8 +48,8 @@ namespace PrintTool
             {
                 await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
             }
-            loggers.Add(new Logger("application"));
-            loggers[0].AddTextBox(logsBottomApp);
+            
+            appLogs.AddTextBox(logsBottomApp);
             
         }
 
@@ -58,22 +61,39 @@ namespace PrintTool
 
         #region Connections Tab
 
-        private void connectionsIpPrinterEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private async void connectionsIpPrinterEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            Connections.checkIP(connectionsIpPrinterEntry);
+            if (await Tasks.CheckIP(printerIPEntry.Text))
+            {
+                printerIPEntry.Background = System.Windows.Media.Brushes.LightGreen;
+            }
+
+            else
+            {
+                printerIPEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+            }
+            
         }
 
-        private void connectionsIpDartEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private async void connectionsIpDartEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
-            Connections.checkIP(connectionsIpPrinterEntry);
+            if (await Tasks.CheckIP(dartIPEntry.Text))
+            {
+                printerIPEntry.Background = System.Windows.Media.Brushes.LightGreen;
+            }
+
+            else
+            {
+                printerIPEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+            }
         }
 
         public void ConnectionsSaveDefaults(object sender, EventArgs e)
         {
             List<string> items = new();
-            items.Add(connectionsModel.Text);
-            items.Add(connectionsIpPrinterEntry.Text);
-            items.Add(connectionsIpDartEntry.Text);
+            items.Add(printerModel.Text);
+            items.Add(printerIPEntry.Text);
+            items.Add(dartIPEntry.Text);
             items.Add(connectionsTypeNone.IsChecked.ToString());
             items.Add(connectionsTypeSerial.IsChecked.ToString());
             items.Add(connectionsTypeDart.IsChecked.ToString());
@@ -84,16 +104,16 @@ namespace PrintTool
             items.Add(connectionsPort2.Text);
             items.Add(connectionsPort3.Text);
             Connections.SaveDefaults(items);
-            Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
+            Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
         }
         public void ConnectionsLoadDefaults(object sender, EventArgs e)
         {
-            List<string> data = Connections.LoadDefaults(savedConnections);
+            List<string> data = Connections.LoadDefaults(savedPrinters);
             if (data.Count == 0) { return; }
 
-            connectionsModel.Text = data[0];
-            connectionsIpPrinterEntry.Text = data[1];
-            connectionsIpDartEntry.Text = data[2];
+            printerModel.Text = data[0];
+            printerIPEntry.Text = data[1];
+            dartIPEntry.Text = data[2];
             connectionsTypeNone.IsChecked = bool.Parse(data[3]);
             connectionsTypeSerial.IsChecked = bool.Parse(data[4]);
             connectionsTypeDart.IsChecked = bool.Parse(data[5]);
@@ -106,16 +126,11 @@ namespace PrintTool
         }
         public void ConnectionsDeleteDefaults(object sender, EventArgs e)
         {
-            Tasks.ListBoxDelete(savedConnections);
-            Tasks.PopulateListBox(savedConnections, "Data\\Connections\\");
+            Tasks.ListBoxDelete(savedPrinters);
+            Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
         }
 
-        public void connnectionsTypeClick(object sender, RoutedEventArgs e)
-        {
-            if (connectionsTypeNone.IsChecked == true) { connectionsSerialGroup.Visibility = Visibility.Collapsed; connectionsDartGroup.Visibility = Visibility.Collapsed; }
-            else if (connectionsTypeSerial.IsChecked == true) { connectionsSerialGroup.Visibility = Visibility.Visible; connectionsDartGroup.Visibility = Visibility.Collapsed; }
-            else { connectionsSerialGroup.Visibility = Visibility.Collapsed; connectionsDartGroup.Visibility = Visibility.Visible; }
-        }
+       
         #endregion Connections
 
         #region Firmware Tab
@@ -128,24 +143,21 @@ namespace PrintTool
 
         private async void yoloVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            await Task.Delay(100);
-            if (yoloVersions.Text == "") { return; }
-            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D");
+            await Task.Delay(100);            
+            await Tasks.PopulateComboBox(yoloDistros, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text);
         }
 
         private async void yoloDistros_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             await Task.Delay(100);
-            if(yoloVersions.Text == "") { return; }
-            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D");
+            await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D", "fhx");
 
         }
 
         private async void firmwareYoloCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             await Task.Delay(100);
-            if (yoloCustomEntry.Text == "" || !yoloCustomEntry.Text.EndsWith("\\")) { return; }
-            await Tasks.PopulateComboBox(yoloCustomPackages, firmwareYoloCustomEntry.Text);
+            await Tasks.PopulateComboBox(yoloCustomPackages, yoloCustomEntry.Text,"fhx");
         }
 
 
@@ -155,22 +167,22 @@ namespace PrintTool
         {
             System.Threading.CancellationToken cancelToken = cancelSource.Token;
             string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
-            List<string> results = await Tasks.DownloadWebsiteIndex(website);
+            List<string> results = await Tasks.getListings(website);
             string filename = "";
             if (yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
             else { foreach (string result in results) { if (result.Contains("lochsa")) { filename = result; } } }
-            await Firmware.downloadAndSendUSB(filename,website,loggers[0],firmwareYoloSecureB, cancelToken);
+            await Firmware.DLAndSend(filename,website,appLogs,firmwareYoloSecureB, cancelToken);
             firmwareYoloUnsecureB.Content = "Convert to unsecure";
         }
         public async void firmwareYoloSecureB_Click(object sender, RoutedEventArgs e)
         {
             System.Threading.CancellationToken cancelToken = cancelSource.Token;
             string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_secure/";
-            List<string> results = await Tasks.DownloadWebsiteIndex(website);
+            List<string> results = await Tasks.getListings(website);
             string filename = "";
             if(yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
             else { foreach (string result in results) { if (result.Contains("locsha")) { filename = result; } } }
-            await Firmware.downloadAndSendUSB(filename, website, loggers[0], firmwareYoloSecureB, cancelToken);
+            await Firmware.DLAndSend(filename, website, appLogs, firmwareYoloSecureB, cancelToken);
             firmwareYoloSecureB.Content = "Convert to secured";
         }
 
@@ -195,8 +207,8 @@ namespace PrintTool
         private async void firmwareDuneCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             await Task.Delay(100);
-            if (firmwareDuneCustomEntry.Text == "" || !firmwareDuneCustomEntry.Text.EndsWith("\\")) { return; }
-            await Tasks.PopulateComboBox(duneCustomPackages, firmwareDuneCustomEntry.Text, "fhx");
+            if (duneCustomEntry.Text == "" || !duneCustomEntry.Text.EndsWith("/")) { return; }
+            await Tasks.PopulateComboBox(duneCustomPackages, duneCustomEntry.Text, "fhx");
         }
 
         private void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
@@ -224,22 +236,22 @@ namespace PrintTool
             {
                 if (yoloDailyTab.IsSelected)
                 {
-                    await Firmware.downloadAndSendUSB(yoloPackages.Text, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/", loggers[0], yoloInstallButton,cancelToken);
+                    await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/", appLogs, yoloInstallButton,cancelToken);
                 }
                 else
                 {
-                    await Firmware.downloadAndSendUSB(yoloCustomPackages.Text, firmwareYoloCustomEntry.Text, loggers[0], yoloInstallButton, cancelToken);
+                    await Firmware.DLAndSend(yoloCustomPackages.Text, yoloCustomEntry.Text, appLogs, yoloInstallButton, cancelToken);
                 }
             }
             else
             {
                 if (duneDailyTab.IsSelected)
                 {
-                    await Firmware.downloadAndSendUSB(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, loggers[0], duneInstallButton, cancelToken);
+                    await Firmware.DLAndSend(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, appLogs, duneInstallButton, cancelToken);
                 }
                 else
                 {
-                    await Firmware.downloadAndSendUSB(duneCustomPackages.Text, firmwareYoloCustomEntry.Text, loggers[0], duneInstallButton, cancelToken);
+                    await Firmware.DLAndSend(duneCustomPackages.Text, yoloCustomEntry.Text, appLogs, duneInstallButton, cancelToken);
                 }
             }
         }
@@ -283,20 +295,20 @@ namespace PrintTool
 
         private async void printSend9100Button(object sender, RoutedEventArgs e)
         {
-            string filename = Printer.PrintGenerator(generateArgs());
-            await Printer.SendIP(connectionsIpPrinterEntry.Text, filename);
+            string filename = PrintJob.PrintGenerator(generateArgs());
+            await PrintJob.SendIP(printerIPEntry.Text, filename);
         }
         private async void printSendUSBButton(object sender, RoutedEventArgs e)
         {
-            string filename = Printer.PrintGenerator(generateArgs());
-            await Printer.SendUSB(filename);
+            string filename = PrintJob.PrintGenerator(generateArgs());
+            await PrintJob.SendUSB(filename);
 
         }
 
         private void printSaveJob_Click(object sender, RoutedEventArgs e)
         {
             if (File.Exists( @"Data\Jobs\"+printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
-            File.Copy(Printer.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
+            File.Copy(PrintJob.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
             Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
@@ -309,7 +321,7 @@ namespace PrintTool
         private async void printSendJob_Click(object sender, RoutedEventArgs e)
         {
             if(savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-            await Printer.SendIP(connectionsIpPrinterEntry.Text, savedPrintJobs.SelectedItem.ToString());
+            await PrintJob.SendIP(printerIPEntry.Text, savedPrintJobs.SelectedItem.ToString());
         }
 
 

@@ -20,9 +20,15 @@
     <PackageProjectUrl>https://derekhearst.com/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/derekhearst/PrintTool</RepositoryUrl>
     <Version>1.0.1</Version>
+    <Configurations>Debug;Release;DebugFromShare</Configurations>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <NoWarn />
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugFromShare|AnyCPU'">
     <NoWarn />
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>

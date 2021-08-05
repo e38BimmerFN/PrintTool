@@ -12,7 +12,7 @@ using System.Windows.Controls;
 
 namespace PrintTool
 {
-    class Logger
+    public class Logger
     {
         private List<string> logOutput = new();
         private string logType = "";
@@ -24,7 +24,7 @@ namespace PrintTool
         }
         public void Log(string log)
         {
-            string output = "[" + DateTime.Now.ToShortTimeString() + "] " + log +"\n";
+            string output = "[" + DateTime.Now.ToShortTimeString() + " | " + logType+ " ] " + log +"\n";
             logOutput.Add(output);
             foreach(TextBox textBox in textBoxes)
             {
