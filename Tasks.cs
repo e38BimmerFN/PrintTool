@@ -69,12 +69,7 @@ namespace PrintTool
 
 		}
 
-		public static void ListBoxDelete(System.Windows.Controls.ListBox listBox)
-		{
-			if (listBox.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-			string path = listBox.SelectedItem.ToString();
-			File.Delete(path);
-		}
+
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "")
 		{
@@ -161,15 +156,22 @@ namespace PrintTool
 
 		public async static Task<bool> CheckIP(string ip)
 		{
-			string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
-			var myRegex = Regex.Match(ip, regexmatch);
-			if (myRegex.Success)
+			try
 			{
-				Ping pingSender = new Ping();
-				PingReply reply = await pingSender.SendPingAsync(ip);
-				if(reply.Status == IPStatus.Success) { return true; }
+				string regexmatch = @"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$";
+				var myRegex = Regex.Match(ip, regexmatch);
+				if (myRegex.Success)
+				{
+					Ping pingSender = new Ping();
+					PingReply reply = await pingSender.SendPingAsync(ip);
+					if (reply.Status == IPStatus.Success) { return true; }
+				}
+				return false;
 			}
-			return false;
+			catch
+			{
+				return false;
+			}
 		}
 	}
 }

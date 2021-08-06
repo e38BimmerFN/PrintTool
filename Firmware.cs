@@ -34,7 +34,7 @@ namespace PrintTool
             }
             else
             {
-                MessageBox.Show("Firmware upgrade error / canceled");
+                MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.");
             }
             File.Delete(filename);
             try { usbsend.Close(); }

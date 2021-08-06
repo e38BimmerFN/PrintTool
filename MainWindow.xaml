@@ -41,7 +41,7 @@
 								<GroupBox Header="Engine Type" Grid.Row="1" BorderBrush="{x:Null}">
 									<TextBox Name="printerEngine" />
 								</GroupBox>
-								<GroupBox Header="Model" Grid.Row="2" BorderBrush="{x:Null}">
+								<GroupBox Header="Label" Grid.Row="2" BorderBrush="{x:Null}">
 									<TextBox Name="printerID" />
 								</GroupBox>
 								<GroupBox Header="Printer IP" Grid.Row="3" BorderBrush="{x:Null}">

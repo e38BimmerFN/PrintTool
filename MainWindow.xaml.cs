@@ -43,12 +43,8 @@ namespace PrintTool
             {
                 MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
                 firmwareTab.IsEnabled = false;
-            }
-            else
-            {
-                await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
-            }
-            
+            }           
+            await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
             appLogs.AddTextBox(logsBottomApp);
             
         }
@@ -90,43 +86,32 @@ namespace PrintTool
 
         public void ConnectionsSaveDefaults(object sender, EventArgs e)
         {
-            List<string> items = new();
-            items.Add(printerModel.Text);
-            items.Add(printerIPEntry.Text);
-            items.Add(dartIPEntry.Text);
-            items.Add(connectionsTypeNone.IsChecked.ToString());
-            items.Add(connectionsTypeSerial.IsChecked.ToString());
-            items.Add(connectionsTypeDart.IsChecked.ToString());
-            items.Add(connectionsBashSelect.Text);
-            items.Add(connectionsSirusSelect.Text);
-            items.Add(connectionsOptSelect.Text);
-            items.Add(connectionsPort1.Text);
-            items.Add(connectionsPort2.Text);
-            items.Add(connectionsPort3.Text);
-            Connections.SaveDefaults(items);
+            currPrinter.model = printerModel.Text;
+            currPrinter.id = printerID.Text;
+            currPrinter.engineType = printerEngine.Text;
+            currPrinter.ip = printerIPEntry.Text;
+            currPrinter.dart.isEnabled = enableDart.IsChecked ?? false;
+            currPrinter.dart.usingPorts = enableDartSerial.IsChecked ?? false;
+            currPrinter.dart.ip = dartIPEntry.Text;
+            currPrinter.usingSerial = serialEnabled.IsChecked ?? false;
+            currPrinter.Save();            
             Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
         }
         public void ConnectionsLoadDefaults(object sender, EventArgs e)
         {
-            List<string> data = Connections.LoadDefaults(savedPrinters);
-            if (data.Count == 0) { return; }
-
-            printerModel.Text = data[0];
-            printerIPEntry.Text = data[1];
-            dartIPEntry.Text = data[2];
-            connectionsTypeNone.IsChecked = bool.Parse(data[3]);
-            connectionsTypeSerial.IsChecked = bool.Parse(data[4]);
-            connectionsTypeDart.IsChecked = bool.Parse(data[5]);
-            connectionsBashSelect.Text = data[6];
-            connectionsSirusSelect.Text = data[7];
-            connectionsOptSelect.Text = data[8];
-            connectionsPort1.Text = data[9];
-            connectionsPort2.Text = data[10];
-            connectionsPort3.Text = data[11];
+            currPrinter.Load(@"Data\Printers\" + savedPrinters.SelectedItem.ToString());
+            printerModel.Text = currPrinter.model;
+            printerID.Text = currPrinter.id;
+            printerEngine.Text =currPrinter.engineType;
+            printerIPEntry.Text = currPrinter.ip.ToString();
+            enableDart.IsChecked = currPrinter.dart.isEnabled;
+            enableDartSerial.IsChecked = currPrinter.dart.usingPorts;
+            dartIPEntry.Text = currPrinter.dart.ip.ToString();
+            serialEnabled.IsChecked = currPrinter.usingSerial;      
         }
         public void ConnectionsDeleteDefaults(object sender, EventArgs e)
         {
-            Tasks.ListBoxDelete(savedPrinters);
+            File.Delete(@"Data\Printers\" + savedPrinters.SelectedItem);
             Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
         }
 
@@ -314,14 +299,15 @@ namespace PrintTool
 
         private void printDeteleJob_Click(object sender, RoutedEventArgs e)
         {
-            Tasks.ListBoxDelete(savedPrintJobs);
+            if(!File.Exists(@"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString()) ) { MessageBox.Show(savedPrintJobs.SelectedItem.ToString() + "Doesnt exist"); }
+            File.Delete(@"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
             Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
         }
 
         private async void printSendJob_Click(object sender, RoutedEventArgs e)
         {
             if(savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-            await PrintJob.SendIP(printerIPEntry.Text, savedPrintJobs.SelectedItem.ToString());
+            await PrintJob.SendIP(printerIPEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
         }
 
 

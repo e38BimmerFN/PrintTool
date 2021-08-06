@@ -18,7 +18,7 @@ namespace PrintTool
         public string engineType { get; set; }
 
         //Connections
-        public IPAddress ip {get; set;}
+        public string ip {get; set;}
         public bool usingSerial { get; set; }
         public List<SerialConnection> serialPorts { get; set; }
         public Dart dart;
@@ -29,7 +29,7 @@ namespace PrintTool
             dart = new Dart();
             usingSerial = false;       
             dart.isEnabled = false;
-            ip = IPAddress.Parse("0.0.0.0");
+            ip = "0.0.0.0";
         }
 
 
@@ -40,9 +40,11 @@ namespace PrintTool
             data.Add(id);
             data.Add(engineType);
             data.Add(ip.ToString());
-            data.Add(usingSerial.ToString());
             data.Add(dart.isEnabled.ToString());
-            StreamWriter myFile = File.CreateText(location + data[0]);
+            data.Add(dart.usingPorts.ToString());
+            data.Add(dart.ip.ToString());
+            data.Add(usingSerial.ToString());            
+            StreamWriter myFile = File.CreateText(location + model);
             foreach (string entry in data)
             {
                 myFile.WriteLine(entry);
@@ -52,16 +54,18 @@ namespace PrintTool
 
         public void Load(string filename)
         {
-            if(filename == "" || filename == null) { return; }
-            StreamReader file = File.OpenText(location +filename);
-            List<string> data = new();
-
+            
+            if(!File.Exists(filename)) { MessageBox.Show(filename + " Doesnt exist"); return; }
+			StreamReader file = File.OpenText(filename); 
+            
             model = file.ReadLine();
             id = file.ReadLine();
             engineType = file.ReadLine();
-            ip = IPAddress.Parse(file.ReadLine());
-            usingSerial = bool.Parse(file.ReadLine());
+            ip = file.ReadLine();
             dart.isEnabled = bool.Parse(file.ReadLine());
+            dart.usingPorts = bool.Parse(file.ReadLine());
+            dart.ip = file.ReadLine();
+            usingSerial = bool.Parse(file.ReadLine());            
             file.Close();   
         }
     }
