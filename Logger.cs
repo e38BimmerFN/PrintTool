@@ -1,49 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.Net.Sockets;
-using System.Text.RegularExpressions;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
+using System.IO;
 using System.Windows.Controls;
-
 
 namespace PrintTool
 {
-    public class Logger
-    {
-        private List<string> logOutput = new();
-        private string logType = "";
-        private List<TextBox> textBoxes =new();
-       
-        public Logger(string xlogType)
-        {
-            logType = xlogType;
-        }
-        public void Log(string log)
-        {
-            string output = "[" + DateTime.Now.ToShortTimeString() + " | " + logType+ " ] " + log +"\n";
-            logOutput.Add(output);
-            foreach(TextBox textBox in textBoxes)
-            {
-                textBox.AppendText(output);
-            }
-        }
+	public class Logger
+	{
+		string NAME = "Application";
+		string FILENAME;
+		string FILELOC = @"Data\Logs\Temp\";
+		List<TextBox> boxes = new();
+		
+		
 
-        public void SaveLog(string path)
-        {
-            var myFile = File.CreateText(path + logType);
-            foreach(string log in logOutput)
-            {
-                myFile.WriteLineAsync(log);
-            }
-        }
+		public Logger(string name = "Application")
+		{			
+			NAME = name;
+			FILENAME = NAME + "log.txt";
+		}
+		public void AddTextBox(TextBox box)
+		{
+			boxes.Add(box);
+		}		
 
-        public void AddTextBox(TextBox textBox)
-        {
-            textBoxes.Add(textBox);
-        }
-    }
+		public async void Log(string log)
+		{			
+			string output = "[" + DateTime.Now.ToShortTimeString() + "] " + log + "\n";
+			await File.AppendAllTextAsync(FILELOC + FILENAME, output);
+			System.Diagnostics.Trace.WriteLine(output);
+
+			
+			foreach(TextBox box in boxes)
+			{
+				box.AppendText(output);
+			}
+					
+		}		
+	}
 }

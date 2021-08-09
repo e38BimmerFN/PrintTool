@@ -38,8 +38,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="favicon.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="SharpIpp" Version="0.9.0" />
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="favicon.ico" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,15 +14,15 @@ namespace PrintTool
 	{
 
 
-		public static void runStartUp()
+		public static void StartUp()
 		{
 			Directory.CreateDirectory("Data\\Printers\\");
-			Directory.CreateDirectory("Data\\Logs\\");
+			Directory.CreateDirectory("Data\\Logs\\Temp\\");
 			Directory.CreateDirectory("Data\\Jobs\\");
 			InstallOrUpdate();
 		}
 
-		public static bool checkHPStatus()
+		public static bool HPStatus()
 		{
 			return Directory.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\");
 		}
@@ -69,7 +69,7 @@ namespace PrintTool
 
 		}
 
-
+		
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "")
 		{
@@ -103,10 +103,10 @@ namespace PrintTool
 			}
 			else if (location.Contains(@"\") || location.Contains(@"C:"))
 			{
-				File.Copy(location +@"\" + filename, filename);
+				File.Copy(location + @"\" + filename, filename);
 				return filename;
 			}
-			
+
 			else
 			{
 				MessageBox.Show("Invalid location");
@@ -172,6 +172,6 @@ namespace PrintTool
 			{
 				return false;
 			}
-		}
+		}		
 	}
 }
