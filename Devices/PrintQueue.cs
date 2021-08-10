@@ -10,7 +10,7 @@ namespace PrintTool
 {
 	public class PrintQueue
 	{
-		public PrintQueue(string ip)
+		private class Job
 		{
 
 		}

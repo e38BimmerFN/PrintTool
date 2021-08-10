@@ -69,7 +69,7 @@ namespace PrintTool
 
 		}
 
-		
+
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "")
 		{
@@ -172,6 +172,6 @@ namespace PrintTool
 			{
 				return false;
 			}
-		}		
+		}
 	}
 }

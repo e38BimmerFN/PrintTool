@@ -7,7 +7,7 @@ namespace PrintTool
 	{
 		private SerialPortStream port;
 		public Logger log { get; set; }
-		public string portname {get;set;}
+		public string portname { get; set; }
 		public SerialConnection(Logger log)
 		{
 			port = new();
@@ -32,7 +32,7 @@ namespace PrintTool
 			{
 				System.Windows.MessageBox.Show(portname + " cannot be connected to.");
 			}
-			
+
 		}
 
 		private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
@@ -49,7 +49,7 @@ namespace PrintTool
 			}
 		}
 
-		
+
 		public void SendData(string data)
 		{
 			port.WriteLine(data);
@@ -57,7 +57,7 @@ namespace PrintTool
 
 		public static string[] GetPorts()
 		{
-			
+
 			return SerialPortStream.GetPortNames();
 		}
 	}

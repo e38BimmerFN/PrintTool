@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-
+using System.Timers;
 
 
 namespace PrintTool
@@ -107,8 +107,16 @@ namespace PrintTool
 			File.Delete(@"Data\Printers\" + savedPrinters.SelectedItem);
 			Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
 		}
-		private void connectButton_Click(object sender, RoutedEventArgs e)
+		private async void connectButton_Click(object sender, RoutedEventArgs e)
 		{
+			Timer timer = new();
+			timer.Interval = 700;
+			//timer.Elapsed += getPrintStatus;
+			printer.ip = printerIPEntry.Text;
+			printer.dart.ip = dartIPEntry.Text;
+			printer.dart.isEnabled = enableDart.IsChecked ?? false;
+			printer.usingSerial = serialEnabled.IsChecked ?? false;
+			printer.dart.usingPorts = enableDartSerial.IsChecked ?? false;
 			if (currentlyConnected) //stop
 			{
 				LogOutputTabControl.SelectedItem = LogOutputTabControl.Items[0];
@@ -118,18 +126,19 @@ namespace PrintTool
 				{
 					LogOutputTabControl.Items.RemoveAt(1);
 				}
-				
-				
+
+
 				currentlyConnected = false;
 				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
 				connectButton.Content = "Connect and Log";
+				timer.Stop();
 			}
 			else //start
 			{
 				if (serialEnabled.IsChecked ?? false)
 				{
 					printer.ConnectToSerial();
-					foreach(SerialConnection connection in printer.serialPorts)
+					foreach (SerialConnection connection in printer.serialPorts)
 					{
 						TabItem tab = new();
 						tab.Header = connection.portname;
@@ -143,8 +152,21 @@ namespace PrintTool
 				currentlyConnected = true;
 				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
 				connectButton.Content = "Disconnect and Flush Logs";
+				timer.Start();
+
+				await printer.getPrinterStatus();
+				await printer.getJobStatus();
+
 			}
 		}
+
+		private async void getPrintStatus(object sender, ElapsedEventArgs e)
+		{
+			await printer.getPrinterStatus();
+			await printer.getJobStatus();
+		}
+
+
 
 
 
@@ -348,19 +370,11 @@ namespace PrintTool
 
 		#endregion
 
-		private void enableDart_Checked(object sender, RoutedEventArgs e)
-		{
+		#region Log Capture Tab
 
-		}
+		#endregion Log Capture
 
-		private void enableDartSerial_Checked(object sender, RoutedEventArgs e)
-		{
 
-		}
 
-		private void serialEnabled_Checked(object sender, RoutedEventArgs e)
-		{
-
-		}
 	}
 }

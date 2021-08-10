@@ -1,7 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Windows;
-
+using SharpIpp;
+using SharpIpp.Exceptions;
+using SharpIpp.Model;
+using System.Net;
+using System;
+using System.Threading.Tasks;
 namespace PrintTool
 {
 	public class Printer
@@ -18,6 +23,14 @@ namespace PrintTool
 		public Dart dart;
 		public PrintQueue queue;
 
+		//printer data
+		public string printerInfo { get; set; }
+		public string printerState { get; set; }
+		public string printerError { get; set; }
+		public string pagesPerMin { get; set; }
+		public string queuedJobCount { get; set; }
+
+
 		//log 
 		public Logger log { get; set; }
 
@@ -29,6 +42,50 @@ namespace PrintTool
 			dart.isEnabled = false;
 			ip = "0.0.0.0";
 		}
+
+		public async Task getPrinterStatus()
+		{
+			SharpIppClient client = new();
+			List<string> data = new();
+			
+			Uri uri = new Uri("ipp://" + ip + ":631");
+			GetPrinterAttributesRequest request = new() { PrinterUri = uri };
+			GetPrinterAttributesResponse response = new();
+			try
+			{
+				response = await client.GetPrinterAttributesAsync(request);
+			}
+			catch
+			{
+				MessageBox.Show("Couldn't communicate with printer over IPP, check if its enabled");
+			}
+			printerInfo = response.PrinterInfo;
+			printerState = response.PrinterState.ToString();
+			printerError = response.PrinterStateReasons[0];
+			pagesPerMin = response.PagesPerMinute.ToString();
+			queuedJobCount = response.QueuedJobCount.ToString();
+		}
+
+		public async Task getJobStatus()
+		{
+			SharpIppClient client = new();
+			List<string> data = new();
+
+			Uri uri = new Uri("ipp://" + ip + ":631");
+			GetJobsRequest request = new() { PrinterUri = uri, RequestingUserName="PrintTool(name)"};
+			GetJobsResponse response = new();
+			try
+			{
+				response = await client.GetJobsAsync(request);
+			}
+			catch(Exception e)
+			{
+
+				MessageBox.Show("Couldn't communicate with printer over IPP, check if its enabled");
+			}
+			
+		}
+
 
 		public void ConnectToSerial()
 		{
@@ -42,7 +99,7 @@ namespace PrintTool
 
 		public void DisconnectSerial()
 		{
-			foreach(SerialConnection serialConnection in serialPorts)
+			foreach (SerialConnection serialConnection in serialPorts)
 			{
 				serialConnection.Close();
 			}
@@ -51,7 +108,7 @@ namespace PrintTool
 
 		public void SaveLogs(string pathToSaveTo)
 		{
-			foreach(SerialConnection serial in serialPorts)
+			foreach (SerialConnection serial in serialPorts)
 			{
 				serial.log.SaveLogs(pathToSaveTo);
 			}

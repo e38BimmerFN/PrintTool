@@ -497,7 +497,10 @@
 				</TabItem>					
 			</TabControl>			
 			<GroupBox Header="Printer Status" Grid.Column="2">
-				<TextBox x:Name="PrinterStatusBox"/>
+				<TreeView>
+					<TreeViewItem x:Name="printerStatus" Header="Printer"/>
+					<TreeViewItem x:Name="jobStatus" Header="Jobs"/>
+				</TreeView>
 			</GroupBox>
 
 
