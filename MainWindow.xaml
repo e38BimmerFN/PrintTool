@@ -23,9 +23,9 @@
 
 					<Grid Grid.Row="0">
 						<Grid.RowDefinitions>
-							<RowDefinition Height="auto"/>
 							<RowDefinition Height="*"/>
-							<RowDefinition Height="auto"/>
+							<RowDefinition Height=".5*"/>
+							<RowDefinition Height=".5*"/>
 						</Grid.RowDefinitions>
 						<GroupBox Header="Printer Details" Grid.Row="0">
 							<Grid>
@@ -49,53 +49,28 @@
 								</GroupBox>
 							</Grid>
 						</GroupBox>
-
 						<GroupBox Header="Addional Devices" Grid.Row="1">
 							<Grid>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="auto"/>
-									<RowDefinition Height="*"/>									
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="1.5*"/>
+									<ColumnDefinition Width="0.3*"/>
+									<ColumnDefinition Width="2*"/>
+								</Grid.ColumnDefinitions>
+								<Grid.RowDefinitions >
+									<RowDefinition Height=".3*"/>
+									<RowDefinition Height=".3*"/>									
 								</Grid.RowDefinitions>
-								
-								<GroupBox Header="Dart" Grid.Row="0">
-									<Grid>
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="*"/>
-											<ColumnDefinition Width="1.5*"/>
-											<ColumnDefinition Width="0.3*"/>
-											<ColumnDefinition Width="2*"/>
-										</Grid.ColumnDefinitions>
-										<CheckBox Name="enableDart" Content="Enable Dart" Grid.Column="0" VerticalAlignment="Center"/>
-										<CheckBox Name="enableDartSerial" Content="Enable Dart Serial Connections" Grid.Column="1" VerticalAlignment="Center" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}"/>
-										<Label Content="IP - >" Grid.Column="2" HorizontalAlignment="Right"/>
-										<TextBox Name="dartIPEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged" Grid.Column="3" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}"/>
-									</Grid>									
-								</GroupBox>
-
-								<GroupBox Header="Serial Connections" Grid.Row="1">
-									<Grid>
-										<Grid.RowDefinitions>
-											<RowDefinition Height=".1*"/>
-											<RowDefinition Height=".2*"/>
-											<RowDefinition Height="*"/>											
-										</Grid.RowDefinitions>
-										<Grid.ColumnDefinitions>
-											<ColumnDefinition Width="*"/>
-											<ColumnDefinition Width="*"/>
-											<ColumnDefinition Width="*"/>
-										</Grid.ColumnDefinitions>
-										<CheckBox Content="Enable Serial Connections" x:Name="serialEnabled" Grid.ColumnSpan="3"/>
-										<ComboBox Name="serial1" Grid.Row="1" Grid.Column="0" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}"/>
-										<ComboBox Name="serial2" Grid.Row="1" Grid.Column="1" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}"/>
-										<ComboBox Name="serial3" Grid.Row="1" Grid.Column="2" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}"/>
-										<TextBox x:Name="serial1Peek" Grid.Row="2" Grid.Column="0" IsReadOnly="True" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}" BorderBrush="Black"/>
-										<TextBox x:Name="serial2Peek" Grid.Row="2" Grid.Column="1" IsReadOnly="True" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}" BorderBrush="Black"/>
-										<TextBox x:Name="serial3Peek" Grid.Row="2" Grid.Column="2" IsReadOnly="True" IsEnabled="{Binding ElementName=serialEnabled, Path=IsChecked}" BorderBrush="Black"/>
-									</Grid>
-								</GroupBox>
-							</Grid>
+										
+								<CheckBox Name="enableDart" Content="Enable Dart" Grid.Column="0" VerticalAlignment="Center"/>
+								<CheckBox Name="enableDartSerial" Content="Enable Dart Serial Connections" Grid.Column="1" VerticalAlignment="Center" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}"/>
+								<Label Content="IP - >" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+								<TextBox Name="dartIPEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged" Grid.Column="3" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+								<CheckBox Content="Enable Serial Connections" x:Name="serialEnabled" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.ColumnSpan="3"/>
+														
+							</Grid>							
 						</GroupBox>
-						<Button x:Name="connectButton" Content="Connect" Grid.Row="2" Click="connectButton_Click"/>
+						<Button x:Name="connectButton" Content="Connect and Log" Grid.Row="2" Click="connectButton_Click" Background="#7F00FF00"/>
 					</Grid>
 					<GroupBox Header="Saved Connections" Grid.Column="1">
 						<Grid Grid.Column="1">
@@ -359,15 +334,10 @@
 					</TabItem>
 				</TabControl>
 			</TabItem>
-			<TabItem x:Name="logTab" Header="Logs" IsEnabled="False">
-				<TabControl>
-					<TabItem Header="Log Upload">
-						<Grid/>
-					</TabItem>
-					<TabItem Header="Log Output">
-						<TextBlock x:Name="mainLogBlock" Text="Test" />
-					</TabItem>
-				</TabControl>
+			<TabItem x:Name="logTab" Header="Capture Logs">
+				<Grid>
+					
+				</Grid>
 			</TabItem>
 			<TabItem Header="Print">
 				<Grid>
@@ -518,14 +488,16 @@
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="auto"/>
-				<ColumnDefinition Width=".75*"/>
+				<ColumnDefinition Width=".5*"/>
 				
-			</Grid.ColumnDefinitions>
-			<GroupBox Header="Application" Grid.Column="0">
-				<TextBox x:Name="logsBottomApp"/>
-			</GroupBox>
-			<GroupBox Header="Print Status" Grid.Column="2">
-				<TextBox x:Name="logsBottomUSBSend"/>
+			</Grid.ColumnDefinitions>			
+			<TabControl Name="LogOutputTabControl" TabStripPlacement="Top" SelectedIndex="-1">
+				<TabItem Header="Print Tool">
+					<TextBox x:Name="PrintToolLogs"/>
+				</TabItem>					
+			</TabControl>			
+			<GroupBox Header="Printer Status" Grid.Column="2">
+				<TextBox x:Name="PrinterStatusBox"/>
 			</GroupBox>
 
 

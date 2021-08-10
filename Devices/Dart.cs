@@ -27,6 +27,12 @@ namespace PrintTool
 			connections.Add(new(ip.ToString(), 8110));
 		}
 
+		public void Disconnect()
+		{
+			connections.Clear();
+		}
+
+
 		public void Flush()
 		{
 			if (!isEnabled) { return; }

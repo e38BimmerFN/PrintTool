@@ -20,7 +20,11 @@ namespace PrintTool
 		public Logger(string name = "Application")
 		{			
 			NAME = name;
-			FILENAME = NAME + "log.txt";
+			FILENAME = NAME + "_Log.txt";
+			if (File.Exists(FILELOC + FILENAME))
+			{
+				File.Delete(FILELOC + FILENAME);
+			}
 		}
 		public void AddTextBox(TextBox box)
 		{
@@ -30,15 +34,21 @@ namespace PrintTool
 		public async void Log(string log)
 		{			
 			string output = "[" + DateTime.Now.ToShortTimeString() + "] " + log + "\n";
-			await File.AppendAllTextAsync(FILELOC + FILENAME, output);
-			System.Diagnostics.Trace.WriteLine(output);
-
-			
+			await File.AppendAllTextAsync(FILELOC + FILENAME, output);				
 			foreach(TextBox box in boxes)
 			{
-				box.AppendText(output);
-			}
-					
-		}		
+				box.Dispatcher.Invoke(new Action(() =>
+				{
+					box.AppendText(output);
+					box.ScrollToEnd();
+				}));
+			}					
+		}
+		
+		public void SaveLogs(string topath)
+		{
+			File.Copy(FILELOC + FILENAME, topath + FILENAME);
+		}
+
 	}
 }

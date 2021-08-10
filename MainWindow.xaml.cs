@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 
 
 
@@ -18,9 +19,10 @@ namespace PrintTool
 		Printer printer;
 		bool currentlyConnected = false;
 
+
 		const string YOLOSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
 		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-		const string DUNEUTILITY = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
+
 		System.Threading.CancellationTokenSource cancelSource = new();
 
 
@@ -30,8 +32,6 @@ namespace PrintTool
 		private async void LoadTrigger(object sender, EventArgs e)
 		{
 			printer = new();
-			printer.serialPorts.Add(new SerialConnection(new Logger()));
-			printer.serialPorts[0].log.AddTextBox(logsBottomApp);
 			printer.log = new();
 
 			Tasks.StartUp();
@@ -43,13 +43,6 @@ namespace PrintTool
 				firmwareTab.IsEnabled = false;
 			}
 			await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
-
-			foreach (string com in SerialConnection.GetPorts())
-			{
-				serial1.Items.Add(com);
-			}
-
-
 		}
 
 		private void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
@@ -116,23 +109,42 @@ namespace PrintTool
 		}
 		private void connectButton_Click(object sender, RoutedEventArgs e)
 		{
-
-			if (currentlyConnected)
+			if (currentlyConnected) //stop
 			{
-				printer.serialPorts[0].Close();
-				connectButton.Content = "Connect";
+				LogOutputTabControl.SelectedItem = LogOutputTabControl.Items[0];
+				printer.DisconnectSerial();
+				int count = LogOutputTabControl.Items.Count;
+				while (LogOutputTabControl.Items.Count > 1)
+				{
+					LogOutputTabControl.Items.RemoveAt(1);
+				}
+				
+				
+				currentlyConnected = false;
 				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
-
+				connectButton.Content = "Connect and Log";
 			}
-			else
+			else //start
 			{
-				printer.serialPorts[0].Connect(serial1.Text);
-				connectButton.Content = "Disconnect and discard logs";
+				if (serialEnabled.IsChecked ?? false)
+				{
+					printer.ConnectToSerial();
+					foreach(SerialConnection connection in printer.serialPorts)
+					{
+						TabItem tab = new();
+						tab.Header = connection.portname;
+						TextBox box = new();
+						box.IsReadOnly = true;
+						tab.Content = box;
+						connection.log.AddTextBox(box);
+						LogOutputTabControl.Items.Add(tab);
+					}
+				}
+				currentlyConnected = true;
 				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				connectButton.Content = "Disconnect and Flush Logs";
 			}
-
 		}
-
 
 
 
@@ -333,8 +345,22 @@ namespace PrintTool
 
 
 
+
 		#endregion
 
+		private void enableDart_Checked(object sender, RoutedEventArgs e)
+		{
 
+		}
+
+		private void enableDartSerial_Checked(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+		private void serialEnabled_Checked(object sender, RoutedEventArgs e)
+		{
+
+		}
 	}
 }

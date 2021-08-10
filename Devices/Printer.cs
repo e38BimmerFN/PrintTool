@@ -24,10 +24,37 @@ namespace PrintTool
 		public Printer()
 		{
 			serialPorts = new();
-			dart = new Dart();
+			dart = new();
 			usingSerial = false;
 			dart.isEnabled = false;
 			ip = "0.0.0.0";
+		}
+
+		public void ConnectToSerial()
+		{
+			foreach (string name in SerialConnection.GetPorts())
+			{
+				SerialConnection serial = new SerialConnection(new Logger(name));
+				serial.Connect(name);
+				serialPorts.Add(serial);
+			}
+		}
+
+		public void DisconnectSerial()
+		{
+			foreach(SerialConnection serialConnection in serialPorts)
+			{
+				serialConnection.Close();
+			}
+			serialPorts.Clear();
+		}
+
+		public void SaveLogs(string pathToSaveTo)
+		{
+			foreach(SerialConnection serial in serialPorts)
+			{
+				serial.log.SaveLogs(pathToSaveTo);
+			}
 		}
 
 

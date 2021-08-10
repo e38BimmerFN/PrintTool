@@ -1,11 +1,13 @@
-﻿using System.IO.Ports;
+﻿using RJCP.IO.Ports;
+using System.Diagnostics;
 
 namespace PrintTool
 {
 	public class SerialConnection
 	{
-		private SerialPort port { get; set; }
+		private SerialPortStream port;
 		public Logger log { get; set; }
+		public string portname {get;set;}
 		public SerialConnection(Logger log)
 		{
 			port = new();
@@ -14,27 +16,40 @@ namespace PrintTool
 
 		public void Connect(string portname)
 		{
-			port = new SerialPort();
+			this.portname = portname;
+			port = new SerialPortStream();
 			port.PortName = portname;
 			port.BaudRate = 115200;
 			port.DataBits = 8;
 			port.StopBits = StopBits.One;
 			port.Parity = Parity.None;
-			port.DataReceived += new SerialDataReceivedEventHandler(DataReceived);
-			port.Open();
+			port.DataReceived += Port_DataReceived;
+			try
+			{
+				port.Open();
+			}
+			catch
+			{
+				System.Windows.MessageBox.Show(portname + " cannot be connected to.");
+			}
+			
 		}
 
-		public void Close()
-		{
-			port.Close();
-		}
-
-		private void DataReceived(object sender, SerialDataReceivedEventArgs e)
+		private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
 		{
 			string indata = port.ReadLine();
 			log.Log(indata);
 		}
 
+		public void Close()
+		{
+			if (port.IsOpen)
+			{
+				port.Close();
+			}
+		}
+
+		
 		public void SendData(string data)
 		{
 			port.WriteLine(data);
@@ -42,9 +57,8 @@ namespace PrintTool
 
 		public static string[] GetPorts()
 		{
-			return SerialPort.GetPortNames();
+			
+			return SerialPortStream.GetPortNames();
 		}
-
-
 	}
 }
