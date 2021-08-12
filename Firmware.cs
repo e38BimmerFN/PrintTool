@@ -7,20 +7,20 @@ namespace PrintTool
 {
 	class Firmware
 	{
-		public static async Task DLAndSend(string filename, string website, Logger logger, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
+		public static async Task DLAndSend(string filename, string website, Printer printer, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
 		{
 			Process usbsend = new();
 			button.IsEnabled = false;
 			button.Content = "Proccessing..";
-			logger.Log("Downloading " + website + "\\" + filename);
-			await Tasks.DownloadOrCopyFile(filename, website);
-			logger.Log("Download success.");
-			logger.Log("Sending firmware to printer");
+			await printer.Log("Downloading " + website + "\\" + filename);
+			await Helper.DownloadOrCopyFile(filename, website);
+			await printer.Log("Download success.");
+			await printer.Log("Sending firmware to printer");
 			usbsend.StartInfo.FileName = "Services\\USBSend.exe";
 			usbsend.StartInfo.Arguments = filename;
 			usbsend.StartInfo.CreateNoWindow = true;
 			usbsend.StartInfo.RedirectStandardOutput = true;
-			usbsend.OutputDataReceived += new DataReceivedEventHandler((sender, e) => { logger.Log(e.Data); });
+			usbsend.OutputDataReceived += new DataReceivedEventHandler((sender, e) => { printer.Log(e.Data); });
 			usbsend.Start();
 			await usbsend.WaitForExitAsync(token);
 			if (usbsend.ExitCode == 0)

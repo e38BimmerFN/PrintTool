@@ -10,69 +10,70 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="0.75*"/>
-			<RowDefinition Height=".5*"/>
-			<RowDefinition Height="auto"/>
+			<RowDefinition Height=".6*"/>			
 		</Grid.RowDefinitions>
 		<TabControl>
-			<TabItem x:Name="connectionsTab" Header="Printer And Devices">
+			<TabItem x:Name="connectionsTab" Header="Device And Log Setup">
 				<Grid>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="0.75*"/>
 						<ColumnDefinition Width="0.4*"/>
 					</Grid.ColumnDefinitions>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="auto"/>
+						<RowDefinition Height="auto"/>
+						<RowDefinition Height="auto"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
 
-					<Grid Grid.Row="0">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="*"/>
-							<RowDefinition Height=".5*"/>
-							<RowDefinition Height=".5*"/>
-						</Grid.RowDefinitions>
-						<GroupBox Header="Printer Details" Grid.Row="0">
-							<Grid>
-								<Grid.RowDefinitions>
-									<RowDefinition Height="auto"/>
-									<RowDefinition Height="auto"/>
-									<RowDefinition Height="auto"/>
-									<RowDefinition Height="auto"/>
-								</Grid.RowDefinitions>
-								<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}">
-									<TextBox Name="printerModel" />
-								</GroupBox>
-								<GroupBox Header="Engine Type" Grid.Row="1" BorderBrush="{x:Null}">
-									<TextBox Name="printerEngine" />
-								</GroupBox>
-								<GroupBox Header="Label" Grid.Row="2" BorderBrush="{x:Null}">
-									<TextBox Name="printerID" />
-								</GroupBox>
-								<GroupBox Header="Printer IP" Grid.Row="3" BorderBrush="{x:Null}">
-									<TextBox Name="printerIPEntry" Text="" TextChanged="connectionsIpPrinterEntry_TextChanged" />
-								</GroupBox>
-							</Grid>
-						</GroupBox>
-						<GroupBox Header="Addional Devices" Grid.Row="1">
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="1.5*"/>
-									<ColumnDefinition Width="0.3*"/>
-									<ColumnDefinition Width="2*"/>
-								</Grid.ColumnDefinitions>
-								<Grid.RowDefinitions >
-									<RowDefinition Height=".3*"/>
-									<RowDefinition Height=".3*"/>									
-								</Grid.RowDefinitions>
-										
-								<CheckBox Name="enableDart" Content="Enable Dart" Grid.Column="0" VerticalAlignment="Center"/>
-								<CheckBox Name="enableDartSerial" Content="Enable Dart Serial Connections" Grid.Column="1" VerticalAlignment="Center" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}"/>
-								<Label Content="IP - >" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center"/>
-								<TextBox Name="dartIPEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged" Grid.Column="3" IsEnabled="{Binding ElementName=enableDart, Path=IsChecked}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-								<CheckBox Content="Enable Serial Connections" x:Name="serialEnabled" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Grid.ColumnSpan="3"/>
-														
-							</Grid>							
-						</GroupBox>
-						<Button x:Name="connectButton" Content="Connect and Log" Grid.Row="2" Click="connectButton_Click" Background="#7F00FF00"/>
-					</Grid>
-					<GroupBox Header="Saved Connections" Grid.Column="1">
+					<GroupBox Header="Printer Details" Grid.Row="0" >
+						<StackPanel>
+							<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}">
+								<TextBox Name="printerModelEntry" TextChanged="printerModel_TextChanged"/>
+							</GroupBox>
+							<GroupBox Header="Engine Type" Grid.Row="1" BorderBrush="{x:Null}">
+								<TextBox Name="printerEngineEntry" TextChanged="printerEngine_TextChanged" />
+							</GroupBox>
+							<GroupBox Header="Label" Grid.Row="2" BorderBrush="{x:Null}">
+								<TextBox Name="printerIdEntry" TextChanged="printerID_TextChanged"/>
+							</GroupBox>
+							<GroupBox Header="Printer type" BorderBrush="{x:Null}">
+								<ComboBox Name="printerTypeEntry" SelectedIndex="2" SelectionChanged="printerTypeEntry_SelectionChanged">
+									<ComboBoxItem Content="Jedi"/>
+									<ComboBoxItem Content="Dune"/>
+									<ComboBoxItem Content="Sirus"/>
+								</ComboBox>
+							</GroupBox>
+						</StackPanel>
+					</GroupBox>
+					<GroupBox Header="Connections" Grid.Row="1">
+						<StackPanel Orientation="Horizontal">
+							<GroupBox Header="Printer IP" BorderBrush="{x:Null}">
+								<TextBox Name="printerIpEntry" TextChanged="printerIpEntry_TextChanged" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center" />
+							</GroupBox>
+							<GroupBox Header="Dart IP" BorderBrush="{x:Null}">
+								<TextBox Name="dartIpEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged"  Width="200" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+							</GroupBox>
+						</StackPanel>
+					</GroupBox>
+					<GroupBox Header="Logging Options" Grid.Row="2">
+						<StackPanel Orientation="Horizontal">
+							<CheckBox Name="enableSerialCheckBox" Content="Connect to Serial Connections" Margin="10" Click="enableSerialCheckBox_Click" />
+							<CheckBox Name="enableDartCheckBox" Content="Enable Dart Logging"  Margin="10" Click="enableDart_Click"/>
+							<CheckBox Name="enableTelnetCheckBox" Content="Connect to Dart Telnet"  Margin="10" Click="enableTelnet_Click"/>
+							<CheckBox Name="enablePrinterStatus" Content="Get Printer Status"  Margin="10" Click="enablePrinterStatus_Click"/>
+						</StackPanel>
+					</GroupBox>
+					<GroupBox Header="Start Logging" Grid.Row="3">
+						<UniformGrid Rows="1">
+							<Button x:Name="connectButton" Content="Connect and Log" Click="connectButton_Click" Background="#7F00FF00" HorizontalAlignment="Stretch"/>
+							<Button x:Name="captureData" Content="Capture Machine Data" Click="captureData_Click"  HorizontalAlignment="Stretch"/>
+							<Button x:Name="openLogsButton" Content="Open Logs" Click="openLogs_Click"  HorizontalAlignment="Stretch" Background="#7F0000FF"/>							
+						</UniformGrid>
+					</GroupBox>
+
+
+					<GroupBox Header="Saved Connections" Grid.Column="1" Grid.RowSpan="8">
 						<Grid Grid.Column="1">
 							<Grid.RowDefinitions>
 								<RowDefinition Height="*"/>
@@ -334,11 +335,6 @@
 					</TabItem>
 				</TabControl>
 			</TabItem>
-			<TabItem x:Name="logTab" Header="Capture Logs">
-				<Grid>
-					
-				</Grid>
-			</TabItem>
 			<TabItem Header="Print">
 				<Grid>
 					<Grid.ColumnDefinitions>
@@ -484,30 +480,77 @@
 				</Grid>
 			</TabItem>
 		</TabControl>
-		<Grid Grid.Row="1">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*"/>
-				<ColumnDefinition Width="auto"/>
-				<ColumnDefinition Width=".5*"/>
-				
-			</Grid.ColumnDefinitions>			
-			<TabControl Name="LogOutputTabControl" TabStripPlacement="Top" SelectedIndex="-1">
-				<TabItem Header="Print Tool">
-					<TextBox x:Name="PrintToolLogs"/>
-				</TabItem>					
-			</TabControl>			
-			<GroupBox Header="Printer Status" Grid.Column="2">
-				<TreeView>
-					<TreeViewItem x:Name="printerStatus" Header="Printer"/>
-					<TreeViewItem x:Name="jobStatus" Header="Jobs"/>
-				</TreeView>
-			</GroupBox>
+		<TabControl SelectedIndex="0" Grid.Row="1">
+			<TabItem Header="Print Tool">
+				<TextBox x:Name="PrintToolLogs"/>
+			</TabItem>
+			<TabItem Header="Printer Status">
+				<StackPanel>
+					<Label Name="printerModelLabel" Content=" Model : "/>
+					<Label Name="printerStateLabel" Content=" State : "/>
+					<Label Name="printerErrorLabel" Content=" Error Status : "/>
+					<Label Name="printerPPMLabel" Content=" Pages Per Min : "/>
+					<Label Name="printerQJCLabel" Content=" Queued Job Count : "/>
+				</StackPanel>
+			</TabItem>
+			<TabItem Header="Serial Connections">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width=".75*"/>
+						<ColumnDefinition Width=".4*"/>
+					</Grid.ColumnDefinitions>
+					<TabControl x:Name="serialConnectionsTabControl" Grid.Column="0">
 
+					</TabControl>
+					<Grid Grid.Column="1">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height=".19*"/>
+						</Grid.RowDefinitions>
+						<GroupBox Header="Select Serial Port To Send Command To">
+							<ComboBox>
+								
+							</ComboBox>
+						</GroupBox>
+						<GroupBox Header="Common Commands" Grid.Row="1">
+							
+						</GroupBox>
+						<GroupBox Header="Custom Serial Command" Grid.Row="2">
+							<TextBox x:Name="customSerialCommand"/>
+						</GroupBox>
+					</Grid>
+				</Grid>
+			</TabItem>
+			<TabItem Header="Telnet Connections">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width=".75*"/>
+						<ColumnDefinition Width=".4*"/>
+					</Grid.ColumnDefinitions>
+					<TabControl x:Name="telnetConnectionsTabControl" Grid.Column="0">
 
-			<GridSplitter Grid.Column="1" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Center" Width="5"/>
-			
+					</TabControl>
+					<Grid Grid.Column="1">
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height=".19*"/>
+						</Grid.RowDefinitions>
+						<GroupBox Header="Select Telnet Port To Send Command To">
+							<ComboBox>
 
+							</ComboBox>
+						</GroupBox>
+						<GroupBox Header="Common Commands" Grid.Row="1">
 
-		</Grid>
+						</GroupBox>
+						<GroupBox Header="Custom Telnet Commands" Grid.Row="2">
+							<TextBox x:Name="customTelnetCommand"/>
+						</GroupBox>
+					</Grid>
+				</Grid>
+			</TabItem>
+		</TabControl>		
 	</Grid>
 </Window>

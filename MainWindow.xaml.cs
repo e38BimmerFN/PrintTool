@@ -1,172 +1,278 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Timers;
+
+
 
 
 namespace PrintTool
 {
 	public partial class MainWindow : Window
 	{
+		Printer printer = new();
+		const string YOLOSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
+		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
+		System.Threading.CancellationTokenSource cancelSource = new();
+
+
 		public MainWindow()
 		{
 			InitializeComponent();
 		}
 
-		Printer printer;
-		bool currentlyConnected = false;
-
-
-		const string YOLOSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
-		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-
-		System.Threading.CancellationTokenSource cancelSource = new();
 
 
 
 		#region Startup
-
 		private async void LoadTrigger(object sender, EventArgs e)
 		{
-			printer = new();
-			printer.log = new();
+			printer.box = PrintToolLogs;
+			printer.fileLoc = @"Data\Logs\Temp";
+			
 
-			Tasks.StartUp();
-			Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
-			Tasks.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
-			if (!Tasks.HPStatus())
+
+			await printer.Log("The time is " + DateTime.Now);
+			await printer.Log("You have used this program : " + Settings.Default.TimesLaunched++ + " times");
+			await printer.Log("If you have any issues, please direct them to derek.hearst@hp.com");
+			await printer.Log("Logs for this session will be located at :" + printer.fileLoc);
+			await printer.Log("Have a good day");
+			Helper.StartUp();
+			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
+			Helper.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
+			if (!Helper.HPStatus())
 			{
 				MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
 				firmwareTab.IsEnabled = false;
 			}
-			await Tasks.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
-		}
+			await Helper.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
+			try
+			{
+				savedPrinters.SelectedItem = Settings.Default.LastLoaded;
+				ConnectionsLoadDefaults(sender, e);
+			}
+			catch
+			{
+				await printer.Log("Couldn't load last used printer.");
+			}
 
+		}
 		private void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
 		{
-			Tasks.RunEndTasks();
+			Helper.RunEndTasks();
 		}
 		#endregion Startup
 
 		#region Connections Tab
-		private async void connectionsIpPrinterEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+
+
+		private async void printerModel_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			if (await Tasks.CheckIP(printerIPEntry.Text))
+			await Task.Delay(10);
+			printer.model = printerModelEntry.Text;
+		}
+
+		private async void printerEngine_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.engine = printerEngineEntry.Text;
+		}
+
+		private async void printerID_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.id = printerIdEntry.Text;
+		}
+
+		private async void printerTypeEntry_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.type = printerTypeEntry.Text;
+		}
+
+		private async void printerIpEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.printerIp = printerIpEntry.Text;
+			if (await Helper.CheckIP(printerIpEntry.Text))
 			{
-				printerIPEntry.Background = System.Windows.Media.Brushes.LightGreen;
+				printerIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
+				connectButton.IsEnabled = true;
 			}
 
 			else
 			{
-				printerIPEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				printerIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				connectButton.IsEnabled = false;
 			}
 
 		}
 		private async void connectionsIpDartEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
 		{
-			if (await Tasks.CheckIP(dartIPEntry.Text))
+			await Task.Delay(10);
+			printer.dartIp = dartIpEntry.Text;
+			if (await Helper.CheckIP(dartIpEntry.Text))
 			{
-				dartIPEntry.Background = System.Windows.Media.Brushes.LightGreen;
+				dartIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
 			}
 
 			else
 			{
-				dartIPEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				dartIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
 			}
 		}
+
+		private async void enableSerialCheckBox_Click(object sender, RoutedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.enableSerial = enableSerialCheckBox.IsChecked ?? false;
+		}
+
+		private async void enableDart_Click(object sender, RoutedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.enableDart = enableDartCheckBox.IsChecked ?? false;
+		}
+
+		private async void enableTelnet_Click(object sender, RoutedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.enableTelnet = enableTelnetCheckBox.IsChecked ?? false;
+		}
+
+		private async void enablePrinterStatus_Click(object sender, RoutedEventArgs e)
+		{
+			await Task.Delay(10);
+			printer.enablePrinterStatus = enablePrinterStatus.IsChecked ?? false;
+		}
+
+
 		public void ConnectionsSaveDefaults(object sender, EventArgs e)
 		{
-			printer.model = printerModel.Text;
-			printer.id = printerID.Text;
-			printer.engineType = printerEngine.Text;
-			printer.ip = printerIPEntry.Text;
-			printer.dart.isEnabled = enableDart.IsChecked ?? false;
-			printer.dart.usingPorts = enableDartSerial.IsChecked ?? false;
-			printer.dart.ip = dartIPEntry.Text;
-			printer.usingSerial = serialEnabled.IsChecked ?? false;
-			printer.Save();
-			Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
+			printer.SaveConfig();
+			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 		}
-		public void ConnectionsLoadDefaults(object sender, EventArgs e)
+		public async void ConnectionsLoadDefaults(object sender, EventArgs e)
 		{
-			printer.Load(@"Data\Printers\" + savedPrinters.SelectedItem.ToString());
-			printerModel.Text = printer.model;
-			printerID.Text = printer.id;
-			printerEngine.Text = printer.engineType;
-			printerIPEntry.Text = printer.ip.ToString();
-			enableDart.IsChecked = printer.dart.isEnabled;
-			enableDartSerial.IsChecked = printer.dart.usingPorts;
-			dartIPEntry.Text = printer.dart.ip.ToString();
-			serialEnabled.IsChecked = printer.usingSerial;
+			if (savedPrinters.SelectedItem is null or "Nothing Found") { await printer.Log("Select something first"); return; }
+			Settings.Default.LastLoaded = savedPrinters.SelectedItem.ToString();
+			Settings.Default.Save();
+			printer.LoadConfig(@"Data\Printers\" + savedPrinters.SelectedItem.ToString());
+			printerModelEntry.Text = printer.model;
+			printerIdEntry.Text = printer.id;
+			printerEngineEntry.Text = printer.engine;
+			printerIpEntry.Text = printer.printerIp.ToString();
+			enableDartCheckBox.IsChecked = printer.enableDart;
+			enableTelnetCheckBox.IsChecked = printer.enableTelnet;
+			dartIpEntry.Text = printer.dartIp;
+			enableSerialCheckBox.IsChecked = printer.enableSerial;
 		}
-		public void ConnectionsDeleteDefaults(object sender, EventArgs e)
+		public async void ConnectionsDeleteDefaults(object sender, EventArgs e)
 		{
+			if (savedPrinters.SelectedItem is null or "Nothing Found") { await printer.Log("Select something first"); return; }
 			File.Delete(@"Data\Printers\" + savedPrinters.SelectedItem);
-			Tasks.PopulateListBox(savedPrinters, "Data\\Printers\\");
+			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 		}
+
 		private async void connectButton_Click(object sender, RoutedEventArgs e)
 		{
-			Timer timer = new();
-			timer.Interval = 700;
-			//timer.Elapsed += getPrintStatus;
-			printer.ip = printerIPEntry.Text;
-			printer.dart.ip = dartIPEntry.Text;
-			printer.dart.isEnabled = enableDart.IsChecked ?? false;
-			printer.usingSerial = serialEnabled.IsChecked ?? false;
-			printer.dart.usingPorts = enableDartSerial.IsChecked ?? false;
-			if (currentlyConnected) //stop
+
+			if (printer.connected) //stop
 			{
-				LogOutputTabControl.SelectedItem = LogOutputTabControl.Items[0];
-				printer.DisconnectSerial();
-				int count = LogOutputTabControl.Items.Count;
-				while (LogOutputTabControl.Items.Count > 1)
-				{
-					LogOutputTabControl.Items.RemoveAt(1);
-				}
-
-
-				currentlyConnected = false;
+				printer.connected = false;
+				await printer.Log("Disconnecting.");
+				serialConnectionsTabControl.Items.Clear();
+				telnetConnectionsTabControl.Items.Clear();
 				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
 				connectButton.Content = "Connect and Log";
-				timer.Stop();
+
 			}
 			else //start
 			{
-				if (serialEnabled.IsChecked ?? false)
+				if (enableSerialCheckBox.IsChecked ?? false)
 				{
-					printer.ConnectToSerial();
-					foreach (SerialConnection connection in printer.serialPorts)
+					await printer.Log("Connecting to serial connections...");
+					foreach (string portname in SerialConnection.GetPorts())
 					{
-						TabItem tab = new();
-						tab.Header = connection.portname;
-						TextBox box = new();
-						box.IsReadOnly = true;
-						tab.Content = box;
-						connection.log.AddTextBox(box);
-						LogOutputTabControl.Items.Add(tab);
+						await printer.Log("Connecting to " + portname);
+						TabItem tempTab = new();
+						tempTab.Header = portname;
+						TextBox tempBox = new();
+						tempTab.Content = tempBox;
+						SerialConnection tempConnection = new(portname, printer.fileLoc, tempBox);
+						printer.serialConnections.Add(tempConnection);
+						serialConnectionsTabControl.Items.Add(tempTab);
 					}
 				}
-				currentlyConnected = true;
+
+				if (enableTelnetCheckBox.IsChecked ?? false)
+				{
+					if (dartIpEntry.Text is null or "0.0.0.0") { MessageBox.Show("Dart IP is invalid"); }
+					else
+					{
+						foreach (int port in TelnetConnection.getAvaliable())
+						{
+							await printer.Log("Connecting to " + port);
+							TabItem tempTab = new();
+							tempTab.Header = port;
+							TextBox tempBox = new();
+							tempTab.Content = tempBox;
+							TelnetConnection tempConnection = new(printer.dartIp, port, printer.fileLoc, tempBox);
+							printer.telnetConnections.Add(tempConnection);
+							serialConnectionsTabControl.Items.Add(tempTab);
+
+						}
+					}
+				}
+				printer.connected = true;
 				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
 				connectButton.Content = "Disconnect and Flush Logs";
-				timer.Start();
-
-				await printer.getPrinterStatus();
-				await printer.getJobStatus();
+				await printer.Log("Finished connecting.");
 
 			}
 		}
 
-		private async void getPrintStatus(object sender, ElapsedEventArgs e)
+
+		private void openLogs_Click(object sender, RoutedEventArgs e)
 		{
-			await printer.getPrinterStatus();
-			await printer.getJobStatus();
+
 		}
 
 
+		private void captureData_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+
+
+		private async void getPrintStatus(object sender, ElapsedEventArgs e)
+		{
+			await printer.GetPrinterStatus();
+			//await printer.getJobStatus();
+
+			try
+			{
+				Dispatcher.Invoke(new Action(() =>
+				{
+					printerModelLabel.Content = "Model : " + printer.printerInfo;
+					printerStateLabel.Content = "Status : " + printer.printerState;
+					printerErrorLabel.Content = "Error Status : " + printer.printerError;
+					printerPPMLabel.Content = "Pages per min : " + printer.pagesPerMin;
+					printerQJCLabel.Content = "Queued Jobs : " + printer.queuedJobCount;
+				}));
+
+			}
+			catch
+			{
+
+			}
+
+		}
 
 
 
@@ -177,44 +283,44 @@ namespace PrintTool
 		private async void yoloProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
 		{
 			await Task.Delay(100);
-			await Tasks.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text + "/?C=M;O=D");
+			await Helper.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text + "/?C=M;O=D");
 		}
 		private async void yoloVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
 		{
 			await Task.Delay(100);
-			await Tasks.PopulateComboBox(yoloDistros, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text);
+			await Helper.PopulateComboBox(yoloDistros, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text);
 		}
 		private async void yoloDistros_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
 		{
 			await Task.Delay(100);
-			await Tasks.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D", "fhx");
+			await Helper.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D", "fhx");
 
 		}
 		private async void firmwareYoloCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
 		{
 			await Task.Delay(100);
-			await Tasks.PopulateComboBox(yoloCustomPackages, yoloCustomEntry.Text, "fhx");
+			await Helper.PopulateComboBox(yoloCustomPackages, yoloCustomEntry.Text, "fhx");
 		}
 		public async void firmwareYoloUnsecureB_Click(object sender, RoutedEventArgs e)
 		{
 			System.Threading.CancellationToken cancelToken = cancelSource.Token;
 			string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
-			List<string> results = await Tasks.getListings(website);
+			List<string> results = await Helper.getListings(website);
 			string filename = "";
 			if (yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
 			else { foreach (string result in results) { if (result.Contains("lochsa")) { filename = result; } } }
-			await Firmware.DLAndSend(filename, website, printer.log, firmwareYoloSecureB, cancelToken);
+			await Firmware.DLAndSend(filename, website, printer, firmwareYoloSecureB, cancelToken);
 			firmwareYoloUnsecureB.Content = "Convert to unsecure";
 		}
 		public async void firmwareYoloSecureB_Click(object sender, RoutedEventArgs e)
 		{
 			System.Threading.CancellationToken cancelToken = cancelSource.Token;
 			string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_secure/";
-			List<string> results = await Tasks.getListings(website);
+			List<string> results = await Helper.getListings(website);
 			string filename = "";
 			if (yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
 			else { foreach (string result in results) { if (result.Contains("locsha")) { filename = result; } } }
-			await Firmware.DLAndSend(filename, website, printer.log, firmwareYoloSecureB, cancelToken);
+			await Firmware.DLAndSend(filename, website, printer, firmwareYoloSecureB, cancelToken);
 			firmwareYoloSecureB.Content = "Convert to secured";
 		}
 		private void firmwareYoloResetB_Click(object sender, RoutedEventArgs e)
@@ -227,19 +333,19 @@ namespace PrintTool
 		{
 			await Task.Delay(100);
 			if (duneVersions.Text == "") { return; }
-			await Tasks.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
+			await Helper.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
 		}
 		private async void duneProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
 		{
 			await Task.Delay(100);
 			if (duneVersions.Text == "" || duneProducts.Text == "") { return; }
-			await Tasks.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D", "fhx");
+			await Helper.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D", "fhx");
 		}
 		private async void firmwareDuneCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
 		{
 			await Task.Delay(100);
 			if (duneCustomEntry.Text == "" || !duneCustomEntry.Text.EndsWith("/")) { return; }
-			await Tasks.PopulateComboBox(duneCustomPackages, duneCustomEntry.Text, "fhx");
+			await Helper.PopulateComboBox(duneCustomPackages, duneCustomEntry.Text, "fhx");
 		}
 		private void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
 		{
@@ -264,7 +370,7 @@ namespace PrintTool
 			{
 				file = "dune_ulysses_blank_rwfs.fhx";
 			}
-			await Firmware.DLAndSend(file, path, printer.log, firmewareDuneReset, cancelToken);
+			await Firmware.DLAndSend(file, path, printer, firmewareDuneReset, cancelToken);
 		}
 
 		#endregion Dune
@@ -276,22 +382,22 @@ namespace PrintTool
 			{
 				if (yoloDailyTab.IsSelected)
 				{
-					await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/", printer.log, yoloInstallButton, cancelToken);
+					await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/", printer, yoloInstallButton, cancelToken);
 				}
 				else
 				{
-					await Firmware.DLAndSend(yoloCustomPackages.Text, yoloCustomEntry.Text, printer.log, yoloInstallButton, cancelToken);
+					await Firmware.DLAndSend(yoloCustomPackages.Text, yoloCustomEntry.Text, printer, yoloInstallButton, cancelToken);
 				}
 			}
 			else
 			{
 				if (duneDailyTab.IsSelected)
 				{
-					await Firmware.DLAndSend(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, printer.log, duneInstallButton, cancelToken);
+					await Firmware.DLAndSend(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, printer, duneInstallButton, cancelToken);
 				}
 				else
 				{
-					await Firmware.DLAndSend(duneCustomPackages.Text, yoloCustomEntry.Text, printer.log, duneInstallButton, cancelToken);
+					await Firmware.DLAndSend(duneCustomPackages.Text, yoloCustomEntry.Text, printer, duneInstallButton, cancelToken);
 				}
 			}
 		}
@@ -334,7 +440,7 @@ namespace PrintTool
 		private async void printSend9100Button(object sender, RoutedEventArgs e)
 		{
 			string filename = PrintQueue.PrintGenerator(generateArgs());
-			await PrintQueue.SendIP(printerIPEntry.Text, filename);
+			await PrintQueue.SendIP(printerIpEntry.Text, filename);
 		}
 		private async void printSendUSBButton(object sender, RoutedEventArgs e)
 		{
@@ -346,19 +452,21 @@ namespace PrintTool
 		{
 			if (File.Exists(@"Data\Jobs\" + printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
 			File.Copy(PrintQueue.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
-			Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
+			Helper.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
 		}
 		private void printDeteleJob_Click(object sender, RoutedEventArgs e)
 		{
 			if (!File.Exists(@"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString())) { MessageBox.Show(savedPrintJobs.SelectedItem.ToString() + "Doesnt exist"); }
 			File.Delete(@"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
-			Tasks.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
+			Helper.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
 		}
 		private async void printSendJob_Click(object sender, RoutedEventArgs e)
 		{
 			if (savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-			await PrintQueue.SendIP(printerIPEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
+			await PrintQueue.SendIP(printerIpEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
 		}
+
+
 
 
 
@@ -373,7 +481,6 @@ namespace PrintTool
 		#region Log Capture Tab
 
 		#endregion Log Capture
-
 
 
 	}

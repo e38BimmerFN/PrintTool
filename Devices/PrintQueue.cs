@@ -8,13 +8,8 @@ using System.Windows;
 
 namespace PrintTool
 {
-	public class PrintQueue
+	public static class PrintQueue
 	{
-		private class Job
-		{
-
-		}
-
 		public static async Task SendIP(string ip, string file)
 		{
 			byte[] data = new byte[0];

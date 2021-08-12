@@ -1,54 +1,58 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Windows;
-using SharpIpp;
+﻿using SharpIpp;
 using SharpIpp.Exceptions;
 using SharpIpp.Model;
-using System.Net;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 namespace PrintTool
 {
 	public class Printer
 	{
-		private string location = @"Data\Printers\";
-		public string model { get; set; }
-		public string id { get; set; }
-		public string engineType { get; set; }
 
-		//Connections
-		public string ip { get; set; }
-		public bool usingSerial { get; set; }
-		public List<SerialConnection> serialPorts { get; set; }
-		public Dart dart;
-		public PrintQueue queue;
+		// saved printer data
+		public string model = "";
+		public string id = "";
+		public string engine = "";
+		public string type = "";
 
-		//printer data
+		// gathred printer data
 		public string printerInfo { get; set; }
 		public string printerState { get; set; }
 		public string printerError { get; set; }
 		public string pagesPerMin { get; set; }
 		public string queuedJobCount { get; set; }
 
+		//Connections
+		public string printerIp = "0.0.0.0";
+		public string dartIp = "0.0.0.0";
+		public bool enableSerial = false;
+		public bool enableDart = false;
+		public bool enableTelnet = false;
+		public bool enablePrinterStatus = false;
+		public List<SerialConnection> serialConnections = new();
+		public List<TelnetConnection> telnetConnections = new();
+		public bool connected = false;
 
-		//log 
-		public Logger log { get; set; }
+
+		public TextBox box { get; set; }
+		public string fileLoc { get; set; }
+
 
 		public Printer()
 		{
-			serialPorts = new();
-			dart = new();
-			usingSerial = false;
-			dart.isEnabled = false;
-			ip = "0.0.0.0";
+			
 		}
 
-		public async Task getPrinterStatus()
+		public async Task GetPrinterStatus()
 		{
 			SharpIppClient client = new();
 			List<string> data = new();
-			
-			Uri uri = new Uri("ipp://" + ip + ":631");
+
+			Uri uri = new Uri("ipp://" + printerIp + ":631");
 			GetPrinterAttributesRequest request = new() { PrinterUri = uri };
 			GetPrinterAttributesResponse response = new();
 			try
@@ -57,7 +61,7 @@ namespace PrintTool
 			}
 			catch
 			{
-				MessageBox.Show("Couldn't communicate with printer over IPP, check if its enabled");
+				return;
 			}
 			printerInfo = response.PrinterInfo;
 			printerState = response.PrinterState.ToString();
@@ -65,76 +69,47 @@ namespace PrintTool
 			pagesPerMin = response.PagesPerMinute.ToString();
 			queuedJobCount = response.QueuedJobCount.ToString();
 		}
-
-		public async Task getJobStatus()
+		public async Task GetJobStatus()
 		{
 			SharpIppClient client = new();
 			List<string> data = new();
 
-			Uri uri = new Uri("ipp://" + ip + ":631");
-			GetJobsRequest request = new() { PrinterUri = uri, RequestingUserName="PrintTool(name)"};
-			GetJobsResponse response = new();
+			Uri uri = new Uri("ipp://" + printerIp + ":631");
+			GetJobAttributesRequest request = new() { PrinterUri = uri, JobId = 1 };
+			GetJobAttributesResponse response = new();
 			try
 			{
-				response = await client.GetJobsAsync(request);
+				response = await client.GetJobAttributesAsync(request);
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 
-				MessageBox.Show("Couldn't communicate with printer over IPP, check if its enabled");
 			}
-			
+
 		}
 
+		
 
-		public void ConnectToSerial()
-		{
-			foreach (string name in SerialConnection.GetPorts())
-			{
-				SerialConnection serial = new SerialConnection(new Logger(name));
-				serial.Connect(name);
-				serialPorts.Add(serial);
-			}
-		}
-
-		public void DisconnectSerial()
-		{
-			foreach (SerialConnection serialConnection in serialPorts)
-			{
-				serialConnection.Close();
-			}
-			serialPorts.Clear();
-		}
-
-		public void SaveLogs(string pathToSaveTo)
-		{
-			foreach (SerialConnection serial in serialPorts)
-			{
-				serial.log.SaveLogs(pathToSaveTo);
-			}
-		}
-
-
-		public void Save()
+		public void SaveConfig()
 		{
 			List<string> data = new();
 			data.Add(model);
 			data.Add(id);
-			data.Add(engineType);
-			data.Add(ip.ToString());
-			data.Add(dart.isEnabled.ToString());
-			data.Add(dart.usingPorts.ToString());
-			data.Add(dart.ip.ToString());
-			data.Add(usingSerial.ToString());
-			StreamWriter myFile = File.CreateText(location + model);
+			data.Add(engine);
+			data.Add(printerIp.ToString());
+			data.Add(enableDart.ToString());
+			data.Add(enableTelnet.ToString());
+			data.Add(dartIp.ToString());
+			data.Add(enableSerial.ToString());
+			data.Add(type.ToString());
+			StreamWriter myFile = File.CreateText(@"Data\Printers\" + model);
 			foreach (string entry in data)
 			{
 				myFile.WriteLine(entry);
 			}
 			myFile.Close();
 		}
-
-		public void Load(string filename)
+		public void LoadConfig(string filename)
 		{
 
 			if (!File.Exists(filename)) { MessageBox.Show(filename + " Doesnt exist"); return; }
@@ -142,13 +117,29 @@ namespace PrintTool
 
 			model = file.ReadLine();
 			id = file.ReadLine();
-			engineType = file.ReadLine();
-			ip = file.ReadLine();
-			dart.isEnabled = bool.Parse(file.ReadLine());
-			dart.usingPorts = bool.Parse(file.ReadLine());
-			dart.ip = file.ReadLine();
-			usingSerial = bool.Parse(file.ReadLine());
+			engine = file.ReadLine();
+			printerIp = file.ReadLine();
+			enableDart = bool.Parse(file.ReadLine());
+			enableTelnet = bool.Parse(file.ReadLine());
+			dartIp = file.ReadLine();
+			enableSerial = bool.Parse(file.ReadLine());
+			type = file.ReadLine();
 			file.Close();
+		}
+
+
+		public async Task Log(string log)
+		{
+			log = log + "\n";
+			//logging to textbox
+			box.Dispatcher.Invoke(new Action(() =>
+			{
+				box.AppendText(log);
+				box.ScrollToEnd();
+			}));
+
+			//Logging to file
+			await File.AppendAllTextAsync(fileLoc + "PrintToolLog.txt", log);
 		}
 	}
 }

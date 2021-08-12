@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Windows;
 namespace PrintTool
 {
-	static class Tasks
+	static class Helper
 	{
 
 
@@ -163,7 +163,7 @@ namespace PrintTool
 				if (myRegex.Success)
 				{
 					Ping pingSender = new Ping();
-					PingReply reply = await pingSender.SendPingAsync(ip);
+					PingReply reply = await pingSender.SendPingAsync(ip,20);
 					if (reply.Status == IPStatus.Success) { return true; }
 				}
 				return false;

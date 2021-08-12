@@ -6,7 +6,13 @@
       <Value Profile="(Default)">6.1.0.1753/</Value>
     </Setting>
     <Setting Name="Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">106</Value>
+      <Value Profile="(Default)">108</Value>
+    </Setting>
+    <Setting Name="LastLoaded" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Lochsa</Value>
+    </Setting>
+    <Setting Name="TimesLaunched" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
     </Setting>
   </Settings>
 </SettingsFile>

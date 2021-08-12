@@ -1,22 +1,25 @@
 ﻿using RJCP.IO.Ports;
-using System.Diagnostics;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Windows.Controls;
+
 
 namespace PrintTool
 {
 	public class SerialConnection
 	{
 		private SerialPortStream port;
-		public Logger log { get; set; }
-		public string portname { get; set; }
-		public SerialConnection(Logger log)
-		{
-			port = new();
-			this.log = log;
-		}
+		TextBox box { get; set; }
+		public string portName { get; set; }
+		public string fileloc { get; set; }
 
-		public void Connect(string portname)
+		public SerialConnection(string portname, string fileloc, TextBox box)
 		{
-			this.portname = portname;
+			this.box = box;
+			this.portName = portName;
 			port = new SerialPortStream();
 			port.PortName = portname;
 			port.BaudRate = 115200;
@@ -30,15 +33,16 @@ namespace PrintTool
 			}
 			catch
 			{
-				System.Windows.MessageBox.Show(portname + " cannot be connected to.");
+				Log(portName + " cannot be connected to.");
 			}
 
 		}
 
-		private void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
+
+		private async void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
 		{
-			string indata = port.ReadLine();
-			log.Log(indata);
+			try { await Log(port.ReadLine()); }
+			catch { }
 		}
 
 		public void Close()
@@ -47,6 +51,21 @@ namespace PrintTool
 			{
 				port.Close();
 			}
+		}
+
+
+		private async Task Log(string log)
+		{
+			log = log + "\n";
+			//logging to textbox
+			box.Dispatcher.Invoke(new Action(() =>
+			{
+				box.AppendText(log);
+				box.ScrollToEnd();
+			}));
+
+			//Logging to file
+			await File.AppendAllTextAsync(fileloc + port + ".txt", log);
 		}
 
 
