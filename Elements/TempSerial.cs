@@ -9,18 +9,61 @@ using System.Windows.Controls;
 
 namespace PrintTool
 {
-	public class SerialConnection
+	public class TempSerial
 	{
 		private SerialPortStream port;
-		TextBox box { get; set; }
+		
 		public string portName { get; set; }
 		public string fileLoc = @"Data\Logs\Temp\";
-		
 
-		public SerialConnection(string portName, TextBox box)
+		public TabItem tab;
+		private TextBox box;
+		private ScrollViewer scroller;
+
+		public TempSerial(string portName)
 		{
+			box = new()
+			{
+				IsReadOnly = true,
+				FontFamily = new System.Windows.Media.FontFamily("Consolas")
+			};
+
+			scroller = new()
+			{
+				Content = box
+			};
+			var commandGrid = new StackPanel();
+
+			var sp1 = new StackPanel();
 			
-			this.box = box;
+			GroupBox gp1 = new()
+			{
+				Content = sp1
+			};
+
+			commandGrid.Children.Add(gp1);
+
+
+			var grid = new Grid();
+			var Column1 = new ColumnDefinition();
+			Column1.Width = new System.Windows.GridLength(.75, System.Windows.GridUnitType.Star);
+			var Column2 = new ColumnDefinition();
+			Column2.Width = new System.Windows.GridLength(.4, System.Windows.GridUnitType.Star);
+			grid.ColumnDefinitions.Add(Column1);
+			grid.ColumnDefinitions.Add(Column2);
+			
+			grid.Children.Add(box);
+			Grid.SetColumn(box, 0);
+			grid.Children.Add(commandGrid);
+
+			tab = new()
+			{
+				Visibility = System.Windows.Visibility.Collapsed,
+				Content = grid,
+				Header = portName
+			};
+						
+
 			this.portName = portName;
 			port = new();
 			port.PortName = portName;
@@ -35,7 +78,7 @@ namespace PrintTool
 			}
 			catch
 			{
-				Log(this.portName + " cannot be connected to.");
+				Log(portName + " cannot be connected to.");
 			}
 		}
 
@@ -57,13 +100,13 @@ namespace PrintTool
 
 		private async Task Log(string log)
 		{
+			tab.Visibility = System.Windows.Visibility.Visible;
 			if (!log.Contains("\n") || !log.Contains("\r")) { log += "\n"; }
 			//logging to textbox
-			box.Dispatcher.Invoke(new Action(() =>
-			{
-				box.AppendText(log);
-				box.ScrollToEnd();
-			}));
+			
+			box.AppendText(log);
+			scroller.ScrollToBottom();
+			
 
 			//Logging to file
 			await File.AppendAllTextAsync(fileLoc + "Serial" + portName + ".txt", log);

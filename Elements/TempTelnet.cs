@@ -8,7 +8,7 @@ using System.Timers;
 using System.Windows.Controls;
 namespace PrintTool
 {
-	public class TelnetConnection
+	public class TempTelnet
 	{
 		private System.Threading.CancellationTokenSource tokenSource = new();
 		private Client cli;
@@ -17,10 +17,13 @@ namespace PrintTool
 		public int port { get; set; }
 		public string fileloc { get; set; }
 
-		public int timeToGetData = 500;
+		TabItem tab { get; set; }
 
-		public TelnetConnection(string ip, int port, string fileloc, TextBox box)
+		public int timeToGetData = 200;
+
+		public TempTelnet(string ip, int port, string fileloc, TextBox box)
 		{
+			
 			Directory.CreateDirectory(fileloc);
 			this.box = box;
 			this.ip = ip;
@@ -35,10 +38,15 @@ namespace PrintTool
 
 		private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			string result = await cli.TerminatedReadAsync(">");
+			string result;
+			try {result = await cli.TerminatedReadAsync(">"); }
+			catch { return; }
+			
+			if(result is "" or null) { return; }
 			result = Regex.Replace(result, "(\u001b\\[1;34m)", "");
 			result = Regex.Replace(result, "(\u001b\\[1;36m)", "");
 			result = Regex.Replace(result, "(\u001b\\[m)", "");
+			result = Regex.Replace(result, "(\\[0;0)","");
 			await Log(result);
 		}
 
@@ -72,6 +80,8 @@ namespace PrintTool
 		{
 			List<int> connections = new();
 			connections.Add(8108);
+			connections.Add(8109);
+			connections.Add(8110);
 
 
 			return connections;

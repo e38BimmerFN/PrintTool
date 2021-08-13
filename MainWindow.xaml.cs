@@ -159,8 +159,7 @@ namespace PrintTool
 		}
 
 
-		
-
+		//Start logging
 		private async void connectButton_Click(object sender, RoutedEventArgs e)
 		{
 
@@ -183,16 +182,15 @@ namespace PrintTool
 				if (enableSerialCheckBox.IsChecked ?? false)
 				{
 					await printer.Log("Connecting to serial connections...");
-					foreach (string portname in SerialConnection.GetPorts())
+					foreach (string portname in TempSerial.GetPorts())
 					{
 						await printer.Log("Connecting to " + portname);
-						TabItem tempTab = new();
-						tempTab.Header = portname;
-						TextBox tempBox = new();
-						tempTab.Content = tempBox;
-						SerialConnection tempConnection = new(portname, tempBox);
-						printer.serialConnections.Add(tempConnection);
-						serialConnectionsTabControl.Items.Add(tempTab);
+						SerialConnection conection = new(portname);
+						TabItem tab = new()
+						{
+							Content = conection
+						};
+						serialConnectionsTabControl.Items.Add(tab);
 					}
 				}
 
@@ -201,17 +199,20 @@ namespace PrintTool
 					if (dartIpEntry.Text is null or "0.0.0.0") { MessageBox.Show("Dart IP is invalid"); }
 					else
 					{
-						foreach (int port in TelnetConnection.getAvaliable())
+						foreach (int port in TempTelnet.getAvaliable())
 						{
 							await printer.Log("Connecting to " + port);
 							TabItem tempTab = new();
 							tempTab.Header = port;
+							ScrollViewer tempScroll = new();
 							TextBox tempBox = new();
-							tempTab.Content = tempBox;
-							TelnetConnection tempConnection = new(printer.dartIp, port, printer.loggingLocation, tempBox);
-							printer.telnetConnections.Add(tempConnection);
-							serialConnectionsTabControl.Items.Add(tempTab);
+							tempTab.Content = tempScroll;
+							tempScroll.Content = tempBox;
 
+							TempTelnet tempConnection = new(printer.dartIp, port, printer.loggingLocation, tempBox);
+							printer.telnetConnections.Add(tempConnection);
+							telnetConnectionsTabControl.Items.Add(tempConnection);
+							
 						}
 					}
 				}
@@ -222,21 +223,16 @@ namespace PrintTool
 
 			}
 		}
-
-
-
 		private void openLogs_Click(object sender, RoutedEventArgs e)
 		{
 
 		}
-
-
 		private void captureData_Click(object sender, RoutedEventArgs e)
 		{
 
 		}
 
-
+		//Saving
 		public void ConnectionsSaveDefaults(object sender, EventArgs e)
 		{
 			printer.SaveConfig();
@@ -264,6 +260,8 @@ namespace PrintTool
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 		}
 
+		
+		
 
 		#endregion Connections
 
@@ -466,12 +464,16 @@ namespace PrintTool
 
 
 
+
 		#endregion
 
-		#region Log Capture Tab
 
-		#endregion Log Capture
 
+		#region Log UI
+
+		
+
+		#endregion Log ui
 
 	}
 }

@@ -10,7 +10,7 @@
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="0.75*"/>
-			<RowDefinition Height=".6*"/>			
+			<RowDefinition Height=".6*"/>
 		</Grid.RowDefinitions>
 		<TabControl>
 			<TabItem x:Name="connectionsTab" Header="Device And Log Setup">
@@ -74,7 +74,7 @@
 						<UniformGrid Rows="1">
 							<Button x:Name="connectButton" Content="Connect and Log" Click="connectButton_Click" Background="#7F00FF00" HorizontalAlignment="Stretch"/>
 							<Button x:Name="savelogsButton" Content="Save and Triage" Click="captureData_Click"  HorizontalAlignment="Stretch" Background="#7F00FF00"/>
-							<Button x:Name="openLogsButton" Content="Open Logs" Click="openLogs_Click"  HorizontalAlignment="Stretch" Background="#7F0000FF"/>							
+							<Button x:Name="openLogsButton" Content="Open Logs" Click="openLogs_Click"  HorizontalAlignment="Stretch" Background="#7F0000FF"/>
 						</UniformGrid>
 					</GroupBox>
 
@@ -488,7 +488,7 @@
 		</TabControl>
 		<TabControl SelectedIndex="0" Grid.Row="1">
 			<TabItem Header="Print Tool">
-				<TextBox x:Name="PrintToolLogs"/>
+				<TextBox x:Name="PrintToolLogs" FontFamily="Consolas"/>
 			</TabItem>
 			<TabItem Header="Printer Status">
 				<StackPanel>
@@ -500,63 +500,11 @@
 				</StackPanel>
 			</TabItem>
 			<TabItem Header="Serial Connections">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width=".75*"/>
-						<ColumnDefinition Width=".4*"/>
-					</Grid.ColumnDefinitions>
-					<TabControl x:Name="serialConnectionsTabControl" Grid.Column="0">
-
-					</TabControl>
-					<Grid Grid.Column="1">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="auto"/>
-							<RowDefinition Height="*"/>
-							<RowDefinition Height=".19*"/>
-						</Grid.RowDefinitions>
-						<GroupBox Header="Select Serial Port To Send Command To">
-							<ComboBox>
-								
-							</ComboBox>
-						</GroupBox>
-						<GroupBox Header="Common Commands" Grid.Row="1">
-							
-						</GroupBox>
-						<GroupBox Header="Custom Serial Command" Grid.Row="2">
-							<TextBox x:Name="customSerialCommand"/>
-						</GroupBox>
-					</Grid>
-				</Grid>
+				<TabControl x:Name="serialConnectionsTabControl" Grid.Column="0"/>
 			</TabItem>
 			<TabItem Header="Telnet Connections">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width=".75*"/>
-						<ColumnDefinition Width=".4*"/>
-					</Grid.ColumnDefinitions>
-					<TabControl x:Name="telnetConnectionsTabControl" Grid.Column="0">
-
-					</TabControl>
-					<Grid Grid.Column="1">
-						<Grid.RowDefinitions>
-							<RowDefinition Height="auto"/>
-							<RowDefinition Height="*"/>
-							<RowDefinition Height=".19*"/>
-						</Grid.RowDefinitions>
-						<GroupBox Header="Select Telnet Port To Send Command To">
-							<ComboBox>
-
-							</ComboBox>
-						</GroupBox>
-						<GroupBox Header="Common Commands" Grid.Row="1">
-
-						</GroupBox>
-						<GroupBox Header="Custom Telnet Commands" Grid.Row="2">
-							<TextBox x:Name="customTelnetCommand"/>
-						</GroupBox>
-					</Grid>
-				</Grid>
+				<TabControl x:Name="telnetConnectionsTabControl" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,0,406,0" Grid.RowSpan="2"/>
 			</TabItem>
-		</TabControl>		
+		</TabControl>
 	</Grid>
 </Window>

@@ -33,8 +33,8 @@ namespace PrintTool
 		public bool enableDart = false;
 		public bool enableTelnet = false;
 		public bool enablePrinterStatus = false;
-		public List<SerialConnection> serialConnections = new();
-		public List<TelnetConnection> telnetConnections = new();
+		public List<TempSerial> serialConnections = new();
+		public List<TempTelnet> telnetConnections = new();
 		public bool connected = false;
 
 
