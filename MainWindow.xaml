@@ -5,7 +5,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
-		Title="PrintTool by Derek Hearst" Height="972" Width="1174" ContentRendered="LoadTrigger" ResizeMode="CanResize" SizeToContent="Manual" Closing="ExitTrigger" Icon="/favicon.ico">
+		Title="PrintTool by Derek Hearst" Height="972" Width="1174" ContentRendered="LoadTrigger" ResizeMode="CanResize" SizeToContent="Manual" Icon="/favicon.ico">
 
 	<Grid>
 		<Grid.RowDefinitions>
@@ -51,8 +51,14 @@
 							<GroupBox Header="Printer IP" BorderBrush="{x:Null}">
 								<TextBox Name="printerIpEntry" TextChanged="printerIpEntry_TextChanged" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center" />
 							</GroupBox>
+							<GroupBox Header="" BorderBrush="{x:Null}">
+								<Button x:Name="openEWSButton" Content="Open EWS" Click="openEWSButton_Click"/>
+							</GroupBox>
 							<GroupBox Header="Dart IP" BorderBrush="{x:Null}">
-								<TextBox Name="dartIpEntry" Text="" TextChanged="connectionsIpDartEntry_TextChanged"  Width="200" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+								<TextBox Name="dartIpEntry" Text="" TextChanged="dartIpEntry_TextedChanged"  Width="200" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+							</GroupBox>
+							<GroupBox Header="" BorderBrush="{x:Null}">
+								<Button x:Name="openDartButton" Content="Open Dart Site" Click="openDartButton_Click"/>
 							</GroupBox>
 						</StackPanel>
 					</GroupBox>
@@ -67,7 +73,7 @@
 					<GroupBox Header="Start Logging" Grid.Row="3">
 						<UniformGrid Rows="1">
 							<Button x:Name="connectButton" Content="Connect and Log" Click="connectButton_Click" Background="#7F00FF00" HorizontalAlignment="Stretch"/>
-							<Button x:Name="captureData" Content="Capture Machine Data" Click="captureData_Click"  HorizontalAlignment="Stretch"/>
+							<Button x:Name="savelogsButton" Content="Save and Triage" Click="captureData_Click"  HorizontalAlignment="Stretch" Background="#7F00FF00"/>
 							<Button x:Name="openLogsButton" Content="Open Logs" Click="openLogs_Click"  HorizontalAlignment="Stretch" Background="#7F0000FF"/>							
 						</UniformGrid>
 					</GroupBox>
@@ -208,8 +214,8 @@
 												</Grid.RowDefinitions>
 												<Label Content="Select your product." HorizontalAlignment="Center" VerticalAlignment="Center"/>
 												<ComboBox x:Name="yoloProducts" IsReadOnly="True"  SelectedIndex="0" Grid.Row="1" VerticalAlignment="Center" SelectionChanged="yoloProducts_SelectionChanged">
-													<ComboBoxItem Content="yoshino_dist"/>
-													<ComboBoxItem Content="lochsa_dist"/>
+													<ComboBoxItem Content="yoshino_dist/"/>
+													<ComboBoxItem Content="lochsa_dist/"/>
 												</ComboBox>
 												<Label Content="Select Firmware Version" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 												<ComboBox x:Name="yoloVersions" SelectedIndex="0" Grid.Row="3" VerticalAlignment="Center" SelectionChanged="yoloVersions_SelectionChanged" />

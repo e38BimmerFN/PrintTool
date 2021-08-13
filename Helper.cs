@@ -13,21 +13,12 @@ namespace PrintTool
 	static class Helper
 	{
 
-
-		public static void StartUp()
-		{
-			Directory.CreateDirectory("Data\\Printers\\");
-			Directory.CreateDirectory("Data\\Logs\\Temp\\");
-			Directory.CreateDirectory("Data\\Jobs\\");
-			InstallOrUpdate();
-		}
-
 		public static bool HPStatus()
 		{
 			return Directory.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\");
 		}
 
-		private static void InstallOrUpdate()
+		public static void InstallOrUpdate()
 		{
 			string from = @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\";
 			string to = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\";
@@ -43,7 +34,7 @@ namespace PrintTool
 					File.Copy(file, to + filename);
 				}
 				MessageBox.Show("Updated / Installed succesfull.");
-				Process process = new Process();
+				Process process = new();
 				process.StartInfo.FileName = "explorer.exe";
 				process.StartInfo.Arguments = to;
 				process.Start();
@@ -54,7 +45,7 @@ namespace PrintTool
 				if (Settings.Default.Version < version)
 				{
 					MessageBox.Show("This program is out of date. Please run the installer");
-					Process process = new Process();
+					Process process = new();
 					process.StartInfo.FileName = "explorer.exe";
 					process.StartInfo.Arguments = from;
 					process.Start();
@@ -64,12 +55,7 @@ namespace PrintTool
 			}
 		}
 
-		public static void RunEndTasks()
-		{
-
-		}
-
-
+		
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "")
 		{
@@ -120,7 +106,7 @@ namespace PrintTool
 			if (uri == "") { results.Add("Invalid URI"); return results; }
 			if (uri.Contains("http"))
 			{
-				WebClient client = new WebClient();
+				WebClient client = new();
 				string webData = "";
 				try { webData = await client.DownloadStringTaskAsync(uri); }
 				catch { results.Add("Invalid URL"); return results; }
@@ -162,7 +148,7 @@ namespace PrintTool
 				var myRegex = Regex.Match(ip, regexmatch);
 				if (myRegex.Success)
 				{
-					Ping pingSender = new Ping();
+					Ping pingSender = new();
 					PingReply reply = await pingSender.SendPingAsync(ip,20);
 					if (reply.Status == IPStatus.Success) { return true; }
 				}

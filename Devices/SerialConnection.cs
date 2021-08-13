@@ -14,14 +14,16 @@ namespace PrintTool
 		private SerialPortStream port;
 		TextBox box { get; set; }
 		public string portName { get; set; }
-		public string fileloc { get; set; }
+		public string fileLoc = @"Data\Logs\Temp\";
+		
 
-		public SerialConnection(string portname, string fileloc, TextBox box)
+		public SerialConnection(string portName, TextBox box)
 		{
+			
 			this.box = box;
 			this.portName = portName;
-			port = new SerialPortStream();
-			port.PortName = portname;
+			port = new();
+			port.PortName = portName;
 			port.BaudRate = 115200;
 			port.DataBits = 8;
 			port.StopBits = StopBits.One;
@@ -33,9 +35,8 @@ namespace PrintTool
 			}
 			catch
 			{
-				Log(portName + " cannot be connected to.");
+				Log(this.portName + " cannot be connected to.");
 			}
-
 		}
 
 
@@ -56,7 +57,7 @@ namespace PrintTool
 
 		private async Task Log(string log)
 		{
-			log = log + "\n";
+			if (!log.Contains("\n") || !log.Contains("\r")) { log += "\n"; }
 			//logging to textbox
 			box.Dispatcher.Invoke(new Action(() =>
 			{
@@ -65,7 +66,8 @@ namespace PrintTool
 			}));
 
 			//Logging to file
-			await File.AppendAllTextAsync(fileloc + port + ".txt", log);
+			await File.AppendAllTextAsync(fileLoc + "Serial" + portName + ".txt", log);
+
 		}
 
 

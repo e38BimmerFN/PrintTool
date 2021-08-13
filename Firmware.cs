@@ -12,7 +12,7 @@ namespace PrintTool
 			Process usbsend = new();
 			button.IsEnabled = false;
 			button.Content = "Proccessing..";
-			await printer.Log("Downloading " + website + "\\" + filename);
+			await printer.Log("Downloading " + website + filename);
 			await Helper.DownloadOrCopyFile(filename, website);
 			await printer.Log("Download success.");
 			await printer.Log("Sending firmware to printer");
@@ -20,7 +20,7 @@ namespace PrintTool
 			usbsend.StartInfo.Arguments = filename;
 			usbsend.StartInfo.CreateNoWindow = true;
 			usbsend.StartInfo.RedirectStandardOutput = true;
-			usbsend.OutputDataReceived += new DataReceivedEventHandler((sender, e) => { printer.Log(e.Data); });
+			usbsend.OutputDataReceived += new DataReceivedEventHandler(async (sender, e) => { await printer.Log(e.Data); });
 			usbsend.Start();
 			await usbsend.WaitForExitAsync(token);
 			if (usbsend.ExitCode == 0)

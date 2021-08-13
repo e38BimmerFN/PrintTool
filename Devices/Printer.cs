@@ -39,12 +39,14 @@ namespace PrintTool
 
 
 		public TextBox box { get; set; }
-		public string fileLoc { get; set; }
+		public string loggingLocation = @"Data\Logs\Temp\";
 
 
 		public Printer()
 		{
-			
+			Directory.CreateDirectory(@"Data\Jobs\");
+			Directory.CreateDirectory(@"Data\Printers\");
+			Directory.CreateDirectory(@"Data\Logs\Temp\");
 		}
 
 		public async Task GetPrinterStatus()
@@ -52,7 +54,7 @@ namespace PrintTool
 			SharpIppClient client = new();
 			List<string> data = new();
 
-			Uri uri = new Uri("ipp://" + printerIp + ":631");
+			Uri uri = new("ipp://" + printerIp + ":631");
 			GetPrinterAttributesRequest request = new() { PrinterUri = uri };
 			GetPrinterAttributesResponse response = new();
 			try
@@ -74,14 +76,14 @@ namespace PrintTool
 			SharpIppClient client = new();
 			List<string> data = new();
 
-			Uri uri = new Uri("ipp://" + printerIp + ":631");
+			Uri uri = new("ipp://" + printerIp + ":631");
 			GetJobAttributesRequest request = new() { PrinterUri = uri, JobId = 1 };
 			GetJobAttributesResponse response = new();
 			try
 			{
 				response = await client.GetJobAttributesAsync(request);
 			}
-			catch (Exception e)
+			catch
 			{
 
 			}
@@ -130,7 +132,7 @@ namespace PrintTool
 
 		public async Task Log(string log)
 		{
-			log = log + "\n";
+			if (!log.Contains("\n") || !log.Contains("\r")) { log += "\n"; }
 			//logging to textbox
 			box.Dispatcher.Invoke(new Action(() =>
 			{
@@ -139,7 +141,7 @@ namespace PrintTool
 			}));
 
 			//Logging to file
-			await File.AppendAllTextAsync(fileLoc + "PrintToolLog.txt", log);
+			await File.AppendAllTextAsync(loggingLocation + "PrintToolLog.txt", log);
 		}
 	}
 }

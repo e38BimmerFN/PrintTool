@@ -4,19 +4,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Controls;
-
 namespace PrintTool
 {
 	public class TelnetConnection
 	{
-		System.Threading.CancellationTokenSource tokenSource = new();
+		private System.Threading.CancellationTokenSource tokenSource = new();
 		private Client cli;
 		TextBox box { get; set; }
 		public string ip { get; set; }
 		public int port { get; set; }
 		public string fileloc { get; set; }
 
+		public int timeToGetData = 500;
 
 		public TelnetConnection(string ip, int port, string fileloc, TextBox box)
 		{
@@ -27,13 +28,13 @@ namespace PrintTool
 			var token = tokenSource.Token;
 			cli = new Client(ip, port, token);
 			cli.TryLoginAsync("root", "", 1000);
+			Timer timer = new(timeToGetData);
+			timer.Elapsed += Timer_Elapsed;
+			timer.Start();
 		}
 
-
-
-		public async Task WriteAndRecieve(string command)
+		private async void Timer_Elapsed(object sender, ElapsedEventArgs e)
 		{
-			await cli.WriteLine(command);
 			string result = await cli.TerminatedReadAsync(">");
 			result = Regex.Replace(result, "(\u001b\\[1;34m)", "");
 			result = Regex.Replace(result, "(\u001b\\[1;36m)", "");
@@ -41,9 +42,15 @@ namespace PrintTool
 			await Log(result);
 		}
 
+		public async Task Write(string command)
+		{
+			await cli.WriteLine(command);
+
+		}
+
 		private async Task Log(string log)
 		{
-			log = log + "\n";
+			if (!log.Contains("\n") || !log.Contains("\r")) { log += "\n"; }
 			//logging to textbox
 			box.Dispatcher.Invoke(new Action(() =>
 			{

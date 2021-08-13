@@ -31,17 +31,16 @@ namespace PrintTool
 		#region Startup
 		private async void LoadTrigger(object sender, EventArgs e)
 		{
+			if(File.Exists(@"Data\Logs\Temp\PrintToolLog.txt")) { File.Delete(@"Data\Logs\Temp\PrintToolLog.txt"); }
+			Helper.InstallOrUpdate();
+
 			printer.box = PrintToolLogs;
-			printer.fileLoc = @"Data\Logs\Temp";
-			
-
-
 			await printer.Log("The time is " + DateTime.Now);
 			await printer.Log("You have used this program : " + Settings.Default.TimesLaunched++ + " times");
 			await printer.Log("If you have any issues, please direct them to derek.hearst@hp.com");
-			await printer.Log("Logs for this session will be located at :" + printer.fileLoc);
+			await printer.Log("Logs for this session will be located at :" + printer.loggingLocation);
 			await printer.Log("Have a good day");
-			Helper.StartUp();
+			
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 			Helper.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
 			if (!Helper.HPStatus())
@@ -61,40 +60,35 @@ namespace PrintTool
 			}
 
 		}
-		private void ExitTrigger(object sender, System.ComponentModel.CancelEventArgs e)
-		{
-			Helper.RunEndTasks();
-		}
+		
 		#endregion Startup
 
 		#region Connections Tab
 
-
+		//Printer Details
 		private async void printerModel_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.model = printerModelEntry.Text;
 		}
-
 		private async void printerEngine_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.engine = printerEngineEntry.Text;
 		}
-
 		private async void printerID_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.id = printerIdEntry.Text;
 		}
-
 		private async void printerTypeEntry_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.type = printerTypeEntry.Text;
 		}
 
-		private async void printerIpEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		//Connections
+		private async void printerIpEntry_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.printerIp = printerIpEntry.Text;
@@ -102,52 +96,144 @@ namespace PrintTool
 			{
 				printerIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
 				connectButton.IsEnabled = true;
+				openEWSButton.IsEnabled = true;
 			}
 
 			else
 			{
 				printerIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
 				connectButton.IsEnabled = false;
+				openEWSButton.IsEnabled = false;
 			}
 
 		}
-		private async void connectionsIpDartEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		private async void dartIpEntry_TextedChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.dartIp = dartIpEntry.Text;
 			if (await Helper.CheckIP(dartIpEntry.Text))
 			{
 				dartIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
+				enableDartCheckBox.IsEnabled = true;
+				enableTelnetCheckBox.IsEnabled = true;
+				openDartButton.IsEnabled = true;
 			}
 
 			else
 			{
 				dartIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				enableDartCheckBox.IsEnabled = false;
+				enableTelnetCheckBox.IsEnabled = false;
+				openDartButton.IsEnabled = false;
 			}
 		}
+		private void openDartButton_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("explorer", "http://" + dartIpEntry.Text);
+		}
+		private void openEWSButton_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("explorer", "http://" + printerIpEntry.Text);
+		}
 
+		//Log Settings
 		private async void enableSerialCheckBox_Click(object sender, RoutedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.enableSerial = enableSerialCheckBox.IsChecked ?? false;
 		}
-
 		private async void enableDart_Click(object sender, RoutedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.enableDart = enableDartCheckBox.IsChecked ?? false;
 		}
-
 		private async void enableTelnet_Click(object sender, RoutedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.enableTelnet = enableTelnetCheckBox.IsChecked ?? false;
 		}
-
 		private async void enablePrinterStatus_Click(object sender, RoutedEventArgs e)
 		{
 			await Task.Delay(10);
 			printer.enablePrinterStatus = enablePrinterStatus.IsChecked ?? false;
+		}
+
+
+		
+
+		private async void connectButton_Click(object sender, RoutedEventArgs e)
+		{
+
+			if (printer.connected) //stop
+			{
+				printer.connected = false;
+				await printer.Log("Disconnecting.");				
+				serialConnectionsTabControl.Items.Clear();
+				telnetConnectionsTabControl.Items.Clear();
+				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
+				connectButton.Content = "Connect and Log";
+			}
+			else //start
+			{
+				foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\")) 
+				{ 
+					if(file.Contains( "PrintToolLog.txt")) { continue; }
+					File.Delete(file); 
+				}
+				if (enableSerialCheckBox.IsChecked ?? false)
+				{
+					await printer.Log("Connecting to serial connections...");
+					foreach (string portname in SerialConnection.GetPorts())
+					{
+						await printer.Log("Connecting to " + portname);
+						TabItem tempTab = new();
+						tempTab.Header = portname;
+						TextBox tempBox = new();
+						tempTab.Content = tempBox;
+						SerialConnection tempConnection = new(portname, tempBox);
+						printer.serialConnections.Add(tempConnection);
+						serialConnectionsTabControl.Items.Add(tempTab);
+					}
+				}
+
+				if (enableTelnetCheckBox.IsChecked ?? false)
+				{
+					if (dartIpEntry.Text is null or "0.0.0.0") { MessageBox.Show("Dart IP is invalid"); }
+					else
+					{
+						foreach (int port in TelnetConnection.getAvaliable())
+						{
+							await printer.Log("Connecting to " + port);
+							TabItem tempTab = new();
+							tempTab.Header = port;
+							TextBox tempBox = new();
+							tempTab.Content = tempBox;
+							TelnetConnection tempConnection = new(printer.dartIp, port, printer.loggingLocation, tempBox);
+							printer.telnetConnections.Add(tempConnection);
+							serialConnectionsTabControl.Items.Add(tempTab);
+
+						}
+					}
+				}
+				printer.connected = true;
+				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				connectButton.Content = "Disconnect and Flush Logs";
+				await printer.Log("Finished connecting.");
+
+			}
+		}
+
+
+
+		private void openLogs_Click(object sender, RoutedEventArgs e)
+		{
+
+		}
+
+
+		private void captureData_Click(object sender, RoutedEventArgs e)
+		{
+
 		}
 
 
@@ -177,103 +263,6 @@ namespace PrintTool
 			File.Delete(@"Data\Printers\" + savedPrinters.SelectedItem);
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 		}
-
-		private async void connectButton_Click(object sender, RoutedEventArgs e)
-		{
-
-			if (printer.connected) //stop
-			{
-				printer.connected = false;
-				await printer.Log("Disconnecting.");
-				serialConnectionsTabControl.Items.Clear();
-				telnetConnectionsTabControl.Items.Clear();
-				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
-				connectButton.Content = "Connect and Log";
-
-			}
-			else //start
-			{
-				if (enableSerialCheckBox.IsChecked ?? false)
-				{
-					await printer.Log("Connecting to serial connections...");
-					foreach (string portname in SerialConnection.GetPorts())
-					{
-						await printer.Log("Connecting to " + portname);
-						TabItem tempTab = new();
-						tempTab.Header = portname;
-						TextBox tempBox = new();
-						tempTab.Content = tempBox;
-						SerialConnection tempConnection = new(portname, printer.fileLoc, tempBox);
-						printer.serialConnections.Add(tempConnection);
-						serialConnectionsTabControl.Items.Add(tempTab);
-					}
-				}
-
-				if (enableTelnetCheckBox.IsChecked ?? false)
-				{
-					if (dartIpEntry.Text is null or "0.0.0.0") { MessageBox.Show("Dart IP is invalid"); }
-					else
-					{
-						foreach (int port in TelnetConnection.getAvaliable())
-						{
-							await printer.Log("Connecting to " + port);
-							TabItem tempTab = new();
-							tempTab.Header = port;
-							TextBox tempBox = new();
-							tempTab.Content = tempBox;
-							TelnetConnection tempConnection = new(printer.dartIp, port, printer.fileLoc, tempBox);
-							printer.telnetConnections.Add(tempConnection);
-							serialConnectionsTabControl.Items.Add(tempTab);
-
-						}
-					}
-				}
-				printer.connected = true;
-				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				connectButton.Content = "Disconnect and Flush Logs";
-				await printer.Log("Finished connecting.");
-
-			}
-		}
-
-
-		private void openLogs_Click(object sender, RoutedEventArgs e)
-		{
-
-		}
-
-
-		private void captureData_Click(object sender, RoutedEventArgs e)
-		{
-
-		}
-
-
-
-		private async void getPrintStatus(object sender, ElapsedEventArgs e)
-		{
-			await printer.GetPrinterStatus();
-			//await printer.getJobStatus();
-
-			try
-			{
-				Dispatcher.Invoke(new Action(() =>
-				{
-					printerModelLabel.Content = "Model : " + printer.printerInfo;
-					printerStateLabel.Content = "Status : " + printer.printerState;
-					printerErrorLabel.Content = "Error Status : " + printer.printerError;
-					printerPPMLabel.Content = "Pages per min : " + printer.pagesPerMin;
-					printerQJCLabel.Content = "Queued Jobs : " + printer.queuedJobCount;
-				}));
-
-			}
-			catch
-			{
-
-			}
-
-		}
-
 
 
 		#endregion Connections
@@ -382,7 +371,7 @@ namespace PrintTool
 			{
 				if (yoloDailyTab.IsSelected)
 				{
-					await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/", printer, yoloInstallButton, cancelToken);
+					await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text+ yoloVersions.Text + yoloDistros.Text, printer, yoloInstallButton, cancelToken);
 				}
 				else
 				{
@@ -465,6 +454,7 @@ namespace PrintTool
 			if (savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
 			await PrintQueue.SendIP(printerIpEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
 		}
+
 
 
 
