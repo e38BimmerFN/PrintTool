@@ -26,13 +26,24 @@ namespace PrintTool
 			if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
 			{
 				MessageBox.Show("Now updating or installing into " + to);
-				string[] files = Directory.GetFiles(from);
-				foreach (string file in files)
+				Directory.CreateDirectory(to);
+
+				foreach (string dirPath in Directory.GetDirectories(from, "*", SearchOption.AllDirectories))
 				{
-					string filename = Path.GetFileName(file);
-					if (File.Exists(to + filename)) { File.Delete(to + filename); }
-					File.Copy(file, to + filename);
+					Directory.CreateDirectory(dirPath.Replace(from, to));
 				}
+
+				//Copy all the files & Replaces any files with the same name
+				foreach (string newPath in Directory.GetFiles(from, "*.*", SearchOption.AllDirectories))
+				{
+					File.Copy(newPath, newPath.Replace(from, to), true);
+				}
+
+				
+
+
+
+
 				MessageBox.Show("Updated / Installed succesfull.");
 				Process process = new();
 				process.StartInfo.FileName = "explorer.exe";
@@ -55,7 +66,7 @@ namespace PrintTool
 			}
 		}
 
-		
+
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "")
 		{
@@ -69,8 +80,8 @@ namespace PrintTool
 
 		public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "")
 		{
-			comboBox.Items.Clear();
 			var results = await getListings(site, filter);
+			comboBox.Items.Clear();
 			foreach (string result in results)
 			{
 				comboBox.Items.Add(result);
@@ -149,7 +160,7 @@ namespace PrintTool
 				if (myRegex.Success)
 				{
 					Ping pingSender = new();
-					PingReply reply = await pingSender.SendPingAsync(ip,20);
+					PingReply reply = await pingSender.SendPingAsync(ip, 5);
 					if (reply.Status == IPStatus.Success) { return true; }
 				}
 				return false;

@@ -12,7 +12,7 @@ namespace PrintTool
 	{
 		public static async Task SendIP(string ip, string file)
 		{
-			byte[] data = new byte[0];
+			byte[] data = Array.Empty<byte>();
 			try
 			{
 				data = File.ReadAllBytes(file);
@@ -25,7 +25,7 @@ namespace PrintTool
 
 			try
 			{
-				TcpClient client = new TcpClient();
+				TcpClient client = new();
 				await client.ConnectAsync(ip, 9100);
 				NetworkStream stream = client.GetStream();
 				await stream.WriteAsync(data, 0, data.Length);

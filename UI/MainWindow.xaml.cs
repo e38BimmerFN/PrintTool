@@ -15,8 +15,9 @@ namespace PrintTool
 	public partial class MainWindow : Window
 	{
 		Printer printer = new();
-		const string YOLOSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/yolo_sgp/";
+		const string SIRUSSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/";
 		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
+		const string JOLTPATH = @"\\jedibdlserver.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds";
 		System.Threading.CancellationTokenSource cancelSource = new();
 
 
@@ -31,7 +32,7 @@ namespace PrintTool
 		#region Startup
 		private async void LoadTrigger(object sender, EventArgs e)
 		{
-			if(File.Exists(@"Data\Logs\Temp\PrintToolLog.txt")) { File.Delete(@"Data\Logs\Temp\PrintToolLog.txt"); }
+			if (File.Exists(@"Data\Logs\Temp\PrintToolLog.txt")) { File.Delete(@"Data\Logs\Temp\PrintToolLog.txt"); }
 			Helper.InstallOrUpdate();
 
 			printer.box = PrintToolLogs;
@@ -40,7 +41,7 @@ namespace PrintTool
 			await printer.Log("If you have any issues, please direct them to derek.hearst@hp.com");
 			await printer.Log("Logs for this session will be located at :" + printer.loggingLocation);
 			await printer.Log("Have a good day");
-			
+
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 			Helper.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
 			if (!Helper.HPStatus())
@@ -48,7 +49,14 @@ namespace PrintTool
 				MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
 				firmwareTab.IsEnabled = false;
 			}
-			await Helper.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
+			else
+			{
+				//await Helper.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
+				sirusSGPSelect.Items.Add("yolo_sgp/");
+				sirusSGPSelect.Items.Add("avengers_sgp/");
+				sirusSGPSelect.SelectedIndex = 0;
+			}
+			
 			try
 			{
 				savedPrinters.SelectedItem = Settings.Default.LastLoaded;
@@ -60,7 +68,7 @@ namespace PrintTool
 			}
 
 		}
-		
+
 		#endregion Startup
 
 		#region Connections Tab
@@ -166,66 +174,65 @@ namespace PrintTool
 			if (printer.connected) //stop
 			{
 				printer.connected = false;
-				await printer.Log("Disconnecting.");				
-				serialConnectionsTabControl.Items.Clear();
-				telnetConnectionsTabControl.Items.Clear();
+				await printer.Log("Disconnecting.");
+				foreach (SerialConnection serial in printer.serialConnections) { serial.Close(); }
+				foreach (TelnetConnection telnet in printer.telnetConnections) { telnet.Close(); }
 				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
-				connectButton.Content = "Connect and Log";
+				connectButton.Content = "Conect and Flush";
 			}
 			else //start
 			{
-				foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\")) 
-				{ 
-					if(file.Contains( "PrintToolLog.txt")) { continue; }
-					File.Delete(file); 
+				printer.telnetConnections.Clear();
+				printer.serialConnections.Clear();
+				serialConnectionsTabControl.Items.Clear();
+				telnetConnectionsTabControl.Items.Clear();
+				foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\"))
+				{
+					if (file.Contains("PrintToolLog.txt")) { continue; }
+					File.Delete(file);
 				}
 				if (enableSerialCheckBox.IsChecked ?? false)
 				{
 					await printer.Log("Connecting to serial connections...");
-					foreach (string portname in TempSerial.GetPorts())
+					foreach (string portname in SerialConnection.GetPorts())
 					{
 						await printer.Log("Connecting to " + portname);
 						SerialConnection conection = new(portname);
-						TabItem tab = new()
-						{
-							Content = conection
-						};
+						TabItem tab = new() { Content = conection, Header = portname };
 						serialConnectionsTabControl.Items.Add(tab);
+						printer.serialConnections.Add(conection);
 					}
 				}
-
 				if (enableTelnetCheckBox.IsChecked ?? false)
 				{
 					if (dartIpEntry.Text is null or "0.0.0.0") { MessageBox.Show("Dart IP is invalid"); }
 					else
 					{
-						foreach (int port in TempTelnet.getAvaliable())
+						foreach (int port in TelnetConnection.GetPorts())
 						{
 							await printer.Log("Connecting to " + port);
-							TabItem tempTab = new();
-							tempTab.Header = port;
-							ScrollViewer tempScroll = new();
-							TextBox tempBox = new();
-							tempTab.Content = tempScroll;
-							tempScroll.Content = tempBox;
-
-							TempTelnet tempConnection = new(printer.dartIp, port, printer.loggingLocation, tempBox);
-							printer.telnetConnections.Add(tempConnection);
-							telnetConnectionsTabControl.Items.Add(tempConnection);
-							
+							TelnetConnection connection = new(printer.dartIp, port);
+							TabItem tab = new() { Content = connection, Header = port.ToString() };
+							telnetConnectionsTabControl.Items.Add(tab);
+							printer.telnetConnections.Add(connection);
 						}
 					}
 				}
+
+				if (enablePrinterStatus.IsChecked ?? false)
+				{
+					//Todo
+				}
 				printer.connected = true;
 				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				connectButton.Content = "Disconnect and Flush Logs";
+				connectButton.Content = "Disconnect";
 				await printer.Log("Finished connecting.");
 
 			}
 		}
 		private void openLogs_Click(object sender, RoutedEventArgs e)
 		{
-
+			System.Diagnostics.Process.Start("explorer", Directory.GetCurrentDirectory().ToString()+@"\Data\Logs\Temp\");
 		}
 		private void captureData_Click(object sender, RoutedEventArgs e)
 		{
@@ -260,134 +267,120 @@ namespace PrintTool
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
 		}
 
-		
-		
+
+
 
 		#endregion Connections
 
 		#region Firmware Tab
+		#region Jolt
+
+
+
+
+		#endregion Jolt
 		#region Yolo
-		private async void yoloProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			await Task.Delay(100);
-			await Helper.PopulateComboBox(yoloVersions, YOLOSITE + yoloProducts.Text + "/?C=M;O=D");
-		}
-		private async void yoloVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			await Task.Delay(100);
-			await Helper.PopulateComboBox(yoloDistros, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text);
-		}
-		private async void yoloDistros_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			await Task.Delay(100);
-			await Helper.PopulateComboBox(yoloPackages, YOLOSITE + yoloProducts.Text + "/" + yoloVersions.Text + yoloDistros.Text + "/?C=S;O=D", "fhx");
 
-		}
-		private async void firmwareYoloCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		private async void sirusSGPSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(100);
-			await Helper.PopulateComboBox(yoloCustomPackages, yoloCustomEntry.Text, "fhx");
-		}
-		public async void firmwareYoloUnsecureB_Click(object sender, RoutedEventArgs e)
-		{
-			System.Threading.CancellationToken cancelToken = cancelSource.Token;
-			string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
-			List<string> results = await Helper.getListings(website);
-			string filename = "";
-			if (yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
-			else { foreach (string result in results) { if (result.Contains("lochsa")) { filename = result; } } }
-			await Firmware.DLAndSend(filename, website, printer, firmwareYoloSecureB, cancelToken);
-			firmwareYoloUnsecureB.Content = "Convert to unsecure";
-		}
-		public async void firmwareYoloSecureB_Click(object sender, RoutedEventArgs e)
-		{
-			System.Threading.CancellationToken cancelToken = cancelSource.Token;
-			string website = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_secure/";
-			List<string> results = await Helper.getListings(website);
-			string filename = "";
-			if (yoloProducts.Text == "yoshino_dist") { foreach (string result in results) { if (result.Contains("yoshino")) { filename = result; } } }
-			else { foreach (string result in results) { if (result.Contains("locsha")) { filename = result; } } }
-			await Firmware.DLAndSend(filename, website, printer, firmwareYoloSecureB, cancelToken);
-			firmwareYoloSecureB.Content = "Convert to secured";
-		}
-		private void firmwareYoloResetB_Click(object sender, RoutedEventArgs e)
-		{
-
-		}
-		#endregion Yolo
-		#region Dune
-		private async void duneVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			await Task.Delay(100);
-			if (duneVersions.Text == "") { return; }
-			await Helper.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
-		}
-		private async void duneProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		{
-			await Task.Delay(100);
-			if (duneVersions.Text == "" || duneProducts.Text == "") { return; }
-			await Helper.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D", "fhx");
-		}
-		private async void firmwareDuneCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-		{
-			await Task.Delay(100);
-			if (duneCustomEntry.Text == "" || !duneCustomEntry.Text.EndsWith("/")) { return; }
-			await Helper.PopulateComboBox(duneCustomPackages, duneCustomEntry.Text, "fhx");
-		}
-		private void firmewareDuneUnsecure_Click(object sender, RoutedEventArgs e)
-		{
-			// Not enabled yet
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(sirusDistSelect, SIRUSSITE + sirusSGPSelect.Text, "dist/");
+			sirusDistSelect.SelectedIndex = 0;
 		}
 
-		private void firmewareDuneSecure_Click(object sender, RoutedEventArgs e)
+		private async void sirusDistSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			// Not enabled yet
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(sirusFWVersionSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + "?C=M;O=D");
+			sirusFWVersionSelect.SelectedIndex = 0;
 		}
 
-		private async void firmewareDuneReset_Click(object sender, RoutedEventArgs e)
+		private async void sirusFWVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			System.Threading.CancellationToken cancelToken = cancelSource.Token;
-			string path = @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\@Shared\BlankFiles\";
-			string file = "";
-			if (duneSpecialProductSelect.Text == "Selene")
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(sirusBranchSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text);
+			sirusBranchSelect.SelectedIndex = 0;
+		}
+
+		private async void sirusBranchSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(sirusPackageSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text + "?C=S;O=D", "fhx");
+			sirusPackageSelect.SelectedIndex = 0;
+		}
+
+		private async void siriusCustomLink_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text + "?C=S;O=D", "fhx");
+			sirusPackageSelect.SelectedIndex = 0;
+		}
+
+		private async void sirusFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			if (sirusFwTab.SelectedIndex == 0)
 			{
-				file = "dune_selene_blank_rwfs.fhx";
+				await Helper.PopulateComboBox(sirusPackageSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text + "?C=S;O=D", "fhx");
 			}
 			else
 			{
-				file = "dune_ulysses_blank_rwfs.fhx";
+				await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text + "?C=S;O=D", "fhx");
 			}
-			await Firmware.DLAndSend(file, path, printer, firmewareDuneReset, cancelToken);
+			sirusPackageSelect.SelectedIndex = 0;
 		}
+
+
+		#endregion Yolo
+		#region Dune
+		//private async void duneVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		//{
+		//	await Task.Delay(100);
+		//	if (duneVersions.Text == "") { return; }
+		//	await Helper.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
+		//}
+		//private async void duneProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		//{
+		//	await Task.Delay(100);
+		//	if (duneVersions.Text == "" || duneProducts.Text == "") { return; }
+		//	await Helper.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D", "fhx");
+		//}
+		//private async void firmwareDuneCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+		//{
+		//	await Task.Delay(100);
+		//	if (duneCustomEntry.Text == "" || !duneCustomEntry.Text.EndsWith("/")) { return; }
+		//	await Helper.PopulateComboBox(duneCustomPackages, duneCustomEntry.Text, "fhx");
+		//}
+
 
 		#endregion Dune
 		#region SharedFirmware
-		private async void firmwareUSBSend(object sender, RoutedEventArgs e)
-		{
-			System.Threading.CancellationToken cancelToken = cancelSource.Token;
-			if (yoloTab.IsSelected)
-			{
-				if (yoloDailyTab.IsSelected)
-				{
-					await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text+ yoloVersions.Text + yoloDistros.Text, printer, yoloInstallButton, cancelToken);
-				}
-				else
-				{
-					await Firmware.DLAndSend(yoloCustomPackages.Text, yoloCustomEntry.Text, printer, yoloInstallButton, cancelToken);
-				}
-			}
-			else
-			{
-				if (duneDailyTab.IsSelected)
-				{
-					await Firmware.DLAndSend(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, printer, duneInstallButton, cancelToken);
-				}
-				else
-				{
-					await Firmware.DLAndSend(duneCustomPackages.Text, yoloCustomEntry.Text, printer, duneInstallButton, cancelToken);
-				}
-			}
-		}
+		//private async void firmwareUSBSend(object sender, RoutedEventArgs e)
+		//{
+		//	System.Threading.CancellationToken cancelToken = cancelSource.Token;
+		//	if (yoloTab.IsSelected)
+		//	{
+		//		if (yoloDailyTab.IsSelected)
+		//		{
+		//			await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text + yoloVersions.Text + yoloDistros.Text, printer, yoloInstallButton, cancelToken);
+		//		}
+		//		else
+		//		{
+		//			await Firmware.DLAndSend(yoloCustomPackages.Text, yoloCustomEntry.Text, printer, yoloInstallButton, cancelToken);
+		//		}
+		//	}
+		//	else
+		//	{
+		//		if (duneDailyTab.IsSelected)
+		//		{
+		//			await Firmware.DLAndSend(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, printer, duneInstallButton, cancelToken);
+		//		}
+		//		else
+		//		{
+		//			await Firmware.DLAndSend(duneCustomPackages.Text, yoloCustomEntry.Text, printer, duneInstallButton, cancelToken);
+		//		}
+		//	}
+		//}
 		private void firmwareCancel(object sender, RoutedEventArgs e)
 		{
 			cancelSource.Cancel();
@@ -465,15 +458,20 @@ namespace PrintTool
 
 
 
+
+
+
+
+
+
 		#endregion
-
-
 
 		#region Log UI
 
-		
+
 
 		#endregion Log ui
 
+		
 	}
 }

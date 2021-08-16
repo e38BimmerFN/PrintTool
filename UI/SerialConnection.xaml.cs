@@ -1,21 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using RJCP.IO.Ports;
+using System.Timers;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using RJCP.IO.Ports;
-
-using System.IO;
-using System.Text.RegularExpressions;
 
 namespace PrintTool
 {
@@ -25,9 +11,8 @@ namespace PrintTool
 	public partial class SerialConnection : UserControl
 	{
 		Logger logger;
-		private SerialPortStream port;
-
-		public string portName { get; set; }
+		private SerialPortStream port = new();
+		public int refreshRate = 200;
 		public string fileLoc = @"Data\Logs\Temp\";
 
 
@@ -37,15 +22,15 @@ namespace PrintTool
 			InitializeComponent();
 			logger = new(portName);
 			logLocation.Children.Add(logger);
-			this.portName = portName;
-
-			port = new();
 			port.PortName = portName;
 			port.BaudRate = 115200;
 			port.DataBits = 8;
 			port.StopBits = StopBits.One;
 			port.Parity = Parity.None;
-			port.DataReceived += Port_DataReceived;
+			port.DtrEnable = true;
+			port.RtsEnable = true;
+			port.DataReceived += Port_DataReceived1;
+
 			try
 			{
 				port.Open();
@@ -54,14 +39,18 @@ namespace PrintTool
 			{
 				logger.Log(portName + " cannot be connected to.");
 			}
-		}
-		
 
-		private async void Port_DataReceived(object sender, SerialDataReceivedEventArgs e)
+			Timer timer = new(50);
+
+		}
+
+		private async void Port_DataReceived1(object sender, SerialDataReceivedEventArgs e)
 		{
-			try { await logger.Log(port.ReadLine()); }
+			try { await logger.Log(port.ReadExisting()); }
 			catch { }
 		}
+
+
 
 		public void Close()
 		{
@@ -77,9 +66,17 @@ namespace PrintTool
 			port.WriteLine(data);
 		}
 
+		private void customCommandEntry_KeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == System.Windows.Input.Key.Return)
+			{
+				SendData(customCommandEntry.Text);
+				customCommandEntry.Text = "";
+			}
+		}
+
 		public static string[] GetPorts()
 		{
-
 			return SerialPortStream.GetPortNames();
 		}
 	}

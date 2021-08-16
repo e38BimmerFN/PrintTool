@@ -6,7 +6,7 @@
       <Value Profile="(Default)">6.1.0.1753/</Value>
     </Setting>
     <Setting Name="Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">108</Value>
+      <Value Profile="(Default)">109</Value>
     </Setting>
     <Setting Name="LastLoaded" Type="System.String" Scope="User">
       <Value Profile="(Default)">Lochsa</Value>
