@@ -45,7 +45,7 @@ namespace PrintTool
 
 			LogBox.Dispatcher.Invoke(new Action(() =>
 			{
-				if (lineCount > 2000)
+				if (lineCount > 800)
 				{
 					LogBox.Text = "";
 					lineCount = 0;

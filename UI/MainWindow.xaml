@@ -102,48 +102,85 @@
 			</TabItem>
 			<TabItem x:Name="firmwareTab" Header="Firmware">
 				<TabControl>
-					<TabItem Header="Jolt - Not Implimented yet" IsEnabled="False">
+					<TabItem Header="Jolt">
 						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height=".6*"/>
+								<RowDefinition Height=".3*"/>
+								<RowDefinition Height=".3*"/>
+								<RowDefinition Height=".1*"/>
+								<RowDefinition Height="0.4*"/>
+								<RowDefinition Height="0.0*"/>
+							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width=".75*"/>
-								<ColumnDefinition Width=".75*"/>
-								<ColumnDefinition Width=".25*"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TabControl>
+							<TabControl Grid.Row="0" Name="joltFwTab" SelectionChanged="joltFwTab_SelectionChanged">
 								<TabItem Header="Daily">
-									<Grid>
-										<Grid.RowDefinitions>
-											<RowDefinition Height="*"/>
-											<RowDefinition Height=".1*"/>
-										</Grid.RowDefinitions>
-										<UniformGrid Columns="1">
-											<Label Content="Select Branch"/>
-											<ComboBox Name="joltBranchSelect"/>
-											<Label Content="Select Month"/>
-											<ComboBox Name="joltMonthSelect"/>
-											<Label Content="Select Day"/>
-											<ComboBox Name="joltReleaseDaySelect"/>
-											<Label Content="Select Product"/>
-											<ComboBox Name="joltProductSelect"/>
-											<Label Content="Select FW Revison"/>
-											<ComboBox Name="joltFwRevisonSelect"/>
-											<UniformGrid Rows="1">
-												<Button Name="joltAutoSelect" Content="Auto Select"/>
-												<Button Name="joltOpenFwPath" Content="Open FW Path"/>
-											</UniformGrid>
-										</UniformGrid>
-										<Button x:Name="joltInstall" Content="Start FIM" Grid.Row="1"/>
-									</Grid>
-
+									<UniformGrid Rows="2">
+										<GroupBox Header="Select Year" BorderBrush="{x:Null}" >
+											<ComboBox Name="joltYearSelect" SelectionChanged="joltYearSelect_SelectionChanged"/>
+										</GroupBox>
+										<GroupBox Header="Select Month" BorderBrush="{x:Null}">
+											<ComboBox Name="joltMonthSelect" SelectionChanged="joltMonthSelect_SelectionChanged"/>
+										</GroupBox>
+										<GroupBox Header="Select Day" BorderBrush="{x:Null}">
+											<ComboBox Name="joltDaySelect" SelectionChanged="joltDaySelect_SelectionChanged"/>
+										</GroupBox>
+										<GroupBox Header="Select Product" BorderBrush="{x:Null}">
+											<ComboBox Name="joltProductSelect" SelectionChanged="joltProductSelect_SelectionChanged"/>
+										</GroupBox>
+										<GroupBox Header="Select Version" BorderBrush="{x:Null}">
+											<ComboBox Name="joltVersionSelect" SelectionChanged="joltVersionSelect_SelectionChanged"/>
+										</GroupBox>
+									</UniformGrid>
+								</TabItem>
+								<TabItem Header="Custom Link">
+									<GroupBox Header="Please input custom link here" BorderBrush="{x:Null}">
+										<TextBox x:Name="joltCustomLink" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextChanged="joltCustomLink_TextChanged"/>
+									</GroupBox>
 								</TabItem>
 							</TabControl>
+							<GroupBox Grid.Row="1" Header="Select Package" BorderBrush="{x:Null}">
+								<ComboBox Name="joltBuildSelect"/>
+							</GroupBox>
+							<GroupBox Grid.Row="2" Header="Select CSV" BorderBrush="{x:Null}" >
+								<ComboBox Name="joltCSVSelect" Grid.Column="1"/>
+							</GroupBox>
+
+							<GroupBox Header="Send" Grid.Row="4">
+								<Grid>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="2*"/>
+										<ColumnDefinition Width="1*"/>
+										<ColumnDefinition Width="1*"/>
+									</Grid.ColumnDefinitions>
+									<Button x:Name="joltStart" Content="Start FIM" Grid.Column="0" Background="#7F00FF00"/>
+									<CheckBox Content="Enable CSV" VerticalAlignment="Center" Grid.Column="1"/>
+									<Button x:Name="openPath" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF"/>
+								</Grid>
+							</GroupBox>
+							
+							
+							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="5">
+								<UniformGrid Rows="4">
+									<GroupBox Header="N/A">
+										<UniformGrid Columns="2">
+
+										</UniformGrid>
+									</GroupBox>
+								</UniformGrid>
+							</GroupBox>
+
+
 						</Grid>
 					</TabItem>
-					<TabItem Name="yoloTab" Header="Sirus" IsSelected="True">
+					<TabItem Header="Sirus" IsSelected="True">
 						<Grid>
 							<Grid.RowDefinitions>
 								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".3*"/>								
+								<RowDefinition Height=".3*"/>
 								<RowDefinition Height=".5*"/>
 								<RowDefinition Height=".5*"/>
 							</Grid.RowDefinitions>
@@ -170,24 +207,81 @@
 								</TabItem>
 								<TabItem Header="Custom Link">
 									<GroupBox Header="Please input custom link here" BorderBrush="{x:Null}">
-										<TextBox x:Name="sirusCustomLink" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextChanged="siriusCustomLink_TextChanged"/>										
+										<TextBox x:Name="sirusCustomLink" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextChanged="siriusCustomLink_TextChanged"/>
 									</GroupBox>
 								</TabItem>
 							</TabControl>
 							<GroupBox Grid.Row="1" Header="Select Package" BorderBrush="{x:Null}">
 								<ComboBox Name="sirusPackageSelect"/>
 							</GroupBox>
-							
+
 							<UniformGrid  Grid.Row="3" Columns="2">
-								<Button x:Name="sirusSendFW"/>
-								<Button x:Name="sirusCanecelFW"/>
+								<Button x:Name="sirusSendFW" Content="Download and Send" Background="#7F00FF00" Click="sirusSendFW_Click"/>
+								<Button x:Name="sirusCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="sirusCancelFW_Click"/>
 							</UniformGrid>
-							
-							
+
+							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
+								<UniformGrid Rows="4">
+									<GroupBox Header="Yolo">
+										<UniformGrid Columns="2">
+											<Button x:Name="yoloSecureConvert" Content="Convert Yolo To Secured" Click="yoloSecureConvert_Click"/>
+											<Button x:Name="yoloUnsecureConvert" Content="Convert Yolo to Unsecured" Click="yoloUnsecureConvert_Click"/>
+										</UniformGrid>
+									</GroupBox>
+								</UniformGrid>
+							</GroupBox>
+
+
 						</Grid>
 					</TabItem>
-					<TabItem Name="duneTab" Header="DUNE">
-						
+					<TabItem Header="DUNE">
+						<Grid>
+							<Grid.RowDefinitions>
+								<RowDefinition Height=".3*"/>
+								<RowDefinition Height=".3*"/>
+								<RowDefinition Height=".5*"/>
+								<RowDefinition Height=".5*"/>
+							</Grid.RowDefinitions>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TabControl Grid.Row="0" Name="duneFwTab" SelectionChanged="duneFwTab_SelectionChanged">
+								<TabItem Header="Daily">
+									<UniformGrid Rows="1">
+										<GroupBox Header="Select Version" BorderBrush="{x:Null}" >
+											<ComboBox Name="duneVersionSelect" SelectionChanged="duneVersionSelect_SelectionChanged"/>
+										</GroupBox>
+										<GroupBox Header="Select Model" BorderBrush="{x:Null}">
+											<ComboBox Name="duneModelSelect" SelectionChanged="duneModelSelect_SelectionChanged"/>
+										</GroupBox>
+									</UniformGrid>
+								</TabItem>
+								<TabItem Header="Custom Link">
+									<GroupBox Header="Please input custom link here" BorderBrush="{x:Null}">
+										<TextBox x:Name="duneCustomLink" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextChanged="duneCustomLink_TextChanged"/>
+									</GroupBox>
+								</TabItem>
+							</TabControl>
+							<GroupBox Grid.Row="1" Header="Select Package" BorderBrush="{x:Null}">
+								<ComboBox Name="dunePackageSelect"/>
+							</GroupBox>
+
+							<UniformGrid  Grid.Row="3" Columns="2">
+								<Button x:Name="duneSendFW" Content="Download and Send" Background="#7F00FF00" Click="duneSendFW_Click"/>
+								<Button x:Name="duneCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="duneCancelFW_Click"/>
+							</UniformGrid>
+
+							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
+								<UniformGrid Rows="4">
+									<GroupBox Header="Yolo">
+										<UniformGrid Columns="2">
+											<Button x:Name="duneUtilityFolder" Content="Dune Utility" Click="duneUtilityFolder_Click"/>
+										</UniformGrid>
+									</GroupBox>
+								</UniformGrid>
+							</GroupBox>
+						</Grid>
 					</TabItem>
 				</TabControl>
 			</TabItem>

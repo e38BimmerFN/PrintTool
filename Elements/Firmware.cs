@@ -10,6 +10,7 @@ namespace PrintTool
 		public static async Task DLAndSend(string filename, string website, Printer printer, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
 		{
 			Process usbsend = new();
+			
 			button.IsEnabled = false;
 			button.Content = "Proccessing..";
 			await printer.Log("Downloading " + website + filename);
@@ -26,16 +27,21 @@ namespace PrintTool
 			if (usbsend.ExitCode == 0)
 			{
 				MessageBox.Show("Firmware upgrade success!");
+				await printer.Log("Firmware upgrade success!");
 			}
 			else
 			{
 				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.");
+				await printer.Log("Firmware upgrade error / canceled. Check USB Connection.");
 			}
-			File.Delete(filename);
-			try { usbsend.Close(); }
-			catch { }
+			try { usbsend.Kill(); }
+			catch { MessageBox.Show("Unable to close USBSend"); }
+			try { File.Delete(filename); }
+			catch { MessageBox.Show($"Unable to delete {filename}"); }
 			button.IsEnabled = true; ;
 			button.Content = "Download and Send";
+					
 		}
+
 	}
 }

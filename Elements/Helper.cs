@@ -39,7 +39,7 @@ namespace PrintTool
 					File.Copy(newPath, newPath.Replace(from, to), true);
 				}
 
-				
+
 
 
 
@@ -68,24 +68,27 @@ namespace PrintTool
 
 
 
-		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "")
+		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "", bool flip = false)
 		{
+			List<string> results = await getListings(site, filter);
+			if (flip) { results.Reverse(); }			
 			listBox.Items.Clear();
-			var results = await getListings(site, filter);
 			foreach (string result in results)
 			{
 				listBox.Items.Add(result);
 			}
 		}
 
-		public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "")
+		public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "", bool flip = false)
 		{
-			var results = await getListings(site, filter);
+			List<string> results = await getListings(site, filter);
+			if (flip) { results.Reverse(); }
 			comboBox.Items.Clear();
 			foreach (string result in results)
 			{
 				comboBox.Items.Add(result);
 			}
+			comboBox.SelectedIndex = 0;
 		}
 
 		public static async Task<string> DownloadOrCopyFile(string filename, string location)
@@ -100,7 +103,8 @@ namespace PrintTool
 			}
 			else if (location.Contains(@"\") || location.Contains(@"C:"))
 			{
-				File.Copy(location + @"\" + filename, filename);
+				if (File.Exists(filename)) { File.Delete(filename); }
+				File.Copy(location + "\\" + filename, filename);
 				return filename;
 			}
 
@@ -115,6 +119,9 @@ namespace PrintTool
 		{
 			List<string> results = new();
 			if (uri == "") { results.Add("Invalid URI"); return results; }
+
+
+
 			if (uri.Contains("http"))
 			{
 				WebClient client = new();
@@ -129,16 +136,26 @@ namespace PrintTool
 				}
 				results.RemoveAt(0);
 			}
+
+
 			else if (uri.Contains(@"\"))
 			{
-				List<string> files = new();
-				try { files = Directory.GetFiles(uri).ToList(); }
-				catch { results.Add("Invalid path."); return results; ; }
-				foreach (string file in files)
+				List<string> listings = new();
+
+				List<string> folders = Directory.GetDirectories(uri, "*", new EnumerationOptions()).ToList();
+				List<string> files = Directory.GetFiles(uri, "*", new EnumerationOptions()).ToList();
+				
+				
+				
+				listings.AddRange(folders);
+				listings.AddRange(files);
+				foreach (string listing in listings)
 				{
-					results.Add(Path.GetFileName(file));
+					results.Add(Path.GetFileName(listing));
 				}
 			}
+
+
 			List<string> filteredResults = new();
 			foreach (string result in results)
 			{

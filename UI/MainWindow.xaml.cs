@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-
+using System.Linq;
 
 
 
@@ -17,7 +17,7 @@ namespace PrintTool
 		Printer printer = new();
 		const string SIRUSSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/";
 		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
-		const string JOLTPATH = @"\\jedibdlserver.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds";
+		const string JOLTPATH = @"\\jedibdlserver.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds\25s\";
 		System.Threading.CancellationTokenSource cancelSource = new();
 
 
@@ -39,7 +39,7 @@ namespace PrintTool
 			await printer.Log("The time is " + DateTime.Now);
 			await printer.Log("You have used this program : " + Settings.Default.TimesLaunched++ + " times");
 			await printer.Log("If you have any issues, please direct them to derek.hearst@hp.com");
-			await printer.Log("Logs for this session will be located at :" + printer.loggingLocation);
+			await printer.Log("Logs for this session will be located at : " + printer.loggingLocation);
 			await printer.Log("Have a good day");
 
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
@@ -51,7 +51,8 @@ namespace PrintTool
 			}
 			else
 			{
-				//await Helper.PopulateComboBox(duneVersions, DUNESITE + "?C=M;O=D");
+				await Helper.PopulateComboBox(joltYearSelect, JOLTPATH,"",true);
+				await Helper.PopulateComboBox(duneVersionSelect, DUNESITE + "?C=M;O=D");
 				sirusSGPSelect.Items.Add("yolo_sgp/");
 				sirusSGPSelect.Items.Add("avengers_sgp/");
 				sirusSGPSelect.SelectedIndex = 0;
@@ -274,46 +275,94 @@ namespace PrintTool
 
 		#region Firmware Tab
 		#region Jolt
+	
 
+		private async void joltYearSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(joltMonthSelect, JOLTPATH + joltYearSelect.Text + "\\" ,"",true);
+		}
+
+		private async void joltMonthSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(joltDaySelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\","",true);
+			
+		}
+		private async void joltDaySelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(joltProductSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\");
+		}
+
+		private async void joltProductSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(joltVersionSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\","",true);
+		}
+
+		private async void joltVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
+			await Helper.PopulateComboBox(joltCSVSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
+		}
+
+		private async void joltCustomLink_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
+			await Helper.PopulateComboBox(joltCSVSelect, joltCustomLink.Text , "csv");
+		}
+
+		private async void joltFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			//if (joltFwTab.SelectedIndex == 0)
+			//{
+			//	await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
+			//	await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
+			//}
+			//else
+			//{
+			//	await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
+			//	await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "csv");
+			//}
+		}
 
 
 
 		#endregion Jolt
 		#region Yolo
 
+		//Main UI
 		private async void sirusSGPSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(sirusDistSelect, SIRUSSITE + sirusSGPSelect.Text, "dist/");
-			sirusDistSelect.SelectedIndex = 0;
 		}
 
 		private async void sirusDistSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(sirusFWVersionSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + "?C=M;O=D");
-			sirusFWVersionSelect.SelectedIndex = 0;
 		}
 
 		private async void sirusFWVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(sirusBranchSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text);
-			sirusBranchSelect.SelectedIndex = 0;
 		}
 
 		private async void sirusBranchSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(sirusPackageSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text + "?C=S;O=D", "fhx");
-			sirusPackageSelect.SelectedIndex = 0;
 		}
 
 		private async void siriusCustomLink_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text + "?C=S;O=D", "fhx");
-			sirusPackageSelect.SelectedIndex = 0;
 		}
 
 		private async void sirusFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -330,62 +379,110 @@ namespace PrintTool
 			sirusPackageSelect.SelectedIndex = 0;
 		}
 
+		//Quick Links
+		private void yoloSecureConvert_Click(object sender, RoutedEventArgs e)
+		{
+			sirusCustomLink.Text = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_secure/";
+			sirusFwTab.SelectedIndex = 1;
+		}
+
+		private void yoloUnsecureConvert_Click(object sender, RoutedEventArgs e)
+		{
+			sirusCustomLink.Text = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
+			sirusFwTab.SelectedIndex = 1;
+		}
+
+
+		private async void sirusSendFW_Click(object sender, RoutedEventArgs e)
+		{
+			System.Threading.CancellationToken cancelToken = cancelSource.Token;
+			if (sirusFwTab.SelectedIndex == 0) 
+			{
+				await Firmware.DLAndSend(sirusPackageSelect.Text, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text, printer, sirusSendFW, cancelToken);
+			}
+			else
+			{
+				await Firmware.DLAndSend(sirusPackageSelect.Text, sirusCustomLink.Text,printer,sirusSendFW,cancelToken);
+			}
+		}
+
+		private void sirusCancelFW_Click(object sender, RoutedEventArgs e)
+		{
+			cancelSource.Cancel();
+			cancelSource = new();
+		}
+
 
 		#endregion Yolo
 		#region Dune
-		//private async void duneVersions_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		//{
-		//	await Task.Delay(100);
-		//	if (duneVersions.Text == "") { return; }
-		//	await Helper.PopulateComboBox(duneProducts, DUNESITE + duneVersions.Text);
-		//}
-		//private async void duneProducts_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-		//{
-		//	await Task.Delay(100);
-		//	if (duneVersions.Text == "" || duneProducts.Text == "") { return; }
-		//	await Helper.PopulateComboBox(dunePackages, DUNESITE + duneVersions.Text + duneProducts.Text + "/?C=S;O=D", "fhx");
-		//}
-		//private async void firmwareDuneCustomEntry_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
-		//{
-		//	await Task.Delay(100);
-		//	if (duneCustomEntry.Text == "" || !duneCustomEntry.Text.EndsWith("/")) { return; }
-		//	await Helper.PopulateComboBox(duneCustomPackages, duneCustomEntry.Text, "fhx");
-		//}
+
+		private async void duneFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (duneFwTab.SelectedIndex == 0)
+			{
+				await Helper.PopulateComboBox(dunePackageSelect, DUNESITE + duneVersionSelect.Text + duneModelSelect.Text + "?C=S;O=D", "fhx");
+			}
+			else
+			{
+				await Helper.PopulateComboBox(dunePackageSelect, duneCustomLink.Text, "fhx");
+			}
+			
+
+		}
 
 
-		#endregion Dune
-		#region SharedFirmware
-		//private async void firmwareUSBSend(object sender, RoutedEventArgs e)
-		//{
-		//	System.Threading.CancellationToken cancelToken = cancelSource.Token;
-		//	if (yoloTab.IsSelected)
-		//	{
-		//		if (yoloDailyTab.IsSelected)
-		//		{
-		//			await Firmware.DLAndSend(yoloPackages.Text, YOLOSITE + yoloProducts.Text + yoloVersions.Text + yoloDistros.Text, printer, yoloInstallButton, cancelToken);
-		//		}
-		//		else
-		//		{
-		//			await Firmware.DLAndSend(yoloCustomPackages.Text, yoloCustomEntry.Text, printer, yoloInstallButton, cancelToken);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		if (duneDailyTab.IsSelected)
-		//		{
-		//			await Firmware.DLAndSend(dunePackages.Text, DUNESITE + duneVersions.Text + duneProducts.Text, printer, duneInstallButton, cancelToken);
-		//		}
-		//		else
-		//		{
-		//			await Firmware.DLAndSend(duneCustomPackages.Text, yoloCustomEntry.Text, printer, duneInstallButton, cancelToken);
-		//		}
-		//	}
-		//}
-		private void firmwareCancel(object sender, RoutedEventArgs e)
+		private async void duneVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(duneModelSelect, DUNESITE + duneVersionSelect.Text);
+			if (duneModelSelect.Items[0].ToString().Contains("defaultProductGroup"))
+			{
+				duneModelSelect.Items.RemoveAt(0);
+			}
+			duneModelSelect.SelectedIndex = 0;
+		}
+
+		private async void duneModelSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(dunePackageSelect, DUNESITE + duneVersionSelect.Text + duneModelSelect.Text + "?C=S;O=D", "fhx");
+		}
+
+		private async void duneCustomLink_TextChanged(object sender, TextChangedEventArgs e)
+		{
+			await Task.Delay(10);
+			await Helper.PopulateComboBox(dunePackageSelect, duneCustomLink.Text, "fhx");
+		}
+
+		//Special Links
+		private async void duneUtilityFolder_Click(object sender, RoutedEventArgs e)
+		{
+			duneCustomLink.Text = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
+			duneFwTab.SelectedIndex = 1;
+		}
+		//Sending
+		private async void duneSendFW_Click(object sender, RoutedEventArgs e)
+		{
+			System.Threading.CancellationToken cancelToken = cancelSource.Token;
+			if (duneFwTab.SelectedIndex == 0)
+			{
+				await Firmware.DLAndSend(dunePackageSelect.Text, DUNESITE + duneVersionSelect.Text + duneModelSelect.Text, printer, duneSendFW, cancelToken);
+			}
+			else
+			{
+				await Firmware.DLAndSend(dunePackageSelect.Text, duneCustomLink.Text, printer, duneSendFW, cancelToken);
+			}
+		}
+
+		private async void duneCancelFW_Click(object sender, RoutedEventArgs e)
 		{
 			cancelSource.Cancel();
+			cancelSource = new();
+			
 		}
-		#endregion SharedFirmware
+
+		#endregion Dune
+
 		#endregion Firmware
 
 		#region Printing tab 
@@ -464,14 +561,13 @@ namespace PrintTool
 
 
 
+
+
+
+
+
 		#endregion
 
-		#region Log UI
-
-
-
-		#endregion Log ui
-
-		
+	
 	}
 }
