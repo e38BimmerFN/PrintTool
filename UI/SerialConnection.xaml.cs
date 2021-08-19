@@ -64,6 +64,7 @@ namespace PrintTool
 		public void SendData(string data)
 		{
 			port.WriteLine(data);
+			port.WriteLine("\r\n");
 		}
 
 		private void customCommandEntry_KeyDown(object sender, KeyEventArgs e)
@@ -78,6 +79,47 @@ namespace PrintTool
 		public static string[] GetPorts()
 		{
 			return SerialPortStream.GetPortNames();
+		}
+
+		private void escapeButton_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("\u001B");
+		}
+
+		private void ctrF_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("\u0006");
+		}
+
+		private void reboot_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("reboot");
+		}
+
+		private void reset_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("reset");
+
+		}
+
+		private void partClean_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("disktest partclean 0");
+		}
+
+		private void netExec_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("netexec");
+		}
+
+		private void pristineDisk_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("disktest pristine");
+		}
+
+		private void cleanNVRam_Click(object sender, System.Windows.RoutedEventArgs e)
+		{
+			SendData("nvmgmt vs clean -r");
 		}
 	}
 }

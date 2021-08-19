@@ -10,7 +10,7 @@ namespace PrintTool
 		public static async Task DLAndSend(string filename, string website, Printer printer, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
 		{
 			Process usbsend = new();
-			
+
 			button.IsEnabled = false;
 			button.Content = "Proccessing..";
 			await printer.Log("Downloading " + website + filename);
@@ -40,8 +40,7 @@ namespace PrintTool
 			catch { MessageBox.Show($"Unable to delete {filename}"); }
 			button.IsEnabled = true; ;
 			button.Content = "Download and Send";
-					
-		}
 
+		}
 	}
 }

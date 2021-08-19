@@ -3,13 +3,62 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
+using SharpIpp;
+using SharpIpp.Exceptions;
+using SharpIpp.Model;
 
 namespace PrintTool
 {
 	public static class PrintQueue
 	{
+
+		public static async Task sendIpp()
+		{
+
+			HttpClient cli = new();
+
+
+			//FileStream str = File.OpenRead("stuff.txt");
+			//Uri printerUri = new Uri("ipp://15.86.118.50:631");
+			//SharpIppClient cli = new();
+			
+
+			//GetPrinterAttributesRequest req = new()
+			//{
+			//	PrinterUri = printerUri
+			//};
+
+			//var resp = await cli.GetPrinterAttributesAsync(req);
+
+			
+
+			//NewJobAttributes job = new()
+			//{
+				
+			//	JobName = "Yes",
+			//	Copies = 3
+				
+			//};
+
+
+			//PrintJobRequest request = new()
+			//{
+
+			//	PrinterUri = printerUri,
+			//	Document = str,
+			//	NewJobAttributes = job
+				
+				
+			//};
+			//var response = await cli.PrintJobAsync(request);
+
+		}
+
+	
+
 		public static async Task SendIP(string ip, string file)
 		{
 			byte[] data = Array.Empty<byte>();

@@ -21,7 +21,14 @@
 			</Grid.RowDefinitions>
 			<GroupBox Header="Common Commands">
 				<UniformGrid>
-					
+					<Button x:Name="escapeButton" Content="ESC" Click="escapeButton_Click"/>
+					<Button x:Name="ctrF" Content="CTRL + F" Click="ctrF_Click"/>
+					<Button x:Name="reebot" Content="Reboot" Click="reboot_Click"/>
+					<Button x:Name="reset" Content="Reset" Click="reset_Click"/>
+					<Button x:Name="partClean" Content="Part.Clean 0" Click="partClean_Click"/>
+					<Button x:Name="netExec" Content="NetExec" Click="netExec_Click"/>
+					<Button x:Name="pristineDisk" Content="PristineDisk" Click="pristineDisk_Click"/>
+					<Button x:Name="cleanNVRam" Content="Clean NVRam" Click="cleanNVRam_Click"/>
 				</UniformGrid>
 			</GroupBox>
 			<GroupBox Header="Custom Commands here. Press enter to send" Grid.Row="1">

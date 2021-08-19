@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Linq;
 
 
 
@@ -51,13 +51,13 @@ namespace PrintTool
 			}
 			else
 			{
-				await Helper.PopulateComboBox(joltYearSelect, JOLTPATH,"",true);
+				await Helper.PopulateComboBox(joltYearSelect, JOLTPATH, "", true);
 				await Helper.PopulateComboBox(duneVersionSelect, DUNESITE + "?C=M;O=D");
 				sirusSGPSelect.Items.Add("yolo_sgp/");
 				sirusSGPSelect.Items.Add("avengers_sgp/");
 				sirusSGPSelect.SelectedIndex = 0;
 			}
-			
+
 			try
 			{
 				savedPrinters.SelectedItem = Settings.Default.LastLoaded;
@@ -99,19 +99,19 @@ namespace PrintTool
 		//Connections
 		private async void printerIpEntry_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			await Task.Delay(10);
+			await Task.Delay(500);
 			printer.printerIp = printerIpEntry.Text;
 			if (await Helper.CheckIP(printerIpEntry.Text))
 			{
 				printerIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
-				connectButton.IsEnabled = true;
+				enablePrinterStatus.IsEnabled = true;
 				openEWSButton.IsEnabled = true;
 			}
 
 			else
 			{
 				printerIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				connectButton.IsEnabled = false;
+				enablePrinterStatus.IsEnabled = false;
 				openEWSButton.IsEnabled = false;
 			}
 
@@ -233,7 +233,7 @@ namespace PrintTool
 		}
 		private void openLogs_Click(object sender, RoutedEventArgs e)
 		{
-			System.Diagnostics.Process.Start("explorer", Directory.GetCurrentDirectory().ToString()+@"\Data\Logs\Temp\");
+			System.Diagnostics.Process.Start("explorer", Directory.GetCurrentDirectory().ToString() + @"\Data\Logs\Temp\");
 		}
 		private void captureData_Click(object sender, RoutedEventArgs e)
 		{
@@ -255,6 +255,7 @@ namespace PrintTool
 			printerModelEntry.Text = printer.model;
 			printerIdEntry.Text = printer.id;
 			printerEngineEntry.Text = printer.engine;
+			printerTypeEntry.Text = printer.type;
 			printerIpEntry.Text = printer.printerIp.ToString();
 			enableDartCheckBox.IsChecked = printer.enableDart;
 			enableTelnetCheckBox.IsChecked = printer.enableTelnet;
@@ -275,19 +276,19 @@ namespace PrintTool
 
 		#region Firmware Tab
 		#region Jolt
-	
+
 
 		private async void joltYearSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
-			await Helper.PopulateComboBox(joltMonthSelect, JOLTPATH + joltYearSelect.Text + "\\" ,"",true);
+			await Helper.PopulateComboBox(joltMonthSelect, JOLTPATH + joltYearSelect.Text + "\\", "", true);
 		}
 
 		private async void joltMonthSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
-			await Helper.PopulateComboBox(joltDaySelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\","",true);
-			
+			await Helper.PopulateComboBox(joltDaySelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\", "", true);
+
 		}
 		private async void joltDaySelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
@@ -298,7 +299,7 @@ namespace PrintTool
 		private async void joltProductSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			await Task.Delay(10);
-			await Helper.PopulateComboBox(joltVersionSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\","",true);
+			await Helper.PopulateComboBox(joltVersionSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\", "", true);
 		}
 
 		private async void joltVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -306,29 +307,119 @@ namespace PrintTool
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
 			await Helper.PopulateComboBox(joltCSVSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
+			await Helper.PopulateComboBox(joltFIMSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "exe");
 		}
 
 		private async void joltCustomLink_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
 			await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
-			await Helper.PopulateComboBox(joltCSVSelect, joltCustomLink.Text , "csv");
+			await Helper.PopulateComboBox(joltCSVSelect, joltCustomLink.Text, "csv");
+			await Helper.PopulateComboBox(joltFIMSelect, joltCustomLink.Text, "exe");
 		}
 
 		private async void joltFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			//if (joltFwTab.SelectedIndex == 0)
-			//{
-			//	await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
-			//	await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
-			//}
-			//else
-			//{
-			//	await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
-			//	await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "csv");
-			//}
+			if (joltFwTab.SelectedIndex == 0)
+			{
+				await Helper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
+				await Helper.PopulateComboBox(joltCSVSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
+				await Helper.PopulateComboBox(joltFIMSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "exe");
+			}
+			else
+			{
+				await Helper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
+				await Helper.PopulateComboBox(joltCSVSelect, joltCustomLink.Text, "csv");
+				await Helper.PopulateComboBox(joltFIMSelect, joltCustomLink.Text, "exe");
+			}
 		}
 
+
+		private async void joltStart_Click(object sender, RoutedEventArgs e)
+		{
+			joltStart.IsEnabled = false;
+
+			string sourceLink = "";
+			if (joltFwTab.SelectedIndex == 0)
+			{
+				sourceLink = JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\";
+			}
+			else
+			{
+				sourceLink = joltCustomLink.Text + "\\";
+			}
+			await printer.Log($"Now starting download of {sourceLink}");
+
+			await Helper.DownloadOrCopyFile(joltBuildSelect.Text, sourceLink);
+			await Helper.DownloadOrCopyFile(joltCSVSelect.Text, sourceLink);
+			await Helper.DownloadOrCopyFile(joltFIMSelect.Text, sourceLink);
+			await printer.Log($"Finished downloading of {joltBuildSelect.Text}, {joltCSVSelect.Text}, and{joltFIMSelect.Text}");
+			if (joltEnableCSV.IsChecked ?? false)
+			{
+				await printer.Log($"Running fimClient with these commands : {joltFIMSelect.Text} -x {printer.printerIp} -t bios -n arm64 -c {joltCSVSelect.Text} {joltBuildSelect.Text}");
+				ProcessHandler handler = new(joltFIMSelect.Text, $"-x {printer.printerIp} -t bios -n arm64 -c {joltCSVSelect.Text} {joltBuildSelect.Text}", processLogs);
+				await handler.Start(cancelSource.Token);
+			}
+			else
+			{
+				await printer.Log($"Running fimClient with these commands : {joltFIMSelect.Text} -x {printer.printerIp} -t bios -n arm64 {joltBuildSelect.Text}");
+				ProcessHandler handler = new(joltFIMSelect.Text, $"-x {printer.printerIp} -t bios -n arm64 {joltBuildSelect.Text}", processLogs);
+				await handler.Start(cancelSource.Token);
+			}
+
+			File.Delete(joltBuildSelect.Text);
+			File.Delete(joltCSVSelect.Text);
+			File.Delete(joltFIMSelect.Text);
+			
+			await printer.Log("FIM Process done!");
+			MessageBox.Show("Installtion done!");
+			joltStart.IsEnabled = true;
+		}
+
+		private void joltOpenFW_Click(object sender, RoutedEventArgs e)
+		{
+			if (joltFwTab.SelectedIndex == 0)
+			{
+				Helper.OpenPath(JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\");
+			}
+			else
+			{
+				Helper.OpenPath(joltCustomLink.Text);
+			}
+
+		}
+
+		private void joltInventorsBell_Click(object sender, RoutedEventArgs e)
+		{
+			if (joltProductSelect.Items.Contains("Bell"))
+			{
+				joltProductSelect.SelectedItem = "Bell";
+			}
+		}
+
+		private void joltInventorsCurie_Click(object sender, RoutedEventArgs e)
+		{
+			if (joltProductSelect.Items.Contains("Curie"))
+			{
+				joltProductSelect.SelectedItem = "Curie";
+			}
+		}
+
+		private void joltInventorsEdison_Click(object sender, RoutedEventArgs e)
+		{
+			if (joltProductSelect.Items.Contains("Edison"))
+			{
+				joltProductSelect.SelectedItem = "Edison";
+			}
+		}
+
+		private void joltInventorsHopper_Click(object sender, RoutedEventArgs e)
+		{
+			if (joltProductSelect.Items.Contains("Hopper"))
+			{
+				joltProductSelect.SelectedItem = "Hopper";
+			}
+		}
 
 
 		#endregion Jolt
@@ -396,13 +487,13 @@ namespace PrintTool
 		private async void sirusSendFW_Click(object sender, RoutedEventArgs e)
 		{
 			System.Threading.CancellationToken cancelToken = cancelSource.Token;
-			if (sirusFwTab.SelectedIndex == 0) 
+			if (sirusFwTab.SelectedIndex == 0)
 			{
 				await Firmware.DLAndSend(sirusPackageSelect.Text, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text, printer, sirusSendFW, cancelToken);
 			}
 			else
 			{
-				await Firmware.DLAndSend(sirusPackageSelect.Text, sirusCustomLink.Text,printer,sirusSendFW,cancelToken);
+				await Firmware.DLAndSend(sirusPackageSelect.Text, sirusCustomLink.Text, printer, sirusSendFW, cancelToken);
 			}
 		}
 
@@ -412,6 +503,17 @@ namespace PrintTool
 			cancelSource = new();
 		}
 
+		private void sirusOpenFW_Click(object sender, RoutedEventArgs e)
+		{
+			if (sirusFwTab.SelectedIndex == 0)
+			{
+				Helper.OpenPath(SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text);
+			}
+			else
+			{
+				Helper.OpenPath(sirusCustomLink.Text);
+			}
+		}
 
 		#endregion Yolo
 		#region Dune
@@ -426,7 +528,7 @@ namespace PrintTool
 			{
 				await Helper.PopulateComboBox(dunePackageSelect, duneCustomLink.Text, "fhx");
 			}
-			
+
 
 		}
 
@@ -478,7 +580,20 @@ namespace PrintTool
 		{
 			cancelSource.Cancel();
 			cancelSource = new();
-			
+
+		}
+
+		private void duneOpenFw_Click(object sender, RoutedEventArgs e)
+		{
+			if (duneFwTab.SelectedIndex == 0)
+			{
+				Helper.OpenPath(DUNESITE + duneVersionSelect.Text + duneModelSelect.Text);
+			}
+			else
+			{
+				Helper.OpenPath(duneCustomLink.Text);
+			}
+
 		}
 
 		#endregion Dune
@@ -488,10 +603,6 @@ namespace PrintTool
 		#region Printing tab 
 		private List<string> generateArgs()
 		{
-			string sendType = "";
-			if (psButton.IsChecked == true) { sendType = "1"; }
-			if (pclButton.IsChecked == true) { sendType = "2"; }
-			if (escpButton.IsChecked == true) { sendType = "3"; }
 
 			string duplex = "OFF";
 			string duplexMode = "";
@@ -502,7 +613,7 @@ namespace PrintTool
 			List<string> args = new();
 			args.Add("temp.ps"); //filename
 			args.Add("PrintTool Selection Send"); //jobname
-			args.Add(sendType); //what language
+			 //what language
 			args.Add(printPages.Text); // copies of pages
 			args.Add(duplex); // duplexing on or off
 			args.Add(duplexMode); //duplexing selection
@@ -544,30 +655,11 @@ namespace PrintTool
 		}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		#endregion
 
-	
+		private async void Button_Click(object sender, RoutedEventArgs e)
+		{
+			await PrintQueue.sendIpp();
+		}
 	}
 }

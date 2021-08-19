@@ -106,11 +106,9 @@
 						<Grid>
 							<Grid.RowDefinitions>
 								<RowDefinition Height=".6*"/>
-								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".1*"/>
+								<RowDefinition Height=".6*"/>
 								<RowDefinition Height="0.4*"/>
-								<RowDefinition Height="0.0*"/>
+
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
@@ -142,32 +140,41 @@
 									</GroupBox>
 								</TabItem>
 							</TabControl>
-							<GroupBox Grid.Row="1" Header="Select Package" BorderBrush="{x:Null}">
-								<ComboBox Name="joltBuildSelect"/>
-							</GroupBox>
-							<GroupBox Grid.Row="2" Header="Select CSV" BorderBrush="{x:Null}" >
-								<ComboBox Name="joltCSVSelect" Grid.Column="1"/>
-							</GroupBox>
+							<UniformGrid Grid.Row="1" Rows="3">
+								<GroupBox  Header="Select Package" BorderBrush="{x:Null}">
+									<ComboBox Name="joltBuildSelect"/>
+								</GroupBox>
+								<GroupBox  Header="Select CSV" BorderBrush="{x:Null}" >
+									<ComboBox Name="joltCSVSelect"/>
+								</GroupBox>
+								<GroupBox  Header="Select FIM Client" BorderBrush="{x:Null}" >
+									<ComboBox Name="joltFIMSelect" />
+								</GroupBox>
+							</UniformGrid>
+							
 
-							<GroupBox Header="Send" Grid.Row="4">
+							<GroupBox Header="Send" Grid.Row="3">
 								<Grid>
 									<Grid.ColumnDefinitions>
 										<ColumnDefinition Width="2*"/>
 										<ColumnDefinition Width="1*"/>
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
-									<Button x:Name="joltStart" Content="Start FIM" Grid.Column="0" Background="#7F00FF00"/>
-									<CheckBox Content="Enable CSV" VerticalAlignment="Center" Grid.Column="1"/>
-									<Button x:Name="openPath" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF"/>
+									<Button x:Name="joltStart" Content="Start FIM" Grid.Column="0" Background="#7F00FF00" Click="joltStart_Click"/>
+									<CheckBox x:Name="joltEnableCSV" Content="Enable CSV" VerticalAlignment="Center" Grid.Column="1"/>
+									<Button x:Name="joltOpenFW" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF" Click="joltOpenFW_Click"/>
 								</Grid>
 							</GroupBox>
 							
 							
 							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="5">
 								<UniformGrid Rows="4">
-									<GroupBox Header="N/A">
-										<UniformGrid Columns="2">
-
+									<GroupBox Header="Inventors">
+										<UniformGrid Columns="4">
+											<Button x:Name="joltInventorsBell" Content="Bell" Click="joltInventorsBell_Click"/>
+											<Button x:Name="joltInventorsCurie" Content="Curie" Click="joltInventorsCurie_Click" />
+											<Button x:Name="joltInventorsEdison" Content="Edison" Click="joltInventorsEdison_Click"/>
+											<Button x:Name="joltInventorsHopper" Content="Hopper" Click="joltInventorsHopper_Click"/>
 										</UniformGrid>
 									</GroupBox>
 								</UniformGrid>
@@ -182,7 +189,7 @@
 								<RowDefinition Height=".3*"/>
 								<RowDefinition Height=".3*"/>
 								<RowDefinition Height=".5*"/>
-								<RowDefinition Height=".5*"/>
+								<RowDefinition Height=".3*"/>
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
@@ -215,9 +222,10 @@
 								<ComboBox Name="sirusPackageSelect"/>
 							</GroupBox>
 
-							<UniformGrid  Grid.Row="3" Columns="2">
+							<UniformGrid  Grid.Row="3" Columns="3">
 								<Button x:Name="sirusSendFW" Content="Download and Send" Background="#7F00FF00" Click="sirusSendFW_Click"/>
 								<Button x:Name="sirusCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="sirusCancelFW_Click"/>
+								<Button x:Name="sirusOpenFW" Content="Open FW Link" Background="#7F0000FF" Click="sirusOpenFW_Click" />
 							</UniformGrid>
 
 							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
@@ -240,7 +248,7 @@
 								<RowDefinition Height=".3*"/>
 								<RowDefinition Height=".3*"/>
 								<RowDefinition Height=".5*"/>
-								<RowDefinition Height=".5*"/>
+								<RowDefinition Height="0.3*"/>
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
@@ -267,9 +275,10 @@
 								<ComboBox Name="dunePackageSelect"/>
 							</GroupBox>
 
-							<UniformGrid  Grid.Row="3" Columns="2">
+							<UniformGrid  Grid.Row="3" Columns="3">
 								<Button x:Name="duneSendFW" Content="Download and Send" Background="#7F00FF00" Click="duneSendFW_Click"/>
 								<Button x:Name="duneCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="duneCancelFW_Click"/>
+								<Button x:Name="duneOpenFw" Content="Open FW Link" Background="#7F0000FF" Click="duneOpenFw_Click" />
 							</UniformGrid>
 
 							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
@@ -296,61 +305,24 @@
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
 					<GroupBox Header="Printing Options" Grid.Column="0" Grid.Row="0">
-						<Grid>
-							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="*"/>
-							</Grid.ColumnDefinitions>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="auto"/>
-							</Grid.RowDefinitions>
-							<GroupBox Header="File Type" Grid.Row="0" Grid.Column="0">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<RadioButton Content="POSTSCRIPT" IsChecked="True" Name="psButton" GroupName="filetype" Grid.Column="0" />
-									<RadioButton Content="PCL5" IsChecked="False" Name="pclButton" GroupName="filetype" Grid.Column="1" IsEnabled="False"/>
-									<RadioButton Content="ESCP" IsChecked="False" Name="escpButton" GroupName="filetype" Grid.Column="2" IsEnabled="False"/>
-								</Grid>
-							</GroupBox>
+						<UniformGrid>
 							<GroupBox Header="Pages &amp; Copies" Grid.Row="1" Grid.Column="0">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="auto"/>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="auto"/>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<Label Content="Pages : " Grid.Column="0"/>
-									<TextBox x:Name="printPages" Text="1" Grid.Column="1" VerticalAlignment="Center"/>
-									<Label Content="Copies : " Grid.Column="2"/>
-									<TextBox x:Name="printCopies" Text="1" Grid.Column="3" VerticalAlignment="Center"/>
-								</Grid>
+								<UniformGrid Columns="2">
+									<GroupBox Header="Pages" BorderBrush="{x:Null}">
+										<TextBox x:Name="printPages" Text="1"/>
+									</GroupBox>
+									<GroupBox Header="Copies" BorderBrush="{x:Null}">
+										<TextBox x:Name="printCopies" Text="1"/>
+									</GroupBox>
+								</UniformGrid>
 							</GroupBox>
-							<GroupBox Header="Duplexing" Grid.Row="2" Grid.Column="0">
-								<Grid>
-									<Grid.ColumnDefinitions>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="*"/>
-										<ColumnDefinition Width="*"/>
-									</Grid.ColumnDefinitions>
-									<RadioButton Content="Simplex" IsChecked="True" Name="simplexButton" GroupName="duplexmode" Grid.Column="0"/>
-									<RadioButton Content="Duplex LE" IsChecked="False" Name="duplexLEButton" GroupName="duplexmode" Grid.Column="1"/>
-									<RadioButton Content="Duplex SE" IsChecked="False" Name="duplexSEButton" GroupName="duplexmode" Grid.Column="2"/>
-								</Grid>
+							<GroupBox Header="Duplexing">
+								<UniformGrid Columns="3" VerticalAlignment="Center">
+									<RadioButton Content="Simplex" IsChecked="True" Name="simplexButton" GroupName="duplexmode"/>
+									<RadioButton Content="Duplex LE" IsChecked="False" Name="duplexLEButton" GroupName="duplexmode"/>
+									<RadioButton Content="Duplex SE" IsChecked="False" Name="duplexSEButton" GroupName="duplexmode"/>
+								</UniformGrid>
 							</GroupBox>
-
-
 							<GroupBox Header="Source Tray" Grid.Row="0" Grid.Column="1">
 								<ComboBox Name="printSourceTray" SelectedIndex="0">
 									<ComboBoxItem Content="Default"/>
@@ -386,7 +358,7 @@
 
 
 
-						</Grid>
+						</UniformGrid>
 					</GroupBox>
 					<GroupBox Header="Sending Options" Grid.Column="1" Grid.RowSpan="1">
 						<Grid>
@@ -424,15 +396,24 @@
 					</GroupBox>
 				</Grid>
 			</TabItem>
-			<TabItem Header="Tests" IsEnabled="False">
-				<Grid>
-
-				</Grid>
+			<TabItem Header="Tests">
+				<UniformGrid>
+					<Button Click="Button_Click">
+						Send
+					</Button>
+				</UniformGrid>
 			</TabItem>
 		</TabControl>
 		<TabControl SelectedIndex="0" Grid.Row="1">
-			<TabItem Header="Print Tool">
-				<TextBox x:Name="PrintToolLogs" FontFamily="Consolas"/>
+			<TabItem Header="Application Logs">
+				<TabControl>
+					<TabItem Header="PrintTool">
+						<TextBox x:Name="PrintToolLogs" FontFamily="Consolas"/>
+					</TabItem>
+					<TabItem Header="Started Process">
+						<TextBox x:Name="processLogs" FontFamily="Consolas"/>
+					</TabItem>
+				</TabControl>
 			</TabItem>
 			<TabItem Header="Printer Status">
 				<StackPanel>

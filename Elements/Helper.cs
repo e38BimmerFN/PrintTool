@@ -70,8 +70,8 @@ namespace PrintTool
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "", bool flip = false)
 		{
-			List<string> results = await getListings(site, filter);
-			if (flip) { results.Reverse(); }			
+			List<string> results = await GetListings(site, filter);
+			if (flip) { results.Reverse(); }
 			listBox.Items.Clear();
 			foreach (string result in results)
 			{
@@ -81,7 +81,7 @@ namespace PrintTool
 
 		public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "", bool flip = false)
 		{
-			List<string> results = await getListings(site, filter);
+			List<string> results = await GetListings(site, filter);
 			if (flip) { results.Reverse(); }
 			comboBox.Items.Clear();
 			foreach (string result in results)
@@ -104,7 +104,11 @@ namespace PrintTool
 			else if (location.Contains(@"\") || location.Contains(@"C:"))
 			{
 				if (File.Exists(filename)) { File.Delete(filename); }
-				File.Copy(location + "\\" + filename, filename);
+				FileStream readFile = File.OpenRead(location + "\\" + filename);
+				FileStream copyFile = File.Create(filename);
+				await readFile.CopyToAsync(copyFile);
+				readFile.Close();
+				copyFile.Close();
 				return filename;
 			}
 
@@ -115,7 +119,7 @@ namespace PrintTool
 			}
 		}
 
-		public static async Task<List<string>> getListings(string uri, string filter = "")
+		public static async Task<List<string>> GetListings(string uri, string filter = "")
 		{
 			List<string> results = new();
 			if (uri == "") { results.Add("Invalid URI"); return results; }
@@ -140,19 +144,24 @@ namespace PrintTool
 
 			else if (uri.Contains(@"\"))
 			{
-				List<string> listings = new();
-
-				List<string> folders = Directory.GetDirectories(uri, "*", new EnumerationOptions()).ToList();
-				List<string> files = Directory.GetFiles(uri, "*", new EnumerationOptions()).ToList();
-				
-				
-				
-				listings.AddRange(folders);
-				listings.AddRange(files);
-				foreach (string listing in listings)
+				try
 				{
-					results.Add(Path.GetFileName(listing));
+					List<string> listings = new();
+					List<string> folders = Directory.GetDirectories(uri, "*", new EnumerationOptions()).ToList();
+					List<string> files = Directory.GetFiles(uri, "*", new EnumerationOptions()).ToList();
+					listings.AddRange(folders);
+					listings.AddRange(files);
+					foreach (string listing in listings)
+					{
+						results.Add(Path.GetFileName(listing));
+					}
 				}
+				catch
+				{
+
+				}
+
+
 			}
 
 
@@ -177,7 +186,7 @@ namespace PrintTool
 				if (myRegex.Success)
 				{
 					Ping pingSender = new();
-					PingReply reply = await pingSender.SendPingAsync(ip, 5);
+					PingReply reply = await pingSender.SendPingAsync(ip, 10);
 					if (reply.Status == IPStatus.Success) { return true; }
 				}
 				return false;
@@ -186,6 +195,12 @@ namespace PrintTool
 			{
 				return false;
 			}
+		}
+
+
+		public static void OpenPath(string uri)
+		{
+			Process.Start("explorer", uri);
 		}
 	}
 }
