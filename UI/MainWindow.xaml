@@ -325,18 +325,17 @@
 							</GroupBox>
 							<GroupBox Header="Source Tray" Grid.Row="0" Grid.Column="1">
 								<ComboBox Name="printSourceTray" SelectedIndex="0">
-									<ComboBoxItem Content="Default"/>
-									<ComboBoxItem Content="TRAY1"/>
-									<ComboBoxItem Content="TRAY2"/>
-									<ComboBoxItem Content="TRAY3"/>
-									<ComboBoxItem Content="TRAY4"/>
-									<ComboBoxItem Content="TRAY5"/>
+									<ComboBoxItem Content="Auto"/>
+									<ComboBoxItem Content="INTRAY1"/>
+									<ComboBoxItem Content="INTRAY2"/>
+									<ComboBoxItem Content="INTRAY3"/>
+									<ComboBoxItem Content="INTRAY4"/>									
 								</ComboBox>
 							</GroupBox>
 							<GroupBox Header="Output Tray" Grid.Row="1" Grid.Column="1">
 								<ComboBox Name="printOutputTray" SelectedIndex="0" VerticalAlignment="Center">
 									<ComboBoxItem Content="Default"/>
-									<ComboBoxItem Content="UPPER"/>
+									<ComboBoxItem Content="FACEDOWN"/>
 									<ComboBoxItem Content="LOWER"/>
 									<ComboBoxItem Content="OPTIONALOUTPUTBIN1"/>
 									<ComboBoxItem Content="OPTIONALOUTPUTBIN2"/>

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Controls;
 namespace PrintTool
 {
 	public class ProcessHandler
@@ -22,7 +22,7 @@ namespace PrintTool
 			this.fileToStart = fileToStart;
 			this.args = args;
 			this.outputDisplay = outputDisplay;
-		} 
+		}
 
 		public async Task Start(CancellationToken token)
 		{
@@ -30,19 +30,19 @@ namespace PrintTool
 			pc.StartInfo.FileName = fileToStart;
 			pc.StartInfo.Arguments = args;
 			pc.StartInfo.CreateNoWindow = true;
-			pc.StartInfo.RedirectStandardOutput = true;			
+			pc.StartInfo.RedirectStandardOutput = true;
 			pc.StartInfo.RedirectStandardInput = true;
 			pc.OutputDataReceived += DataReceived;
 			pc.Start();
-			pc.BeginOutputReadLine();			
+			pc.BeginOutputReadLine();
 			await pc.WaitForExitAsync(token);
 		}
 
 		private async void DataReceived(object sender, DataReceivedEventArgs e)
 		{
 			outputDisplay.Dispatcher.Invoke(new Action(() =>
-			{				
-				outputDisplay.AppendText(e.Data+"\n");
+			{
+				outputDisplay.AppendText(e.Data + "\n");
 				outputDisplay.ScrollToEnd();
 			}));
 		}

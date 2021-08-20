@@ -370,7 +370,7 @@ namespace PrintTool
 			File.Delete(joltBuildSelect.Text);
 			File.Delete(joltCSVSelect.Text);
 			File.Delete(joltFIMSelect.Text);
-			
+
 			await printer.Log("FIM Process done!");
 			MessageBox.Show("Installtion done!");
 			joltStart.IsEnabled = true;
@@ -613,7 +613,7 @@ namespace PrintTool
 			List<string> args = new();
 			args.Add("temp.ps"); //filename
 			args.Add("PrintTool Selection Send"); //jobname
-			 //what language
+												  //what language
 			args.Add(printPages.Text); // copies of pages
 			args.Add(duplex); // duplexing on or off
 			args.Add(duplexMode); //duplexing selection
@@ -627,19 +627,19 @@ namespace PrintTool
 
 		private async void printSend9100Button(object sender, RoutedEventArgs e)
 		{
-			string filename = PrintQueue.PrintGenerator(generateArgs());
-			await PrintQueue.SendIP(printerIpEntry.Text, filename);
+			string filename = PrinterConnection.PrintGenerator(generateArgs());
+			await PrinterConnection.SendIP(printerIpEntry.Text, filename);
 		}
 		private async void printSendUSBButton(object sender, RoutedEventArgs e)
 		{
-			string filename = PrintQueue.PrintGenerator(generateArgs());
-			await PrintQueue.SendUSB(filename);
+			string filename = PrinterConnection.PrintGenerator(generateArgs());
+			await PrinterConnection.SendUSB(filename);
 
 		}
 		private void printSaveJob_Click(object sender, RoutedEventArgs e)
 		{
 			if (File.Exists(@"Data\Jobs\" + printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
-			File.Copy(PrintQueue.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
+			File.Copy(PrinterConnection.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
 			Helper.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
 		}
 		private void printDeteleJob_Click(object sender, RoutedEventArgs e)
@@ -651,7 +651,7 @@ namespace PrintTool
 		private async void printSendJob_Click(object sender, RoutedEventArgs e)
 		{
 			if (savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-			await PrintQueue.SendIP(printerIpEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
+			await PrinterConnection.SendIP(printerIpEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
 		}
 
 
@@ -659,7 +659,8 @@ namespace PrintTool
 
 		private async void Button_Click(object sender, RoutedEventArgs e)
 		{
-			await PrintQueue.sendIpp();
+			PrinterConnection cli = new("15.86.118.50");
+			var result = cli.SendJob("test.txt");
 		}
 	}
 }

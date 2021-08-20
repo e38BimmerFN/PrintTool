@@ -30,7 +30,7 @@ namespace PrintTool
 			lineCount++;
 			if (result is null or "" or "\n" or "\r" or "\r\n" or "\n\r") { return; } // removing empty lines and unsupported syntax
 			result = Regex.Replace(result, "(\x9B|\x1B\\[)[0-?]*[ -\\/]*[@-~]", "");
-			
+
 			result = Regex.Replace(result, "(\\0)", "");
 			result = Regex.Replace(result, "(\n\r)", "\r\n");
 

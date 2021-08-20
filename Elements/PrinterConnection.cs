@@ -1,63 +1,68 @@
-﻿using System;
+﻿using SharpIpp;
+using SharpIpp.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows;
-using SharpIpp;
-using SharpIpp.Exceptions;
-using SharpIpp.Model;
 
 namespace PrintTool
 {
-	public static class PrintQueue
+	public class PrinterConnection
 	{
-
-		public static async Task sendIpp()
+		SharpIppClient cli = new();
+		Uri ip;
+		public PrinterConnection(string ip)
 		{
+			this.ip = new Uri($"ipp://{ip}:631");
+		}
 
-			HttpClient cli = new();
-
-
-			//FileStream str = File.OpenRead("stuff.txt");
-			//Uri printerUri = new Uri("ipp://15.86.118.50:631");
-			//SharpIppClient cli = new();
-			
-
-			//GetPrinterAttributesRequest req = new()
-			//{
-			//	PrinterUri = printerUri
-			//};
-
-			//var resp = await cli.GetPrinterAttributesAsync(req);
-
-			
-
-			//NewJobAttributes job = new()
-			//{
-				
-			//	JobName = "Yes",
-			//	Copies = 3
-				
-			//};
-
-
-			//PrintJobRequest request = new()
-			//{
-
-			//	PrinterUri = printerUri,
-			//	Document = str,
-			//	NewJobAttributes = job
-				
-				
-			//};
-			//var response = await cli.PrintJobAsync(request);
+		public async Task<PrintJobResponse> SendJob(string file, string media = "na_letter_8.5x11in", Sides sides = Sides.OneSided, string mediaSource = "auto", string outputTray = "face-down")
+		{
+			FileStream fs = File.OpenRead(file);
+			List<IppAttribute> ja = new();
+			//Media source
+			ja.Add(new IppAttribute(Tag.BegCollection, "media-col",""));
+			ja.Add(new IppAttribute(Tag.MemberAttrName, "" ,"media-source"));
+			ja.Add(new IppAttribute(Tag.Keyword, "", mediaSource));
+			ja.Add(new IppAttribute(Tag.EndCollection, "", ""));
+			//Output Trray
+			ja.Add(new IppAttribute(Tag.Keyword, "output-bin", outputTray));
+			PrintJobRequest req = new()
+			{
+				NewJobAttributes = new NewJobAttributes()
+				{
+					Copies = 1,
+					JobName = "PrintTool",
+					Media = media,
+					Sides = sides,
+					AdditionalJobAttributes = ja,
+					
+				},
+				PrinterUri = ip,
+				Document = fs
+			};
+			var res = await cli.PrintJobAsync(req);
+			fs.Close();
+			return res;
 
 		}
 
-	
+		public async Task<GetPrinterAttributesResponse> GetPrinterDetails()
+		{
+			GetPrinterAttributesRequest req = new()
+			{
+				PrinterUri = ip
+			};
+			GetPrinterAttributesResponse res = await cli.GetPrinterAttributesAsync(req);
+			
+			return res.;
+
+		}
+
 
 		public static async Task SendIP(string ip, string file)
 		{
@@ -77,8 +82,10 @@ namespace PrintTool
 				TcpClient client = new();
 				await client.ConnectAsync(ip, 9100);
 				NetworkStream stream = client.GetStream();
-				await stream.WriteAsync(data, 0, data.Length);
-				client.Close();
+				await stream.WriteAsync(data);
+				byte[] buffer = new byte[1000];
+				stream.Read(buffer);
+				string output = System.Text.ASCIIEncoding.ASCII.GetString(buffer);
 			}
 			catch
 			{
