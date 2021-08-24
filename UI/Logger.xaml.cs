@@ -33,8 +33,12 @@ namespace PrintTool
 			result = Regex.Replace(result, "(\x9B|\x1B\\[)[0-?]*[ -\\/]*[@-~]", "");
 
 			result = Regex.Replace(result, "(\\0)", "");
+
+			//fixing malformed newlines.
+			result = Regex.Replace(result, "(\r\r)", "\r");
+			result = Regex.Replace(result, "(\n\n)", "\n");
 			result = Regex.Replace(result, "(\n\r)", "\r\n");
-			if(!result.Contains("\n")) { result += "\r\n"; }
+			if (!result.Contains("\n")) { result += "\r\n"; }
 
 
 			LogBox.Dispatcher.Invoke(new Action(() =>

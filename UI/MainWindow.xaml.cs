@@ -3,19 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 
 namespace PrintTool
 {
 	public partial class MainWindow : Window
 	{
-		
+
 		const string SIRUSSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/";
 		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
 		const string JOLTPATH = @"\\jedibdlserver.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds\25s\";
@@ -24,6 +24,11 @@ namespace PrintTool
 		Logger ptlog = new("PrintTool");
 		Logger procLogs = new("Started Process");
 		Printer currPrinter = new();
+		PrinterConnection printConnection;
+		List<SerialConnection> serialConnections = new();
+		List<TelnetConnection> telnetConnections = new();
+
+
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -43,7 +48,7 @@ namespace PrintTool
 
 			if (File.Exists(@"Data\Logs\Temp\PrintToolLog.txt")) { File.Delete(@"Data\Logs\Temp\PrintToolLog.txt"); }
 			Helper.InstallOrUpdate();
-						
+
 			await ptlog.Log("The time is " + DateTime.Now);
 			await ptlog.Log("You have used this program : " + Settings.Default.TimesLaunched++ + " times");
 			await ptlog.Log("If you have any issues, please direct them to derek.hearst@hp.com");
@@ -115,7 +120,7 @@ namespace PrintTool
 				printerIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
 				enablePrinterStatus.IsEnabled = true;
 				openEWSButton.IsEnabled = true;
-				
+
 			}
 
 			else
@@ -147,7 +152,7 @@ namespace PrintTool
 			}
 		}
 
-		
+
 		private void openDartButton_Click(object sender, RoutedEventArgs e)
 		{
 			System.Diagnostics.Process.Start("explorer", "http://" + dartIpEntry.Text);
@@ -180,17 +185,16 @@ namespace PrintTool
 		}
 		#endregion ui changes
 
-		
+
 		bool currentlyConnected = false;
 		private async void connectButton_Click(object sender, RoutedEventArgs e)
 		{
-
 			if (currentlyConnected) //stop
 			{
 				currentlyConnected = false;
 				await ptlog.Log("Disconnecting.");
-				foreach (SerialConnection serial in serialConnectionsTabControl.Items) { serial.Close(); }
-				foreach (TelnetConnection telnet in telnetConnectionsTabControl.Items) { telnet.Close(); }
+				foreach (SerialConnection serial in serialConnections) { serial.Close(); }
+				foreach (TelnetConnection telnet in telnetConnections) { telnet.Close(); }
 				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
 				connectButton.Content = "Conect and Flush";
 			}
@@ -212,7 +216,8 @@ namespace PrintTool
 						SerialConnection conection = new(portname);
 						TabItem tab = new() { Content = conection, Header = portname };
 						serialConnectionsTabControl.Items.Add(tab);
-						
+						serialConnections.Add(conection);
+
 					}
 				}
 				if (enableTelnetCheckBox.IsChecked ?? false)
@@ -225,14 +230,16 @@ namespace PrintTool
 							await ptlog.Log("Connecting to " + port);
 							TelnetConnection connection = new(currPrinter.dartIp, port);
 							TabItem tab = new() { Content = connection, Header = port.ToString() };
-							telnetConnectionsTabControl.Items.Add(tab);							
+							telnetConnectionsTabControl.Items.Add(tab);
+							telnetConnections.Add(connection);
 						}
 					}
 				}
 
 				if (enablePrinterStatus.IsChecked ?? false)
 				{
-					// TODO: Enable Stauts
+					printConnection = new(currPrinter.printerIp); 		
+					// TODO This
 
 				}
 				currentlyConnected = true;
@@ -263,12 +270,12 @@ namespace PrintTool
 			Settings.Default.LastLoaded = savedPrinters.SelectedItem.ToString();
 			Settings.Default.Save();
 			string json = File.ReadAllText($"Data\\Printers\\{savedPrinters.SelectedItem}");
-			currPrinter =  JsonSerializer.Deserialize<Printer>(json);			
+			currPrinter = JsonSerializer.Deserialize<Printer>(json);
 			printerModelEntry.Text = currPrinter.model;
 			printerIdEntry.Text = currPrinter.id;
 			printerEngineEntry.Text = currPrinter.engine;
 			printerTypeEntry.Text = currPrinter.type;
-			printerIpEntry.Text = currPrinter.printerIp.ToString();
+			printerIpEntry.Text = currPrinter.printerIp;
 			enableDartCheckBox.IsChecked = currPrinter.enableDart;
 			enableTelnetCheckBox.IsChecked = currPrinter.enableTelnet;
 			dartIpEntry.Text = currPrinter.dartIp;
@@ -615,7 +622,7 @@ namespace PrintTool
 		#region Printing tab 
 		private List<string> generateArgs()
 		{
-			
+
 			string duplex = "OFF";
 			string duplexMode = "";
 			if (simplexButton.IsChecked == true) { duplex = "OFF"; }
@@ -672,10 +679,10 @@ namespace PrintTool
 		private async void Button_Click(object sender, RoutedEventArgs e)
 		{
 			PrinterConnection cli = new("15.86.118.32");
-			var result = await cli.SendJob("test.txt",sides:SharpIpp.Model.Sides.TwoSidedLongEdge);
+			var result = await cli.SendJob("test.txt", sides: SharpIpp.Model.Sides.TwoSidedLongEdge);
 			var jobstate = await cli.GetJob(new Uri(result.JobUri));
-			
-			
+
+
 		}
 
 		#region misc
@@ -698,7 +705,7 @@ namespace PrintTool
 			{
 				clockTimer.Content = time;
 			});
-			
+
 		}
 
 		private void stopClock_Click(object sender, RoutedEventArgs e)
@@ -709,6 +716,6 @@ namespace PrintTool
 
 		#endregion
 
-	
+
 	}
 }
