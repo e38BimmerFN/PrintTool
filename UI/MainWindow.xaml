@@ -5,7 +5,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
-		Title="PrintTool by Derek Hearst" Height="972" Width="1174" ContentRendered="LoadTrigger" ResizeMode="CanResize" SizeToContent="Manual" Icon="/favicon.ico">
+		Title="PrintTool by Derek Hearst" Height="972" Width="1394" ContentRendered="LoadTrigger" ResizeMode="CanResize" SizeToContent="Manual" Icon="/favicon.ico">
 
 	<Grid>
 		<Grid.RowDefinitions>
@@ -13,10 +13,10 @@
 			<RowDefinition Height="0.75*"/>
 		</Grid.RowDefinitions>
 		<TabControl>
-			<TabItem x:Name="connectionsTab" Header="Device And Log Setup">
+			<TabItem x:Name="connectionsTab" Header="Device and Log Setup">
 				<Grid>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="0.75*"/>
+						<ColumnDefinition Width="0.5*"/>
 						<ColumnDefinition Width="0.4*"/>
 					</Grid.ColumnDefinitions>
 					<Grid.RowDefinitions>
@@ -27,16 +27,7 @@
 					</Grid.RowDefinitions>
 
 					<GroupBox Header="Printer Details" Grid.Row="0" >
-						<StackPanel>
-							<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}">
-								<TextBox Text="" Name="printerModelEntry" TextChanged="printerModel_TextChanged"/>
-							</GroupBox>
-							<GroupBox Header="Engine Type" Grid.Row="1" BorderBrush="{x:Null}">
-								<TextBox Text="" Name="printerEngineEntry" TextChanged="printerEngine_TextChanged" />
-							</GroupBox>
-							<GroupBox Header="Label" Grid.Row="2" BorderBrush="{x:Null}">
-								<TextBox Text="" Name="printerIdEntry" TextChanged="printerID_TextChanged"/>
-							</GroupBox>
+						<UniformGrid Rows="4">
 							<GroupBox Header="Printer type" BorderBrush="{x:Null}">
 								<ComboBox Name="printerTypeEntry" SelectedIndex="2" SelectionChanged="printerTypeEntry_SelectionChanged">
 									<ComboBoxItem Content="Jedi"/>
@@ -44,33 +35,43 @@
 									<ComboBoxItem Content="Sirus"/>
 								</ComboBox>
 							</GroupBox>
-						</StackPanel>
+							<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}">
+								<TextBox Text="" Name="printerModelEntry" TextChanged="printerModel_TextChanged"/>
+							</GroupBox>
+							<GroupBox Header="Model Revison" Grid.Row="1" BorderBrush="{x:Null}">
+								<TextBox Text="" Name="printerEngineEntry" TextChanged="printerEngine_TextChanged" />
+							</GroupBox>
+							<GroupBox Header="PET Label" Grid.Row="2" BorderBrush="{x:Null}">
+								<TextBox Text="" Name="printerIdEntry" TextChanged="printerID_TextChanged"/>
+							</GroupBox>
+							
+						</UniformGrid>
 					</GroupBox>
 					<GroupBox Header="Connections" Grid.Row="1">
-						<StackPanel Orientation="Horizontal">
+						<UniformGrid Columns="4">
 							<GroupBox Header="Printer IP" BorderBrush="{x:Null}">
-								<TextBox Name="printerIpEntry" Text="0.0.0.0" TextChanged="printerIpEntry_TextChanged" Width="200" HorizontalAlignment="Center" VerticalAlignment="Center" />
+								<TextBox Name="printerIpEntry" Text="0.0.0.0" TextChanged="printerIpEntry_TextChanged"  VerticalAlignment="Center" />
 							</GroupBox>
 							<GroupBox Header="" BorderBrush="{x:Null}">
 								<Button x:Name="openEWSButton" Content="Open EWS" Click="openEWSButton_Click"/>
 							</GroupBox>
 							<GroupBox Header="Dart IP" BorderBrush="{x:Null}">
-								<TextBox Name="dartIpEntry" Text="0.0.0.0" TextChanged="dartIpEntry_TextedChanged"  Width="200" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+								<TextBox Name="dartIpEntry" Text="0.0.0.0" TextChanged="dartIpEntry_TextedChanged" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 							</GroupBox>
 							<GroupBox Header="" BorderBrush="{x:Null}">
 								<Button x:Name="openDartButton" Content="Open Dart Site" Click="openDartButton_Click"/>
 							</GroupBox>
-						</StackPanel>
+						</UniformGrid>
 					</GroupBox>
 					<GroupBox Header="Logging Options" Grid.Row="2">
-						<StackPanel Orientation="Horizontal">
-							<CheckBox Name="enableSerialCheckBox" Content="Connect to Serial Connections" Margin="10" Click="enableSerialCheckBox_Click" />
-							<CheckBox Name="enableDartCheckBox" Content="Enable Dart Logging"  Margin="10" Click="enableDart_Click"/>
-							<CheckBox Name="enableTelnetCheckBox" Content="Connect to Dart Telnet"  Margin="10" Click="enableTelnet_Click"/>
-							<CheckBox Name="enablePrinterStatus" Content="Get Printer Status"  Margin="10" Click="enablePrinterStatus_Click"/>
-						</StackPanel>
+						<UniformGrid Columns="4">
+							<CheckBox Name="enableSerialCheckBox" Content="Connect to Serial Connections" Click="enableSerialCheckBox_Click" />
+							<CheckBox Name="enableDartCheckBox" Content="Enable Dart Logging" Click="enableDart_Click"/>
+							<CheckBox Name="enableTelnetCheckBox" Content="Connect to Dart Telnet" Click="enableTelnet_Click"/>
+							<CheckBox Name="enablePrinterStatus" Content="IPP Feedback" Click="enablePrinterStatus_Click"/>
+						</UniformGrid>
 					</GroupBox>
-					<GroupBox Header="Start Logging" Grid.Row="3">
+					<GroupBox Header="Logging" Grid.Row="3">
 						<UniformGrid Rows="1">
 							<Button x:Name="connectButton" Content="Conect and Flush" Click="connectButton_Click" Background="LightGreen" HorizontalAlignment="Stretch"/>
 							<Button x:Name="savelogsButton" Content="Save and Triage" Click="captureData_Click"  HorizontalAlignment="Stretch" Background="LightGreen"/>
@@ -294,106 +295,101 @@
 					</TabItem>
 				</TabControl>
 			</TabItem>
-			<TabItem Header="Print">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width=".25*"/>
-					</Grid.ColumnDefinitions>
-					<Grid.RowDefinitions>
-						<RowDefinition Height="*"/>
-						<RowDefinition Height="*"/>
-					</Grid.RowDefinitions>
-					<GroupBox Header="Printing Options" Grid.Column="0" Grid.Row="0">
-						<UniformGrid>
-							<GroupBox Header="Pages &amp; Copies" Grid.Row="1" Grid.Column="0">
-								<UniformGrid Columns="2">
-									<GroupBox Header="Pages" BorderBrush="{x:Null}">
-										<TextBox x:Name="printPages" Text="1"/>
-									</GroupBox>
-									<GroupBox Header="Copies" BorderBrush="{x:Null}">
-										<TextBox x:Name="printCopies" Text="1"/>
-									</GroupBox>
-								</UniformGrid>
-							</GroupBox>
-							<GroupBox Header="Duplexing">
-								<UniformGrid Columns="3" VerticalAlignment="Center">
-									<RadioButton Content="Simplex" IsChecked="True" Name="simplexButton" GroupName="duplexmode"/>
-									<RadioButton Content="Duplex LE" IsChecked="False" Name="duplexLEButton" GroupName="duplexmode"/>
-									<RadioButton Content="Duplex SE" IsChecked="False" Name="duplexSEButton" GroupName="duplexmode"/>
-								</UniformGrid>
-							</GroupBox>
-							<GroupBox Header="Source Tray" Grid.Row="0" Grid.Column="1">
-								<ComboBox Name="printSourceTray" SelectedIndex="0">
-									<ComboBoxItem Content="Auto"/>
-									<ComboBoxItem Content="INTRAY1"/>
-									<ComboBoxItem Content="INTRAY2"/>
-									<ComboBoxItem Content="INTRAY3"/>
-									<ComboBoxItem Content="INTRAY4"/>									
-								</ComboBox>
-							</GroupBox>
-							<GroupBox Header="Output Tray" Grid.Row="1" Grid.Column="1">
-								<ComboBox Name="printOutputTray" SelectedIndex="0" VerticalAlignment="Center">
-									<ComboBoxItem Content="Default"/>
-									<ComboBoxItem Content="FACEDOWN"/>
-									<ComboBoxItem Content="LOWER"/>
-									<ComboBoxItem Content="OPTIONALOUTPUTBIN1"/>
-									<ComboBoxItem Content="OPTIONALOUTPUTBIN2"/>
-									<ComboBoxItem Content="OPTIONALOUTPUTBIN3"/>
-									<ComboBoxItem Content="OPTIONALOUTPUTBIN4"/>
-								</ComboBox>
-							</GroupBox>
-							<GroupBox Header="Paper Type" Grid.Row="2" Grid.Column="1">
-								<ComboBox Name ="paperTypeSelection" SelectedIndex="0" VerticalAlignment="Center">
-									<ComboBoxItem Content="LETTER"/>
-									<ComboBoxItem Content="A4"/>
-									<ComboBoxItem Content="LEGAL"/>
-									<ComboBoxItem Content="EXECUTIVE"/>
-									<ComboBoxItem Content="A5"/>
-								</ComboBox>
-							</GroupBox>
-
-
-
-
-
-						</UniformGrid>
-					</GroupBox>
-					<GroupBox Header="Sending Options" Grid.Column="1" Grid.RowSpan="1">
+			<TabItem Header="Printing">
+				<TabControl>
+					<TabItem Header="PostScript">
 						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="auto"/>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="*"/>
-							</Grid.RowDefinitions>
-
-
-							<Button Content="Send VIA AppSocket / 9100" Click="printSend9100Button" Grid.Row="1"/>
-							<Button Content="Send VIA USB" Click="printSendUSBButton" Grid.Row="2"/>
-						</Grid>
-					</GroupBox>
-					<GroupBox Header="Saved Jobs" Grid.Row="1" Grid.ColumnSpan="2" Foreground="Black">
-						<Grid>
-							<Grid.RowDefinitions>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="auto"/>
-							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width=".25*"/>
 							</Grid.ColumnDefinitions>
-
-							<ListBox x:Name="savedPrintJobs" Grid.Row="0" Grid.ColumnSpan="4"/>
-							<TextBox x:Name="printNameJob" Text="Name Job Here" Grid.Row="1" Grid.Column="0"/>
-							<Button x:Name="printSaveJob" Content="Save Job" Grid.Row="1" Grid.Column="1" Background="#7F0000FF" Click="printSaveJob_Click"/>
-							<Button x:Name="printDeteleJob" Content="Delete Job" Grid.Row="1" Grid.Column="2" Background="#7FFF0000" Click="printDeteleJob_Click"/>
-							<Button x:Name="printSendJob" Content="Send Job via Appsocket" Grid.Row="3" Grid.Column="3" Background="#7F00FF00" Click="printSendJob_Click"/>
+							<Grid.RowDefinitions>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="*"/>
+							</Grid.RowDefinitions>
+							<GroupBox Header="Printing Options" Grid.Column="0" Grid.Row="0">
+								<UniformGrid Rows="3">
+									<GroupBox Header="Pages &amp; Copies">
+										<UniformGrid Columns="2">
+											<GroupBox Header="Pages" BorderBrush="{x:Null}">
+												<TextBox x:Name="printPages" Text="1"/>
+											</GroupBox>
+											<GroupBox Header="Copies" BorderBrush="{x:Null}">
+												<TextBox x:Name="printCopies" Text="1"/>
+											</GroupBox>
+										</UniformGrid>
+									</GroupBox>
+									<GroupBox Header="Duplexing">
+										<UniformGrid Columns="3" VerticalAlignment="Center">
+											<RadioButton Content="Simplex" IsChecked="True" Name="simplexButton" GroupName="duplexmode"/>
+											<RadioButton Content="Duplex LE" IsChecked="False" Name="duplexLEButton" GroupName="duplexmode"/>
+											<RadioButton Content="Duplex SE" IsChecked="False" Name="duplexSEButton" GroupName="duplexmode"/>
+										</UniformGrid>
+									</GroupBox>
+									<GroupBox Header="Source Tray">
+										<ComboBox Name="printSourceTray" SelectedIndex="0" VerticalAlignment="Center">
+											<ComboBoxItem Content="Auto"/>
+											<ComboBoxItem Content="INTRAY1"/>
+											<ComboBoxItem Content="INTRAY2"/>
+											<ComboBoxItem Content="INTRAY3"/>
+											<ComboBoxItem Content="INTRAY4"/>
+										</ComboBox>
+									</GroupBox>
+									<GroupBox Header="Output Tray">
+										<ComboBox Name="printOutputTray" SelectedIndex="0" VerticalAlignment="Center">
+											<ComboBoxItem Content="Default"/>
+											<ComboBoxItem Content="FACEDOWN"/>
+											<ComboBoxItem Content="LOWER"/>
+											<ComboBoxItem Content="OPTIONALOUTPUTBIN1"/>
+											<ComboBoxItem Content="OPTIONALOUTPUTBIN2"/>
+											<ComboBoxItem Content="OPTIONALOUTPUTBIN3"/>
+											<ComboBoxItem Content="OPTIONALOUTPUTBIN4"/>
+										</ComboBox>
+									</GroupBox>
+									<GroupBox Header="Paper Type">
+										<ComboBox Name ="paperTypeSelection" SelectedIndex="0" VerticalAlignment="Center">
+											<ComboBoxItem Content="LETTER"/>
+											<ComboBoxItem Content="A4"/>
+											<ComboBoxItem Content="LEGAL"/>
+											<ComboBoxItem Content="EXECUTIVE"/>
+											<ComboBoxItem Content="A5"/>
+										</ComboBox>
+									</GroupBox>
+								</UniformGrid>
+							</GroupBox>
+							<GroupBox Header="Sending Options" Grid.Column="1" Grid.RowSpan="1">
+								<UniformGrid Rows="2">
+					
+									<Button Content="Send VIA AppSocket / 9100" Click="printSend9100Button" Grid.Row="1"/>
+									<Button Content="Send VIA USB" Click="printSendUSBButton" Grid.Row="2"/>
+								</UniformGrid>
+							</GroupBox>
+							<GroupBox Header="Saved Jobs" Grid.Row="1" Grid.ColumnSpan="2" Foreground="Black">
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="*"/>
+										<RowDefinition Height="auto"/>
+									</Grid.RowDefinitions>
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="*"/>
+									</Grid.ColumnDefinitions>
+									<ListBox x:Name="savedPrintJobs" Grid.Row="0" Grid.ColumnSpan="4"/>
+									<TextBox x:Name="printNameJob" Text="Name Job Here" Grid.Row="1" Grid.Column="0"/>
+									<Button x:Name="printSaveJob" Content="Save Job" Grid.Row="1" Grid.Column="1" Background="#7F0000FF" Click="printSaveJob_Click"/>
+									<Button x:Name="printDeteleJob" Content="Delete Job" Grid.Row="1" Grid.Column="2" Background="#7FFF0000" Click="printDeteleJob_Click"/>
+									<Button x:Name="printSendJob" Content="Send Job via Appsocket" Grid.Row="3" Grid.Column="3" Background="#7F00FF00" Click="printSendJob_Click"/>
+								</Grid>
+							</GroupBox>
 						</Grid>
-					</GroupBox>
-				</Grid>
+					</TabItem>
+					<TabItem Header="IPP">
+						
+					</TabItem>
+				</TabControl>
+				
 			</TabItem>
 			<TabItem Header="Tests">
 				<UniformGrid>
@@ -403,32 +399,40 @@
 				</UniformGrid>
 			</TabItem>
 		</TabControl>
-		<TabControl SelectedIndex="0" Grid.Row="1">
-			<TabItem Header="Application Logs">
-				<TabControl>
-					<TabItem Header="PrintTool">
-						<TextBox x:Name="PrintToolLogs" FontFamily="Consolas"/>
-					</TabItem>
-					<TabItem Header="Started Process">
-						<TextBox x:Name="processLogs" FontFamily="Consolas"/>
-					</TabItem>
-				</TabControl>
-			</TabItem>
-			<TabItem Header="Printer Status">
-				<StackPanel>
-					<Label Name="printerModelLabel" Content=" Model : "/>
-					<Label Name="printerStateLabel" Content=" State : "/>
-					<Label Name="printerErrorLabel" Content=" Error Status : "/>
-					<Label Name="printerPPMLabel" Content=" Pages Per Min : "/>
-					<Label Name="printerQJCLabel" Content=" Queued Job Count : "/>
-				</StackPanel>
-			</TabItem>
-			<TabItem Header="Serial Connections">
-				<TabControl x:Name="serialConnectionsTabControl" />
-			</TabItem>
-			<TabItem Header="Telnet Connections">
-				<TabControl x:Name="telnetConnectionsTabControl"/>
-			</TabItem>
-		</TabControl>
+		<Grid Grid.Row="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="10"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<TabControl SelectedIndex="0">
+				<TabItem Header="PrintTool">
+					<TextBox x:Name="PrintToolLogs" FontFamily="Consolas"/>
+				</TabItem>
+				<TabItem Header="Printer Status">
+					<StackPanel>
+						<Label Name="printerModelLabel" Content=" Model : "/>
+						<Label Name="printerStateLabel" Content=" State : "/>
+						<Label Name="printerErrorLabel" Content=" Error Status : "/>
+						<Label Name="printerPPMLabel" Content=" Pages Per Min : "/>
+						<Label Name="printerQJCLabel" Content=" Queued Job Count : "/>
+					</StackPanel>
+				</TabItem>
+				<TabItem Header="Started Process">
+					<TextBox x:Name="processLogs" FontFamily="Consolas"/>
+				</TabItem>
+
+			</TabControl>
+			<GridSplitter Grid.Column="1" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Stretch"/>
+			<TabControl Grid.Column="2">
+				<TabItem Header="Serial Connections">
+					<TabControl x:Name="serialConnectionsTabControl" />
+				</TabItem>
+				<TabItem Header="Telnet Connections">
+					<TabControl x:Name="telnetConnectionsTabControl"/>
+				</TabItem>
+			</TabControl>
+		</Grid>
+		
 	</Grid>
 </Window>

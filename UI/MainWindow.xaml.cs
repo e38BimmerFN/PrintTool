@@ -557,7 +557,7 @@ namespace PrintTool
 		}
 
 		//Special Links
-		private async void duneUtilityFolder_Click(object sender, RoutedEventArgs e)
+		private void duneUtilityFolder_Click(object sender, RoutedEventArgs e)
 		{
 			duneCustomLink.Text = @"\\jedifiles01.boi.rd.hpicorp.net\Oasis\Dune\Builds\Utility";
 			duneFwTab.SelectedIndex = 1;
@@ -576,7 +576,7 @@ namespace PrintTool
 			}
 		}
 
-		private async void duneCancelFW_Click(object sender, RoutedEventArgs e)
+		private void duneCancelFW_Click(object sender, RoutedEventArgs e)
 		{
 			cancelSource.Cancel();
 			cancelSource = new();
@@ -627,19 +627,19 @@ namespace PrintTool
 
 		private async void printSend9100Button(object sender, RoutedEventArgs e)
 		{
-			string filename = PrinterConnection.PrintGenerator(generateArgs());
+			string filename = PrinterConnection.CreateJob(generateArgs());
 			await PrinterConnection.SendIP(printerIpEntry.Text, filename);
 		}
 		private async void printSendUSBButton(object sender, RoutedEventArgs e)
 		{
-			string filename = PrinterConnection.PrintGenerator(generateArgs());
+			string filename = PrinterConnection.CreateJob(generateArgs());
 			await PrinterConnection.SendUSB(filename);
 
 		}
 		private void printSaveJob_Click(object sender, RoutedEventArgs e)
 		{
 			if (File.Exists(@"Data\Jobs\" + printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
-			File.Copy(PrinterConnection.PrintGenerator(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
+			File.Copy(PrinterConnection.CreateJob(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
 			Helper.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
 		}
 		private void printDeteleJob_Click(object sender, RoutedEventArgs e)
@@ -660,7 +660,7 @@ namespace PrintTool
 		private async void Button_Click(object sender, RoutedEventArgs e)
 		{
 			PrinterConnection cli = new("15.86.118.50");
-			var result = cli.SendJob("test.txt");
+			var result = await cli.SendJob("test.txt");
 		}
 	}
 }

@@ -38,7 +38,7 @@ namespace PrintTool
 			await pc.WaitForExitAsync(token);
 		}
 
-		private async void DataReceived(object sender, DataReceivedEventArgs e)
+		private void DataReceived(object sender, DataReceivedEventArgs e)
 		{
 			outputDisplay.Dispatcher.Invoke(new Action(() =>
 			{
