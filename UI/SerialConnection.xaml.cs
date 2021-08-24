@@ -20,6 +20,7 @@ namespace PrintTool
 		public SerialConnection(string portName)
 		{
 			InitializeComponent();
+			
 			logger = new(portName);
 			logLocation.Children.Add(logger);
 			port.PortName = portName;
@@ -39,9 +40,6 @@ namespace PrintTool
 			{
 				logger.Log(portName + " cannot be connected to.");
 			}
-
-			Timer timer = new(50);
-
 		}
 
 		private async void Port_DataReceived1(object sender, SerialDataReceivedEventArgs e)
@@ -69,7 +67,7 @@ namespace PrintTool
 
 		private void customCommandEntry_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Key == System.Windows.Input.Key.Return)
+			if (e.Key == Key.Return)
 			{
 				SendData(customCommandEntry.Text);
 				customCommandEntry.Text = "";

@@ -27,27 +27,24 @@ namespace PrintTool
 
 		public async Task Log(string result)
 		{
+			
+			if (result is null or "" or "\n" or "\r" or "\r\n" or "\n\r") { return; } // removing empty lines
 			lineCount++;
-			if (result is null or "" or "\n" or "\r" or "\r\n" or "\n\r") { return; } // removing empty lines and unsupported syntax
 			result = Regex.Replace(result, "(\x9B|\x1B\\[)[0-?]*[ -\\/]*[@-~]", "");
 
 			result = Regex.Replace(result, "(\\0)", "");
 			result = Regex.Replace(result, "(\n\r)", "\r\n");
-
-
-
-
+			if(!result.Contains("\n")) { result += "\r\n"; }
 
 
 			LogBox.Dispatcher.Invoke(new Action(() =>
 			{
-				if (lineCount > 800)
+				if (lineCount > 1500)
 				{
 					LogBox.Text = "";
 					lineCount = 0;
 				}
-				LogBox.AppendText(result);
-				LogBox.ScrollToEnd();
+				LogBox.AppendText(result);				
 			}));
 
 			Scroller.Dispatcher.Invoke(new Action(() =>

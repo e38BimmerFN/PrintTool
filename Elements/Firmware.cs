@@ -7,32 +7,32 @@ namespace PrintTool
 {
 	class Firmware
 	{
-		public static async Task DLAndSend(string filename, string website, Printer printer, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
+		public static async Task DLAndSend(string filename, string website, Logger logger, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
 		{
 			Process usbsend = new();
 
 			button.IsEnabled = false;
 			button.Content = "Proccessing..";
-			await printer.Log("Downloading " + website + filename);
+			await logger.Log("Downloading " + website + filename);
 			await Helper.DownloadOrCopyFile(filename, website);
-			await printer.Log("Download success.");
-			await printer.Log("Sending firmware to printer");
+			await logger.Log("Download success.");
+			await logger.Log("Sending firmware to printer");
 			usbsend.StartInfo.FileName = "Services\\USBSend.exe";
 			usbsend.StartInfo.Arguments = filename;
 			usbsend.StartInfo.CreateNoWindow = true;
 			usbsend.StartInfo.RedirectStandardOutput = true;
-			usbsend.OutputDataReceived += new DataReceivedEventHandler(async (sender, e) => { await printer.Log(e.Data); });
+			usbsend.OutputDataReceived += new DataReceivedEventHandler(async (sender, e) => { await logger.Log(e.Data); });
 			usbsend.Start();
 			await usbsend.WaitForExitAsync(token);
 			if (usbsend.ExitCode == 0)
 			{
 				MessageBox.Show("Firmware upgrade success!");
-				await printer.Log("Firmware upgrade success!");
+				await logger.Log("Firmware upgrade success!");
 			}
 			else
 			{
 				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.");
-				await printer.Log("Firmware upgrade error / canceled. Check USB Connection.");
+				await logger.Log("Firmware upgrade error / canceled. Check USB Connection.");
 			}
 			try { usbsend.Kill(); }
 			catch { MessageBox.Show("Unable to close USBSend"); }

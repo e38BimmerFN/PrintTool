@@ -11,13 +11,13 @@ namespace PrintTool
 {
 	public class ProcessHandler
 	{
+		
+		private string fileToStart = "";
+		private string args = "";
+		private Logger outputDisplay;
+		private Process pc;
 
-		string fileToStart = "";
-		string args = "";
-		TextBox outputDisplay;
-		Process pc;
-
-		public ProcessHandler(string fileToStart, string args, TextBox outputDisplay)
+		public ProcessHandler(string fileToStart, string args, Logger outputDisplay)
 		{
 			this.fileToStart = fileToStart;
 			this.args = args;
@@ -38,13 +38,9 @@ namespace PrintTool
 			await pc.WaitForExitAsync(token);
 		}
 
-		private void DataReceived(object sender, DataReceivedEventArgs e)
+		private async void DataReceived(object sender, DataReceivedEventArgs e)
 		{
-			outputDisplay.Dispatcher.Invoke(new Action(() =>
-			{
-				outputDisplay.AppendText(e.Data + "\n");
-				outputDisplay.ScrollToEnd();
-			}));
+			await outputDisplay.Log(e.Data + "\r\n");
 		}
 
 		private void WriteData(string data)

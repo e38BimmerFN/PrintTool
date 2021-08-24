@@ -59,8 +59,29 @@ namespace PrintTool
 			};
 			GetPrinterAttributesResponse res = await cli.GetPrinterAttributesAsync(req);
 
+			
 			return res;
 
+		}
+
+		public async Task<GetJobAttributesResponse> GetJob(Uri jobUri)
+		{
+			GetJobAttributesRequest req = new()
+			{
+				PrinterUri = ip,
+				JobUrl = jobUri,				
+			};
+
+			return await cli.GetJobAttributesAsync(req);
+		}
+
+		public async Task<GetJobsResponse> GetJobs()
+		{
+			GetJobsRequest req = new()
+			{
+				PrinterUri = ip,				
+			};
+			return await cli.GetJobsAsync(req);
 		}
 
 
@@ -93,14 +114,10 @@ namespace PrintTool
 			return;
 		}
 
-		public static async Task SendUSB(string file)
+		public static async Task SendUSB(string file, Logger proc)
 		{
-			Process usbsend = new();
-			usbsend.StartInfo.FileName = "Services\\USBSend.exe";
-			usbsend.StartInfo.Arguments = file;
-			usbsend.StartInfo.CreateNoWindow = true;
-			usbsend.Start();
-			await usbsend.WaitForExitAsync();
+			ProcessHandler usbsend = new("Services\\USBSend.exe", file, proc);
+			await usbsend.Start(new System.Threading.CancellationToken());
 		}
 
 
@@ -137,7 +154,7 @@ namespace PrintTool
 
 			}
 
-			
+
 			output += escapeSequence + "@PJL\r\n"
 				+ "@PJL EOJ NAME = " + args[1] + "\r\n"
 				+ escapeSequence + "\r\n";
@@ -150,6 +167,6 @@ namespace PrintTool
 
 	}
 
-	
+
 }
 

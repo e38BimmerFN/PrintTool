@@ -63,10 +63,10 @@
 							</GroupBox>
 						</UniformGrid>
 					</GroupBox>
-					<GroupBox Header="Logging Options" Grid.Row="2">
+					<GroupBox Header="Connecction Options" Grid.Row="2">
 						<UniformGrid Columns="4">
-							<CheckBox Name="enableSerialCheckBox" Content="Connect to Serial Connections" Click="enableSerialCheckBox_Click" />
-							<CheckBox Name="enableDartCheckBox" Content="Enable Dart Logging" Click="enableDart_Click"/>
+							<CheckBox Name="enableSerialCheckBox" Content="Connect to Serial" Click="enableSerialCheckBox_Click" />
+							<CheckBox Name="enableDartCheckBox" Content="Connect to Dart" Click="enableDart_Click"/>
 							<CheckBox Name="enableTelnetCheckBox" Content="Connect to Dart Telnet" Click="enableTelnet_Click"/>
 							<CheckBox Name="enablePrinterStatus" Content="IPP Feedback" Click="enablePrinterStatus_Click"/>
 						</UniformGrid>
@@ -401,27 +401,20 @@
 		</TabControl>
 		<Grid Grid.Row="1">
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width=".4*"/>
 				<ColumnDefinition Width="10"/>
 				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
 			<TabControl SelectedIndex="0">
-				<TabItem Header="PrintTool">
-					<TextBox x:Name="PrintToolLogs" FontFamily="Consolas"/>
+				<TabItem Header="PrintTool" Name="ptLoggerHere"/>
+				<TabItem Header="Started Process" Name="processLoggerHere"/>
+				<TabItem Header="Clock">
+					<UniformGrid Rows="3">
+						<Label Content="Null" Name="clockTimer" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Arial Black" FontSize="36"/>
+						<Button Content="Start Timer" Name="startClock" Click="startClock_Click"/>
+						<Button x:Name="stopClock" Content="Stop Timer" Click="stopClock_Click"/>
+					</UniformGrid>
 				</TabItem>
-				<TabItem Header="Printer Status">
-					<StackPanel>
-						<Label Name="printerModelLabel" Content=" Model : "/>
-						<Label Name="printerStateLabel" Content=" State : "/>
-						<Label Name="printerErrorLabel" Content=" Error Status : "/>
-						<Label Name="printerPPMLabel" Content=" Pages Per Min : "/>
-						<Label Name="printerQJCLabel" Content=" Queued Job Count : "/>
-					</StackPanel>
-				</TabItem>
-				<TabItem Header="Started Process">
-					<TextBox x:Name="processLogs" FontFamily="Consolas"/>
-				</TabItem>
-
 			</TabControl>
 			<GridSplitter Grid.Column="1" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Stretch"/>
 			<TabControl Grid.Column="2">
