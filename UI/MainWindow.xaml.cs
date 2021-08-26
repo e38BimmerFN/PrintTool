@@ -22,9 +22,8 @@ namespace PrintTool
 		System.Threading.CancellationTokenSource cancelSource = new();
 
 		Logger ptlog = new("PrintTool");
-		Logger procLogs = new("Started Process");
 		Printer currPrinter = new();
-		PrinterConnection printConnection;
+		IPPHandler ippCli;
 		List<SerialConnection> serialConnections = new();
 		List<TelnetConnection> telnetConnections = new();
 
@@ -33,7 +32,7 @@ namespace PrintTool
 		{
 			InitializeComponent();
 			ptLoggerHere.Content = ptlog;
-			processLoggerHere.Content = procLogs;
+
 		}
 
 
@@ -56,7 +55,6 @@ namespace PrintTool
 			await ptlog.Log("Have a good day");
 
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
-			Helper.PopulateListBox(savedPrintJobs, "Data\\Jobs\\");
 			if (!Helper.HPStatus())
 			{
 				MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
@@ -87,7 +85,7 @@ namespace PrintTool
 
 		#region Connections Tab
 
-		#region UI Updates
+		
 		//Printer Details
 		private async void printerModel_TextChanged(object sender, TextChangedEventArgs e)
 		{
@@ -118,7 +116,7 @@ namespace PrintTool
 			if (await Helper.CheckIP(printerIpEntry.Text))
 			{
 				printerIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
-				enablePrinterStatus.IsEnabled = true;
+				getPrinterButton.IsEnabled = true;
 				openEWSButton.IsEnabled = true;
 
 			}
@@ -126,7 +124,7 @@ namespace PrintTool
 			else
 			{
 				printerIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				enablePrinterStatus.IsEnabled = false;
+				getPrinterButton.IsEnabled = false;
 				openEWSButton.IsEnabled = false;
 			}
 
@@ -138,16 +136,16 @@ namespace PrintTool
 			if (await Helper.CheckIP(dartIpEntry.Text))
 			{
 				dartIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
-				enableDartCheckBox.IsEnabled = true;
-				enableTelnetCheckBox.IsEnabled = true;
+				connectTelnetButton.IsEnabled = true;
+				ConnectSnoopyButton.IsEnabled = true;
 				openDartButton.IsEnabled = true;
 			}
 
 			else
 			{
 				dartIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				enableDartCheckBox.IsEnabled = false;
-				enableTelnetCheckBox.IsEnabled = false;
+				connectTelnetButton.IsEnabled = false;
+				ConnectSnoopyButton.IsEnabled = false;
 				openDartButton.IsEnabled = false;
 			}
 		}
@@ -162,101 +160,143 @@ namespace PrintTool
 			System.Diagnostics.Process.Start("explorer", "http://" + printerIpEntry.Text);
 		}
 
-		//Log Settings
-		private async void enableSerialCheckBox_Click(object sender, RoutedEventArgs e)
-		{
-			await Task.Delay(10);
-			currPrinter.enableSerial = enableSerialCheckBox.IsChecked ?? false;
-		}
-		private async void enableDart_Click(object sender, RoutedEventArgs e)
-		{
-			await Task.Delay(10);
-			currPrinter.enableDart = enableDartCheckBox.IsChecked ?? false;
-		}
-		private async void enableTelnet_Click(object sender, RoutedEventArgs e)
-		{
-			await Task.Delay(10);
-			currPrinter.enableTelnet = enableTelnetCheckBox.IsChecked ?? false;
-		}
-		private async void enablePrinterStatus_Click(object sender, RoutedEventArgs e)
-		{
-			await Task.Delay(10);
-			currPrinter.enablePrinterStatus = enablePrinterStatus.IsChecked ?? false;
-		}
-		#endregion ui changes
 
 
-		bool currentlyConnected = false;
-		private async void connectButton_Click(object sender, RoutedEventArgs e)
+		bool serialConnected = false;
+		private async void connectSerial_Click(object sender, RoutedEventArgs e)
 		{
-			if (currentlyConnected) //stop
+			if (!serialConnected)
 			{
-				currentlyConnected = false;
-				await ptlog.Log("Disconnecting.");
-				foreach (SerialConnection serial in serialConnections) { serial.Close(); }
-				foreach (TelnetConnection telnet in telnetConnections) { telnet.Close(); }
-				connectButton.Background = System.Windows.Media.Brushes.LightGreen;
-				connectButton.Content = "Conect and Flush";
-			}
-			else //start
-			{
+				await ptlog.Log("Connecting to serial connections...");
 				serialConnectionsTabControl.Items.Clear();
-				telnetConnectionsTabControl.Items.Clear();
-				foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\"))
+				foreach (string portname in SerialConnection.GetPorts())
 				{
-					if (file.Contains("PrintToolLog.txt")) { continue; }
-					File.Delete(file);
-				}
-				if (enableSerialCheckBox.IsChecked ?? false)
-				{
-					await ptlog.Log("Connecting to serial connections...");
-					foreach (string portname in SerialConnection.GetPorts())
-					{
-						await ptlog.Log("Connecting to " + portname);
-						SerialConnection conection = new(portname);
-						TabItem tab = new() { Content = conection, Header = portname };
-						serialConnectionsTabControl.Items.Add(tab);
-						serialConnections.Add(conection);
-
-					}
-				}
-				if (enableTelnetCheckBox.IsChecked ?? false)
-				{
-					if (dartIpEntry.Text is null or "0.0.0.0") { MessageBox.Show("Dart IP is invalid"); }
-					else
-					{
-						foreach (int port in TelnetConnection.GetPorts())
-						{
-							await ptlog.Log("Connecting to " + port);
-							TelnetConnection connection = new(currPrinter.dartIp, port);
-							TabItem tab = new() { Content = connection, Header = port.ToString() };
-							telnetConnectionsTabControl.Items.Add(tab);
-							telnetConnections.Add(connection);
-						}
-					}
-				}
-
-				if (enablePrinterStatus.IsChecked ?? false)
-				{
-					printConnection = new(currPrinter.printerIp); 		
-					// TODO This
+					await ptlog.Log("Connecting to " + portname);
+					SerialConnection conection = new(portname);
+					TabItem tab = new() { Content = conection, Header = portname };
+					serialConnectionsTabControl.Items.Add(tab);
+					serialConnections.Add(conection);
 
 				}
-				currentlyConnected = true;
-				connectButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				connectButton.Content = "Disconnect";
-				await ptlog.Log("Finished connecting.");
-
+				connectSerialButton.Content = "Disconnect from Serial";
+				connectSerialButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				serialConnected = true;
+				await ptlog.Log("Finished");
 			}
+			else
+			{
+				await ptlog.Log("Disconnecting from serial connections....");
+				foreach (SerialConnection sc in serialConnections) { sc.Close(); }
+				connectSerialButton.Content = "Connect to Serial";
+				connectSerialButton.Background = System.Windows.Media.Brushes.LightGreen;
+				serialConnected = false;
+				await ptlog.Log("Finished");
+			}
+
 		}
+		bool snoopyConnected = false;
+		private async void connectSnoopy_Click(object sender, RoutedEventArgs e)
+		{
+			//TODO
+		}
+		bool telnetConnected = false;
+		private async void connectTelnet_Click(object sender, RoutedEventArgs e)
+		{
+			if (!telnetConnected)
+			{
+				await ptlog.Log("Connecting to telnet connections...");
+				foreach (int port in TelnetConnection.GetPorts())
+				{
+					await ptlog.Log("Connecting to " + port);
+					TelnetConnection connection = new(currPrinter.dartIp, port);
+					TabItem tab = new() { Content = connection, Header = port.ToString() };
+					telnetConnectionsTabControl.Items.Add(tab);
+					telnetConnections.Add(connection);
+				}
+				connectTelnetButton.Content = "Disconnect from Telnet";
+				connectTelnetButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				telnetConnected = true;				
+				await ptlog.Log("Finished");	
+				
+			}
+			else
+			{
+				await ptlog.Log("Disconnecting from Telnet connections....");
+				foreach (TelnetConnection tc in telnetConnections) { tc.Close(); }
+				connectTelnetButton.Content = "Connect to Telnet";
+				connectTelnetButton.Background = System.Windows.Media.Brushes.LightGreen;
+				telnetConnected = false;
+				await ptlog.Log("Finished");
+			}
+
+		}
+
+		private async void flushLogs_Click(object sender, RoutedEventArgs e)
+		{
+			foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\"))
+			{
+				if (file.Contains("LogPrintTool.txt")) { continue; }
+				File.Delete(file);
+			}
+			await ptlog.Log("Flushed Logs");
+		}
+
+		private async void getPrinter_Click(object sender, RoutedEventArgs e)
+		{
+			var response = await ippCli.GetPrinterDetails();
+			if (response is null) { return; }
+			List<SharpIpp.Model.IppAttribute> atl = response.Sections[1].Attributes;
+			ippMedia.Items.Clear();
+			ippMediaSource.Items.Clear();
+			ippPaperAttributes.Items.Clear();
+			ippOutputBin.Items.Clear();
+			ippDuplex.Items.Clear();
+			foreach (SharpIpp.Model.IppAttribute at in atl)
+			{
+				if (true)
+				{
+					switch (at.Name)
+					{
+						case "media-supported":
+							ippMedia.Items.Add(at.Value);
+							break;
+						case "media-source-supported":
+							ippMediaSource.Items.Add(at.Value);
+							break;
+						case "media-type-supported":
+							ippPaperAttributes.Items.Add(at.Value);
+							break;
+						case "output-bin-supported":
+							ippOutputBin.Items.Add(at.Value);
+							break;
+						case "sides-supported":
+							ippDuplex.Items.Add(at.Value);
+							break;
+
+						default:
+							break;
+					}
+				}
+			}
+			try
+			{
+				ippMedia.SelectedIndex = 0;
+				ippMediaSource.SelectedIndex = 0;
+				ippPaperAttributes.SelectedIndex = 0;
+				ippOutputBin.SelectedIndex = 0;
+				ippDuplex.SelectedIndex = 0;
+			}
+			catch { }
+		}
+
+
+
+
 		private void openLogs_Click(object sender, RoutedEventArgs e)
 		{
 			System.Diagnostics.Process.Start("explorer", Directory.GetCurrentDirectory().ToString() + @"\Data\Logs\Temp\");
 		}
-		private void captureData_Click(object sender, RoutedEventArgs e)
-		{
 
-		}
 
 		//Saving
 		public void ConnectionsSaveDefaults(object sender, EventArgs e)
@@ -276,10 +316,8 @@ namespace PrintTool
 			printerEngineEntry.Text = currPrinter.engine;
 			printerTypeEntry.Text = currPrinter.type;
 			printerIpEntry.Text = currPrinter.printerIp;
-			enableDartCheckBox.IsChecked = currPrinter.enableDart;
-			enableTelnetCheckBox.IsChecked = currPrinter.enableTelnet;
 			dartIpEntry.Text = currPrinter.dartIp;
-			enableSerialCheckBox.IsChecked = currPrinter.enableSerial;
+
 		}
 		public async void ConnectionsDeleteDefaults(object sender, EventArgs e)
 		{
@@ -376,13 +414,13 @@ namespace PrintTool
 			if (joltEnableCSV.IsChecked ?? false)
 			{
 				await ptlog.Log($"Running fimClient with these commands : {joltFIMSelect.Text} -x {currPrinter.printerIp} -t bios -n arm64 -c {joltCSVSelect.Text} {joltBuildSelect.Text}");
-				ProcessHandler handler = new(joltFIMSelect.Text, $"-x {currPrinter.printerIp} -t bios -n arm64 -c {joltCSVSelect.Text} {joltBuildSelect.Text}", procLogs);
+				ProcessHandler handler = new(joltFIMSelect.Text, $"-x {currPrinter.printerIp} -t bios -n arm64 -c {joltCSVSelect.Text} {joltBuildSelect.Text}", ptlog);
 				await handler.Start(cancelSource.Token);
 			}
 			else
 			{
 				await ptlog.Log($"Running fimClient with these commands : {joltFIMSelect.Text} -x {currPrinter.printerIp} -t bios -n arm64 {joltBuildSelect.Text}");
-				ProcessHandler handler = new(joltFIMSelect.Text, $"-x {currPrinter.printerIp} -t bios -n arm64 {joltBuildSelect.Text}", procLogs);
+				ProcessHandler handler = new(joltFIMSelect.Text, $"-x {currPrinter.printerIp} -t bios -n arm64 {joltBuildSelect.Text}", ptlog);
 				await handler.Start(cancelSource.Token);
 			}
 
@@ -619,71 +657,35 @@ namespace PrintTool
 
 		#endregion Firmware
 
-		#region Printing tab 
-		private List<string> generateArgs()
+
+		#region IPP Tab
+
+		private async void ippSendJob_Click(object sender, RoutedEventArgs e)
 		{
+			string template = File.ReadAllText(@"Data\Jobs\template.txt");
+			template = template.Replace("RMEDIA", ippMedia.Text);
+			template = template.Replace("RDUPLEX", ippDuplex.Text);
+			template = template.Replace("RSOURCE", ippMediaSource.Text);
+			template = template.Replace("ROUTBIN", ippOutputBin.Text);
+			template = template.Replace("RCOPIES", ippCopies.Text);
+			template = template.Replace("RUSERNAME", Environment.UserName);
 
-			string duplex = "OFF";
-			string duplexMode = "";
-			if (simplexButton.IsChecked == true) { duplex = "OFF"; }
-			if (duplexLEButton.IsChecked == true) { duplex = "ON"; duplexMode = "LONGEDGE"; }
-			if (duplexSEButton.IsChecked == true) { duplex = "ON"; duplexMode = "SHORTEDGE"; }
+			var newfile = File.CreateText(@"Data\Jobs\Temp.txt");
 
-			List<string> args = new();
-			args.Add("temp.ps"); //filename
-			args.Add("PrintTool Selection Send"); //jobname
-												  //what language
-			args.Add(printPages.Text); // copies of pages
-			args.Add(duplex); // duplexing on or off
-			args.Add(duplexMode); //duplexing selection
-			args.Add(paperTypeSelection.Text);
-			args.Add(printSourceTray.Text);
-			args.Add(printOutputTray.Text);
-			args.Add(printCopies.Text);
-
-			return args;
+			foreach (int i in Enumerable.Range(0, int.Parse(ippPages.Text)))
+			{
+				string tempstr = template;
+				tempstr = tempstr.Replace("RCURPAGE", i.ToString());
+				newfile.WriteLine(tempstr + "\f\r\n");
+			}
+			newfile.Close();
+			await ippCli.SendJob(@"Data\Jobs\Temp.txt", ippMedia.Text, ippDuplex.Text, ippMediaSource.Text, ippOutputBin.Text, int.Parse(ippCopies.Text));
 		}
 
-		private async void printSend9100Button(object sender, RoutedEventArgs e)
-		{
-			string filename = PrinterConnection.CreateJob(generateArgs());
-			await PrinterConnection.SendIP(printerIpEntry.Text, filename);
-		}
-		private async void printSendUSBButton(object sender, RoutedEventArgs e)
-		{
-			string filename = PrinterConnection.CreateJob(generateArgs());
-			await PrinterConnection.SendUSB(filename, procLogs);
-
-		}
-		private void printSaveJob_Click(object sender, RoutedEventArgs e)
-		{
-			if (File.Exists(@"Data\Jobs\" + printNameJob.Text)) { File.Delete(@"Data\Jobs\" + printNameJob.Text); }
-			File.Copy(PrinterConnection.CreateJob(generateArgs()), @"Data\Jobs\" + printNameJob.Text);
-			Helper.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
-		}
-		private void printDeteleJob_Click(object sender, RoutedEventArgs e)
-		{
-			if (!File.Exists(@"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString())) { MessageBox.Show(savedPrintJobs.SelectedItem.ToString() + "Doesnt exist"); }
-			File.Delete(@"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
-			Helper.PopulateListBox(savedPrintJobs, @"Data\Jobs\");
-		}
-		private async void printSendJob_Click(object sender, RoutedEventArgs e)
-		{
-			if (savedPrintJobs.SelectedItem == null) { MessageBox.Show("Please select something first."); return; }
-			await PrinterConnection.SendIP(printerIpEntry.Text, @"Data\Jobs\" + savedPrintJobs.SelectedItem.ToString());
-		}
+		#endregion IPP
 
 
-		#endregion
 
-		private async void Button_Click(object sender, RoutedEventArgs e)
-		{
-			PrinterConnection cli = new("15.86.118.32");
-			var result = await cli.SendJob("test.txt", sides: SharpIpp.Model.Sides.TwoSidedLongEdge);
-			var jobstate = await cli.GetJob(new Uri(result.JobUri));
-
-
-		}
 
 		#region misc
 		int time;
@@ -714,8 +716,9 @@ namespace PrintTool
 			clockTime.Stop();
 		}
 
-		#endregion
 
+
+		#endregion
 
 	}
 }

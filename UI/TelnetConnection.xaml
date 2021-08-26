@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:PrintTool"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="White">
+    <Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width=".75*"/>
 			<ColumnDefinition Width=".4*"/>

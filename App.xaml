@@ -4,9 +4,11 @@
              xmlns:local="clr-namespace:PrintTool"
              StartupUri="UI/MainWindow.xaml">
     <Application.Resources>
+
 		<Style TargetType="ComboBoxItem">
 			<Setter Property="HorizontalContentAlignment" Value="Left" />
 			<Setter Property="VerticalContentAlignment" Value="Center" />
 		</Style>
 	</Application.Resources>
+
 </Application>

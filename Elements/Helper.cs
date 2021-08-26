@@ -22,7 +22,7 @@ namespace PrintTool
 		{
 			string from = @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\";
 			string to = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\";
-			int version = int.Parse(File.ReadAllLines(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt")[0]);
+			
 			if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
 			{
 				MessageBox.Show("Now updating or installing into " + to);
@@ -53,6 +53,7 @@ namespace PrintTool
 			}
 			else
 			{
+				int version = int.Parse(File.ReadAllLines(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt")[0]);
 				if (Settings.Default.Version < version)
 				{
 					MessageBox.Show("This program is out of date. Please run the installer");
@@ -65,7 +66,6 @@ namespace PrintTool
 				}
 			}
 		}
-
 
 
 		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "", bool flip = false)
