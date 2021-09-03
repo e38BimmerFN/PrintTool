@@ -5,7 +5,7 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
-		Title="PrintTool by Derek Hearst" Height="972" Width="1394" ContentRendered="LoadTrigger" ResizeMode="CanResize" SizeToContent="Manual" Icon="/favicon.ico">
+		Title="PrintTool by Derek Hearst" Height="972" Width="1394" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Icon="/favicon.ico">
 
 	<Grid>
 		<Grid.RowDefinitions>
@@ -19,55 +19,90 @@
 						<ColumnDefinition Width="*"/>
 						<ColumnDefinition Width=".3*"/>
 					</Grid.ColumnDefinitions>
-					<DockPanel>
-						<UniformGrid Columns="4" DockPanel.Dock="Top">
+					<Grid>
+						<Grid.RowDefinitions>
+							<RowDefinition Height="auto"/>
+							<RowDefinition Height="auto"/>
+							<RowDefinition Height="*"/>
+							<RowDefinition Height="auto" MinHeight="100"/>
+						</Grid.RowDefinitions>
+						<UniformGrid Columns="4" MinHeight="70">
 							<GroupBox Header="Printer IP" BorderBrush="{x:Null}">
-								<TextBox Name="printerIpEntry" Text="0.0.0.0" TextChanged="printerIpEntry_TextChanged"  VerticalAlignment="Center" />
+								<TextBox Name="printerIpEntry" Text="0.0.0.0" TextChanged="PrinterIpEntry_TextChanged"  VerticalAlignment="Center" />
 							</GroupBox>
 							<GroupBox Header="" BorderBrush="{x:Null}">
-								<Button x:Name="openEWSButton" Content="Open EWS" Click="openEWSButton_Click"/>
+								<Button x:Name="openEWSButton" Content="Open EWS" Click="OpenEWSButton_Click"/>
 							</GroupBox>
 							<GroupBox Header="Dart IP" BorderBrush="{x:Null}">
-								<TextBox Name="dartIpEntry" Text="0.0.0.0" TextChanged="dartIpEntry_TextedChanged" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+								<TextBox Name="dartIpEntry" Text="0.0.0.0" TextChanged="DartIpEntry_TextedChanged" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
 							</GroupBox>
 							<GroupBox Header="" BorderBrush="{x:Null}">
-								<Button x:Name="openDartButton" Content="Open Dart Site" Click="openDartButton_Click"/>
+								<Button x:Name="openDartButton" Content="Open Dart Site" Click="OpenDartButton_Click"/>
 							</GroupBox>
 						</UniformGrid>
-						<GroupBox Header="Printer Details" DockPanel.Dock="Top">
-							<UniformGrid Rows="4">
-								<GroupBox Header="Printer type" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-									<ComboBox Name="printerTypeEntry" SelectedIndex="2" SelectionChanged="printerTypeEntry_SelectionChanged">
-										<ComboBoxItem Content="Jedi"/>
-										<ComboBoxItem Content="Dune"/>
-										<ComboBoxItem Content="Sirus"/>
-									</ComboBox>
-								</GroupBox>
-								<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-									<TextBox Text="" Name="printerModelEntry" TextChanged="printerModel_TextChanged"/>
-								</GroupBox>
-								<GroupBox Header="Model Revison" Grid.Row="1" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-									<TextBox Text="" Name="printerEngineEntry" TextChanged="printerEngine_TextChanged" />
-								</GroupBox>
-								<GroupBox Header="PET Label" Grid.Row="2" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-									<TextBox Text="" Name="printerIdEntry" TextChanged="printerID_TextChanged"/>
-								</GroupBox>
+						<GroupBox Header="Printer Details" Grid.Row="1">
+							<UniformGrid Columns="4">
+								<UniformGrid Rows="4">
+									<GroupBox Header="Printer type" BorderBrush="{x:Null}" DockPanel.Dock="Top">
+										<ComboBox Name="printerTypeEntry" SelectedIndex="2" SelectionChanged="PrinterTypeEntry_SelectionChanged">
+											<ComboBoxItem Content="Jedi"/>
+											<ComboBoxItem Content="Dune"/>
+											<ComboBoxItem Content="Sirus"/>
+										</ComboBox>
+									</GroupBox>
+									<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}" DockPanel.Dock="Top">
+										<TextBox Text="" Name="printerModelEntry" TextChanged="PrinterModel_TextChanged"/>
+									</GroupBox>
+									<GroupBox Header="Model Revison" Grid.Row="1" BorderBrush="{x:Null}" DockPanel.Dock="Top">
+										<TextBox Text="" Name="printerEngineEntry" TextChanged="PrinterEngine_TextChanged" />
+									</GroupBox>
+									<GroupBox Header="PET Label" Grid.Row="2" BorderBrush="{x:Null}" DockPanel.Dock="Top">
+										<TextBox Text="" Name="printerIdEntry" TextChanged="PrinterID_TextChanged"/>
+									</GroupBox>
+								</UniformGrid>
+								<UniformGrid Rows="4">
+									<GroupBox Header="Printer Name" BorderBrush="{x:Null}">
+										<TextBox Name="ippName" IsReadOnly="True"/>
+									</GroupBox>
+									<GroupBox Header="Printer Firmware" BorderBrush="{x:Null}">
+										<TextBox Name="ippFirmwareInstalled" IsReadOnly="True"/>
+									</GroupBox>
+									<GroupBox Header="Pages Per Min" BorderBrush="{x:Null}">
+										<TextBox Name="ippPPM" IsReadOnly="True"/>
+									</GroupBox>
+									<GroupBox Header="Color Supported" BorderBrush="{x:Null}">
+										<TextBox Name="ippColorSupport" IsReadOnly="True"/>
+									</GroupBox>
+								</UniformGrid>
+								<UniformGrid Rows="4">
+									<GroupBox Header="Printer State" BorderBrush="{x:Null}">
+										<TextBox Name="ippPrinterState"/>
+									</GroupBox>
+									<GroupBox Header="Printer State Message" BorderBrush="{x:Null}">
+										<TextBox Name="ippPrinterStateMessage"/>
+									</GroupBox>
+								</UniformGrid>
+								<UniformGrid Rows="4">
+									<GroupBox Header="Black Toner Level" BorderBrush="{x:Null}">
+										<TextBox Name="ippTonerLevel"/>
+									</GroupBox>
+								</UniformGrid>
+
 							</UniformGrid>
 						</GroupBox>
-						<GroupBox Header="Logging">
-							<UniformGrid Columns="6">
-								<Button x:Name="connectSerialButton" Content="Connect To Serial" Click="connectSerial_Click" />
-								<Button x:Name="connectTelnetButton" Content="Connect To Telnet" Click="connectSerial_Click"/>
-								<Button x:Name="ConnectSnoopyButton" Content="Connect To Snoopy On Dart" Click="connectSnoopy_Click"/>
-								<Button x:Name="openLogs" Content="Open Logs" Click="openLogs_Click" Background="#7F0000FF"/>
-								<Button x:Name="flushLogs" Content="Flush Logs" Click="flushLogs_Click" Background="#7FFF0000"/>
-								<Button x:Name="getPrinterButton" Content="Get Printer Details" Click="getPrinter_Click" Background="#7F00FF00"/>
-							</UniformGrid>
+						<GroupBox Header="Logging" Grid.Row="3">
+							<UniformGrid Rows="1">
+								<Button x:Name="connectSerialButton" Content="Connect To Serial" Click="ConnectSerial_Click" Background="LightGreen" />
+								<Button x:Name="connectTelnetButton" Content="Connect To Telnet" Click="ConnectTelnet_Click" Background="LightGreen"/>
+								<Button x:Name="ConnectSnoopyButton" Content="Connect To Snoopy On Dart" Click="ConnectSnoopy_Click" Background="LightGreen" />
+								<Button x:Name="openLogs" Content="Open Logs" Click="OpenLogs_Click" Background="#7F0000FF"/>
+								<Button x:Name="flushLogs" Content="Flush Logs" Click="FlushLogs_Click" Background="#7FFF0000"/>
+								<Button x:Name="refreshPrinterAttributes" Content="Get Printer Attributes" Click="refreshPrinterAttributes_Click" Background="#7F00FF00"/>							</UniformGrid>
 						</GroupBox>
 
 
 
-					</DockPanel>
+					</Grid>
 					<GroupBox Header="Saved Connections" Grid.Column="1">
 						<Grid Grid.Column="1">
 							<Grid.RowDefinitions>
@@ -83,48 +118,49 @@
 							</UniformGrid>
 						</Grid>
 					</GroupBox>
-					
+
 
 				</Grid>
 			</TabItem>
-			
+
 			<TabItem x:Name="firmwareTab" Header="Firmware">
 				<TabControl>
-					<TabItem Header="Jolt">
+					<TabItem Header="Jolt" Name="joltTab">
 						<Grid>
 							<Grid.RowDefinitions>
-								<RowDefinition Height=".6*"/>
-								<RowDefinition Height=".6*"/>
-								<RowDefinition Height="0.4*"/>
+								<RowDefinition Height="auto"/>
+								<RowDefinition Height="auto"/>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="auto" MinHeight="100"/>
 
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TabControl Grid.Row="0" Name="joltFwTab" SelectionChanged="joltFwTab_SelectionChanged">
+							<TabControl Grid.Row="0" Name="joltFwTab" SelectionChanged="JoltFwTab_SelectionChanged">
 								<TabItem Header="Daily">
 									<UniformGrid Rows="2">
 										<GroupBox Header="Select Year" BorderBrush="{x:Null}" >
-											<ComboBox Name="joltYearSelect" SelectionChanged="joltYearSelect_SelectionChanged"/>
+											<ComboBox Name="joltYearSelect" SelectionChanged="JoltYearSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Month" BorderBrush="{x:Null}">
-											<ComboBox Name="joltMonthSelect" SelectionChanged="joltMonthSelect_SelectionChanged"/>
+											<ComboBox Name="joltMonthSelect" SelectionChanged="JoltMonthSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Day" BorderBrush="{x:Null}">
-											<ComboBox Name="joltDaySelect" SelectionChanged="joltDaySelect_SelectionChanged"/>
+											<ComboBox Name="joltDaySelect" SelectionChanged="JoltDaySelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Product" BorderBrush="{x:Null}">
-											<ComboBox Name="joltProductSelect" SelectionChanged="joltProductSelect_SelectionChanged"/>
+											<ComboBox Name="joltProductSelect" SelectionChanged="JoltProductSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Version" BorderBrush="{x:Null}">
-											<ComboBox Name="joltVersionSelect" SelectionChanged="joltVersionSelect_SelectionChanged"/>
+											<ComboBox Name="joltVersionSelect" SelectionChanged="JoltVersionSelect_SelectionChanged"/>
 										</GroupBox>
 									</UniformGrid>
 								</TabItem>
 								<TabItem Header="Custom Link">
 									<GroupBox Header="Please input custom link here" BorderBrush="{x:Null}">
-										<TextBox x:Name="joltCustomLink" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextChanged="joltCustomLink_TextChanged"/>
+										<TextBox x:Name="joltCustomLink" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextChanged="JoltCustomLink_TextChanged"/>
 									</GroupBox>
 								</TabItem>
 							</TabControl>
@@ -148,9 +184,9 @@
 										<ColumnDefinition Width="1*"/>
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
-									<Button x:Name="joltStart" Content="Start FIM" Grid.Column="0" Background="#7F00FF00" Click="joltStart_Click"/>
+									<Button x:Name="joltStart" Content="Start FIM" Grid.Column="0" Background="#7F00FF00" Click="JoltStart_Click"/>
 									<CheckBox x:Name="joltEnableCSV" Content="Enable CSV" VerticalAlignment="Center" Grid.Column="1"/>
-									<Button x:Name="joltOpenFW" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF" Click="joltOpenFW_Click"/>
+									<Button x:Name="joltOpenFW" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF" Click="JoltOpenFW_Click"/>
 								</Grid>
 							</GroupBox>
 
@@ -159,10 +195,10 @@
 								<UniformGrid Rows="4">
 									<GroupBox Header="Inventors">
 										<UniformGrid Columns="4">
-											<Button x:Name="joltInventorsBell" Content="Bell" Click="joltInventorsBell_Click"/>
-											<Button x:Name="joltInventorsCurie" Content="Curie" Click="joltInventorsCurie_Click" />
-											<Button x:Name="joltInventorsEdison" Content="Edison" Click="joltInventorsEdison_Click"/>
-											<Button x:Name="joltInventorsHopper" Content="Hopper" Click="joltInventorsHopper_Click"/>
+											<Button x:Name="joltInventorsBell" Content="Bell" Click="JoltInventorsBell_Click"/>
+											<Button x:Name="joltInventorsCurie" Content="Curie" Click="JoltInventorsCurie_Click" />
+											<Button x:Name="joltInventorsEdison" Content="Edison" Click="JoltInventorsEdison_Click"/>
+											<Button x:Name="joltInventorsHopper" Content="Hopper" Click="JoltInventorsHopper_Click"/>
 										</UniformGrid>
 									</GroupBox>
 								</UniformGrid>
@@ -171,38 +207,38 @@
 
 						</Grid>
 					</TabItem>
-					<TabItem Header="Sirus" IsSelected="True">
+					<TabItem Header="Sirus" Name="sirusTab">
 						<Grid>
 							<Grid.RowDefinitions>
-								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".5*"/>
-								<RowDefinition Height=".3*"/>
+								<RowDefinition Height="auto"/>
+								<RowDefinition Height="auto"/>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="auto" MinHeight="100"/>
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
-							<TabControl Grid.Row="0" Name="sirusFwTab" SelectionChanged="sirusFwTab_SelectionChanged">
+							<TabControl Grid.Row="0" Name="sirusFwTab" SelectionChanged="SirusFwTab_SelectionChanged">
 								<TabItem Header="Daily">
 									<UniformGrid Rows="1">
 										<GroupBox Header="Select SGP" BorderBrush="{x:Null}" >
-											<ComboBox Name="sirusSGPSelect" SelectionChanged="sirusSGPSelect_SelectionChanged"/>
+											<ComboBox Name="sirusSGPSelect" SelectionChanged="SirusSGPSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Dist" BorderBrush="{x:Null}">
-											<ComboBox Name="sirusDistSelect" SelectionChanged="sirusDistSelect_SelectionChanged"/>
+											<ComboBox Name="sirusDistSelect" SelectionChanged="SirusDistSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Version" BorderBrush="{x:Null}">
-											<ComboBox Name="sirusFWVersionSelect" SelectionChanged="sirusFWVersionSelect_SelectionChanged"/>
+											<ComboBox Name="sirusFWVersionSelect" SelectionChanged="SirusFWVersionSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Branch" BorderBrush="{x:Null}">
-											<ComboBox Name="sirusBranchSelect" SelectionChanged="sirusBranchSelect_SelectionChanged"/>
+											<ComboBox Name="sirusBranchSelect" SelectionChanged="SirusBranchSelect_SelectionChanged"/>
 										</GroupBox>
 									</UniformGrid>
 								</TabItem>
 								<TabItem Header="Custom Link">
 									<GroupBox Header="Please input custom link here" BorderBrush="{x:Null}">
-										<TextBox x:Name="sirusCustomLink" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextChanged="siriusCustomLink_TextChanged"/>
+										<TextBox x:Name="sirusCustomLink" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextChanged="SiriusCustomLink_TextChanged"/>
 									</GroupBox>
 								</TabItem>
 							</TabControl>
@@ -211,17 +247,17 @@
 							</GroupBox>
 
 							<UniformGrid  Grid.Row="3" Columns="3">
-								<Button x:Name="sirusSendFW" Content="Download and Send" Background="#7F00FF00" Click="sirusSendFW_Click"/>
-								<Button x:Name="sirusCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="sirusCancelFW_Click"/>
-								<Button x:Name="sirusOpenFW" Content="Open FW Link" Background="#7F0000FF" Click="sirusOpenFW_Click" />
+								<Button x:Name="sirusSendFW" Content="Download and Send" Background="#7F00FF00" Click="SirusSendFW_Click"/>
+								<Button x:Name="sirusCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="SirusCancelFW_Click"/>
+								<Button x:Name="sirusOpenFW" Content="Open FW Link" Background="#7F0000FF" Click="SirusOpenFW_Click" />
 							</UniformGrid>
 
-							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
+							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="8" >
 								<UniformGrid Rows="4">
 									<GroupBox Header="Yolo">
 										<UniformGrid Columns="2">
-											<Button x:Name="yoloSecureConvert" Content="Convert Yolo To Secured" Click="yoloSecureConvert_Click"/>
-											<Button x:Name="yoloUnsecureConvert" Content="Convert Yolo to Unsecured" Click="yoloUnsecureConvert_Click"/>
+											<Button x:Name="yoloSecureConvert" Content="Convert Yolo To Secured" Click="YoloSecureConvert_Click"/>
+											<Button x:Name="yoloUnsecureConvert" Content="Convert Yolo to Unsecured" Click="YoloUnsecureConvert_Click"/>
 										</UniformGrid>
 									</GroupBox>
 								</UniformGrid>
@@ -230,32 +266,32 @@
 
 						</Grid>
 					</TabItem>
-					<TabItem Header="DUNE">
+					<TabItem Header="DUNE" Name="duneTab">
 						<Grid>
 							<Grid.RowDefinitions>
-								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".3*"/>
-								<RowDefinition Height=".5*"/>
-								<RowDefinition Height="0.3*"/>
+								<RowDefinition Height="auto"/>
+								<RowDefinition Height="auto"/>
+								<RowDefinition Height="*"/>
+								<RowDefinition Height="auto" MinHeight="100"/>
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>
-								<ColumnDefinition Width="*"/>
+								<ColumnDefinition/>
 							</Grid.ColumnDefinitions>
-							<TabControl Grid.Row="0" Name="duneFwTab" SelectionChanged="duneFwTab_SelectionChanged">
+							<TabControl Grid.Row="0" Name="duneFwTab" SelectionChanged="DuneFwTab_SelectionChanged">
 								<TabItem Header="Daily">
 									<UniformGrid Rows="1">
 										<GroupBox Header="Select Version" BorderBrush="{x:Null}" >
-											<ComboBox Name="duneVersionSelect" SelectionChanged="duneVersionSelect_SelectionChanged"/>
+											<ComboBox Name="duneVersionSelect" SelectionChanged="DuneVersionSelect_SelectionChanged"/>
 										</GroupBox>
 										<GroupBox Header="Select Model" BorderBrush="{x:Null}">
-											<ComboBox Name="duneModelSelect" SelectionChanged="duneModelSelect_SelectionChanged"/>
+											<ComboBox Name="duneModelSelect" SelectionChanged="DuneModelSelect_SelectionChanged"/>
 										</GroupBox>
 									</UniformGrid>
 								</TabItem>
 								<TabItem Header="Custom Link">
 									<GroupBox Header="Please input custom link here" BorderBrush="{x:Null}">
-										<TextBox x:Name="duneCustomLink" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextChanged="duneCustomLink_TextChanged"/>
+										<TextBox x:Name="duneCustomLink" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextChanged="DuneCustomLink_TextChanged"/>
 									</GroupBox>
 								</TabItem>
 							</TabControl>
@@ -264,16 +300,16 @@
 							</GroupBox>
 
 							<UniformGrid  Grid.Row="3" Columns="3">
-								<Button x:Name="duneSendFW" Content="Download and Send" Background="#7F00FF00" Click="duneSendFW_Click"/>
-								<Button x:Name="duneCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="duneCancelFW_Click"/>
-								<Button x:Name="duneOpenFw" Content="Open FW Link" Background="#7F0000FF" Click="duneOpenFw_Click" />
+								<Button x:Name="duneSendFW" Content="Download and Send" Background="#7F00FF00" Click="DuneSendFW_Click"/>
+								<Button x:Name="duneCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="DuneCancelFW_Click"/>
+								<Button x:Name="duneOpenFw" Content="Open FW Link" Background="#7F0000FF" Click="DuneOpenFw_Click" />
 							</UniformGrid>
 
 							<GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
 								<UniformGrid Rows="4">
 									<GroupBox Header="Yolo">
 										<UniformGrid Columns="2">
-											<Button x:Name="duneUtilityFolder" Content="Dune Utility" Click="duneUtilityFolder_Click"/>
+											<Button x:Name="duneUtilityFolder" Content="Dune Utility" Click="DuneUtilityFolder_Click"/>
 										</UniformGrid>
 									</GroupBox>
 								</UniformGrid>
@@ -281,20 +317,20 @@
 						</Grid>
 					</TabItem>
 				</TabControl>
-			</TabItem>			
+			</TabItem>
 			<TabItem Header="Print">
 				<UniformGrid Columns="2">
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="auto"/>
 							<RowDefinition Height="*"/>
-							<RowDefinition Height=".25*"/>
+							<RowDefinition Height="Auto" MinHeight="100"/>
 						</Grid.RowDefinitions>
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="*"/>							
-						</Grid.ColumnDefinitions>						
-						<UniformGrid Columns="1" Grid.Row="1">
+							<ColumnDefinition Width="*"/>
+						</Grid.ColumnDefinitions>
+						<UniformGrid Columns="1" Grid.Row="0">
 							<GroupBox Header="Pages and Copies">
 								<UniformGrid Rows="1">
 									<GroupBox Header="Pages"  BorderBrush="{x:Null}">
@@ -303,10 +339,6 @@
 									<GroupBox Header="Copies" BorderBrush="{x:Null}">
 										<TextBox x:Name="ippCopies" Text="1"/>
 									</GroupBox>
-									<GroupBox Header="" BorderBrush="{x:Null}">
-										<CheckBox Content="Collated" x:Name="ippCollated" VerticalAlignment="Center" />
-									</GroupBox>
-									
 								</UniformGrid>
 							</GroupBox>
 							<GroupBox Header="Supported Media" BorderBrush="{x:Null}">
@@ -319,49 +351,55 @@
 							<GroupBox Header="Source Tray" BorderBrush="{x:Null}">
 								<ComboBox Name="ippMediaSource"/>
 							</GroupBox>
-							<GroupBox Header="Output Tray" BorderBrush="{x:Null}">
-								<ComboBox Name="ippOutputBin"/>
-							</GroupBox>
+
 
 						</UniformGrid>
-						<UniformGrid Grid.Row="1" Grid.Column="2" Columns="1">
+						<UniformGrid Grid.Row="0" Grid.Column="2" Columns="1" Rows="4">
+							<GroupBox Header="Coallate" BorderBrush="{x:Null}">
+								<ComboBox Name="ippCollate"/>
+							</GroupBox>
 							<GroupBox Header="Supported Paper Attributes" BorderBrush="{x:Null}">
 								<ComboBox Name="ippPaperAttributes"/>
 							</GroupBox>
 							<GroupBox Header="Finishing" BorderBrush="{x:Null}">
 								<ComboBox Name="ippFinishings"/>
 							</GroupBox>
+							<GroupBox Header="Output Tray" BorderBrush="{x:Null}">
+								<ComboBox Name="ippOutputBin"/>
+							</GroupBox>
 						</UniformGrid>
-						<UniformGrid Grid.Row="2" Grid.ColumnSpan="2">
-							<Button x:Name="ippSendJob" Content="Send Job" Click="ippSendJob_Click"/>
-						</UniformGrid>
+						<DockPanel Grid.Row="2" Grid.ColumnSpan="2">
+							<Button x:Name="ippCancelJobs" Content="Cancel Jobs" Click="ippCancelJobs_Click" DockPanel.Dock="Right" Background="#7FFF0000" MinWidth="100"/>
+							<Button x:Name="ippSendJob" Content="Send Job" Click="IppSendJob_Click" Background="#7F00FF00"/>
+						</DockPanel>
 
 
 					</Grid>
 					<UniformGrid>
 						<ListBox x:Name="ippJobStatusList">
-
+							
+							
 						</ListBox>
 					</UniformGrid>
 				</UniformGrid>
 			</TabItem>
 			<TabItem Header="Test">
-				
+
 			</TabItem>
 		</TabControl>
 		<Grid Grid.Row="1">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width=".4*"/>
-				<ColumnDefinition Width="10"/>
+				<ColumnDefinition Width=".01*"/>
 				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
 			<TabControl SelectedIndex="0">
-				<TabItem Header="PrintTool" Name="ptLoggerHere"/>				
+				<TabItem Header="PrintTool" Name="ptLoggerHere"/>
 				<TabItem Header="Clock">
 					<UniformGrid Rows="3">
 						<Label Content="Null" Name="clockTimer" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Arial Black" FontSize="36"/>
-						<Button Content="Start Timer" Name="startClock" Click="startClock_Click"/>
-						<Button x:Name="stopClock" Content="Stop Timer" Click="stopClock_Click"/>
+						<Button Content="Start Timer" Name="startClock" Click="StartClock_Click"/>
+						<Button x:Name="stopClock" Content="Stop Timer" Click="StopClock_Click"/>
 					</UniformGrid>
 				</TabItem>
 			</TabControl>

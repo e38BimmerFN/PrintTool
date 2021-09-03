@@ -18,6 +18,7 @@ namespace PrintTool
 		private Client cli;
 		public int refreshRate = 200;
 		private Logger logger;
+		
 
 		public TelnetConnection(string ip, int port)
 		{

@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Timers;
 
 namespace PrintTool
 {
@@ -15,29 +16,51 @@ namespace PrintTool
 	public partial class Logger : UserControl
 	{
 
-		int lineCount = 0;
+		private int lineCount = 0;
 		public string fileName = "";
-		public string fileLoc = @"Data\Logs\Temp\";
+		private string fileLoc = @"Data\Logs\Temp\";
+		string linestowrite = "";
 		public Logger(string fileName)
 		{
 			InitializeComponent();
 			this.fileName = fileName;
+			Timer writeClk = new Timer(5000); // write every 5 seconds
+			writeClk.Elapsed += WriteClk_Elapsed;
+			writeClk.Start();
+
 		}
 
+		private void WriteClk_Elapsed(object sender, ElapsedEventArgs e)
+		{
+			try
+			{
+				File.AppendAllTextAsync($"{fileLoc}Log{fileName}.txt", linestowrite);
+			}
+			catch
+			{
+
+			}
+		}
+
+	
 
 		public async Task Log(string result)
 		{
 			
 			if (result is null or "" or "\n" or "\r" or "\r\n" or "\n\r") { return; } // removing empty lines
 			lineCount++;
-			result = Regex.Replace(result, "(\x9B|\x1B\\[)[0-?]*[ -\\/]*[@-~]", "");
+			result = Regex.Replace(result, "(\x9B|\x1B\\[)[0-?]*[ -\\/]*[@-~]", ""); //remove ansi
 
-			result = Regex.Replace(result, "(\\0)", "");
+			result = Regex.Replace(result, "(\\0)", " "); //replace null
 
 			//fixing malformed newlines.
-			result = Regex.Replace(result, "(\r\r)", "\r");
-			result = Regex.Replace(result, "(\n\n)", "\n");
-			result = Regex.Replace(result, "(\n\r)", "\r\n");
+			result = Regex.Replace(result, "(\r\r)", "\r",RegexOptions.Multiline);
+			result = Regex.Replace(result, "(\n\n)", "\n" ,RegexOptions.Multiline);
+			result = Regex.Replace(result, "(\n\r)", "\r\n", RegexOptions.Multiline);
+			result = Regex.Replace(result, "(\r\r\n\n)", "\r\n", RegexOptions.Multiline);
+
+
+
 			if (!result.Contains("\n")) { result += "\r\n"; }
 
 
@@ -56,7 +79,8 @@ namespace PrintTool
 				Scroller.ScrollToBottom();
 			}));
 
-			await File.AppendAllTextAsync(fileLoc + "Log" + fileName + ".txt", result);
+			linestowrite += result;
+			
 		}
 	}
 }

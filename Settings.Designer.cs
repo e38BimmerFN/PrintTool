@@ -37,7 +37,7 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("111")]
+        [global::System.Configuration.DefaultSettingValueAttribute("115")]
         public int Version {
             get {
                 return ((int)(this["Version"]));
@@ -49,7 +49,7 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Lochsa")]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string LastLoaded {
             get {
                 return ((string)(this["LastLoaded"]));

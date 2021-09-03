@@ -10,10 +10,10 @@ namespace PrintTool
 	/// </summary>
 	public partial class SerialConnection : UserControl
 	{
-		Logger logger;
+		private Logger logger;
 		private SerialPortStream port = new();
 		public int refreshRate = 200;
-		public string fileLoc = @"Data\Logs\Temp\";
+		
 
 
 
@@ -40,6 +40,7 @@ namespace PrintTool
 			{
 				logger.Log(portName + " cannot be connected to.");
 			}
+			
 		}
 
 		private async void Port_DataReceived1(object sender, SerialDataReceivedEventArgs e)
@@ -61,11 +62,19 @@ namespace PrintTool
 
 		public void SendData(string data)
 		{
-			port.WriteLine(data);
-			port.WriteLine("\r\n");
+			try
+			{
+				port.WriteLine(data);
+				port.WriteLine("\r\n");
+			}
+			catch
+			{
+				System.Windows.MessageBox.Show("Serial connection not accepting commands");
+			}
+			
 		}
 
-		private void customCommandEntry_KeyDown(object sender, KeyEventArgs e)
+		private void CustomCommandEntry_KeyDown(object sender, KeyEventArgs e)
 		{
 			if (e.Key == Key.Return)
 			{
@@ -79,43 +88,43 @@ namespace PrintTool
 			return SerialPortStream.GetPortNames();
 		}
 
-		private void escapeButton_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void EscapeButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("\u001B");
 		}
 
-		private void ctrF_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void CtrF_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("\u0006");
 		}
 
-		private void reboot_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void Reboot_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("reboot");
 		}
 
-		private void reset_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void Reset_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("reset");
 
 		}
 
-		private void partClean_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void PartClean_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("disktest partclean 0");
 		}
 
-		private void netExec_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void NetExec_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("netexec");
 		}
 
-		private void pristineDisk_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void PristineDisk_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("disktest pristine");
 		}
 
-		private void cleanNVRam_Click(object sender, System.Windows.RoutedEventArgs e)
+		private void CleanNVRam_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			SendData("nvmgmt vs clean -r");
 		}

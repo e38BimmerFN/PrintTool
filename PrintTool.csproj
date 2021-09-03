@@ -19,7 +19,7 @@
     <Description>Log gatherer and print job generator.</Description>
     <PackageProjectUrl>https://derekhearst.com/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/derekhearst/PrintTool</RepositoryUrl>
-    <Version>1.0.1</Version>
+    <Version>1.0.0</Version>
     <Configurations>Debug;Release;DebugFromShare</Configurations>
   </PropertyGroup>
 

@@ -23,6 +23,7 @@ namespace PrintTool
 			usbsend.StartInfo.RedirectStandardOutput = true;
 			usbsend.OutputDataReceived += new DataReceivedEventHandler(async (sender, e) => { await logger.Log(e.Data); });
 			usbsend.Start();
+			usbsend.BeginOutputReadLine();
 			await usbsend.WaitForExitAsync(token);
 			if (usbsend.ExitCode == 0)
 			{

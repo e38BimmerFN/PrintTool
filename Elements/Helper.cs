@@ -22,47 +22,44 @@ namespace PrintTool
 		{
 			string from = @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\";
 			string to = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\";
-			
-			if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
+			if (HPStatus())
 			{
-				MessageBox.Show("Now updating or installing into " + to);
-				Directory.CreateDirectory(to);
-
-				foreach (string dirPath in Directory.GetDirectories(from, "*", SearchOption.AllDirectories))
+				if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
 				{
-					Directory.CreateDirectory(dirPath.Replace(from, to));
-				}
+					MessageBox.Show("Now updating or installing into " + to);
+					Directory.CreateDirectory(to);
 
-				//Copy all the files & Replaces any files with the same name
-				foreach (string newPath in Directory.GetFiles(from, "*.*", SearchOption.AllDirectories))
-				{
-					File.Copy(newPath, newPath.Replace(from, to), true);
-				}
+					foreach (string dirPath in Directory.GetDirectories(from, "*", SearchOption.AllDirectories))
+					{
+						Directory.CreateDirectory(dirPath.Replace(from, to));
+					}
 
+					//Copy all the files & Replaces any files with the same name
+					foreach (string newPath in Directory.GetFiles(from, "*.*", SearchOption.AllDirectories))
+					{
+						File.Copy(newPath, newPath.Replace(from, to), true);
+					}
 
-
-
-
-
-				MessageBox.Show("Updated / Installed succesfull.");
-				Process process = new();
-				process.StartInfo.FileName = "explorer.exe";
-				process.StartInfo.Arguments = to;
-				process.Start();
-				Application.Current.MainWindow.Close();
-			}
-			else
-			{
-				int version = int.Parse(File.ReadAllLines(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt")[0]);
-				if (Settings.Default.Version < version)
-				{
-					MessageBox.Show("This program is out of date. Please run the installer");
+					MessageBox.Show("Updated / Installed succesfull.");
 					Process process = new();
 					process.StartInfo.FileName = "explorer.exe";
-					process.StartInfo.Arguments = from;
+					process.StartInfo.Arguments = to;
 					process.Start();
 					Application.Current.MainWindow.Close();
-					return;
+				}
+				else
+				{
+					int version = int.Parse(File.ReadAllLines(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt")[0]);
+					if (Settings.Default.Version < version)
+					{
+						MessageBox.Show("This program is out of date. Please run the installer");
+						Process process = new();
+						process.StartInfo.FileName = "explorer.exe";
+						process.StartInfo.Arguments = from;
+						process.Start();
+						Application.Current.MainWindow.Close();
+						return;
+					}
 				}
 			}
 		}
@@ -186,7 +183,7 @@ namespace PrintTool
 				if (myRegex.Success)
 				{
 					Ping pingSender = new();
-					PingReply reply = await pingSender.SendPingAsync(ip, 10);
+					PingReply reply = await pingSender.SendPingAsync(ip, 1000);
 					if (reply.Status == IPStatus.Success) { return true; }
 				}
 				return false;
