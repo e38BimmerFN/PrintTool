@@ -2,17 +2,14 @@
 <SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PrintTool" GeneratedClassName="Settings">
   <Profiles />
   <Settings>
-    <Setting Name="DuneLastFW" Type="System.String" Scope="User">
-      <Value Profile="(Default)">6.1.0.1753/</Value>
-    </Setting>
     <Setting Name="Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">111</Value>
-    </Setting>
-    <Setting Name="LastLoaded" Type="System.String" Scope="User">
-      <Value Profile="(Default)">Lochsa</Value>
+      <Value Profile="(Default)">118</Value>
     </Setting>
     <Setting Name="TimesLaunched" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="LastLoadedPrinter" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

@@ -28,17 +28,18 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugFromShare|AnyCPU'">
-    <NoWarn />
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Data\template.ps" />
+    <None Remove="Data\template.txt" />
     <None Remove="favicon.ico" />
+    <None Remove="Services\dart.exe" />
+    <None Remove="Services\HP.Platform.Tools.ErrorLookup.exe" />
+    <None Remove="Services\QScanWS.exe" />
+    <None Remove="Services\USBSend.exe" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,7 +49,27 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="favicon.ico" />
+    <Resource Include="Data\template.ps">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Data\template.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="favicon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Services\dart.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Services\HP.Platform.Tools.ErrorLookup.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Services\QScanWS.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Services\USBSend.exe">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

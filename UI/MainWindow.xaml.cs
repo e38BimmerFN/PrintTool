@@ -15,7 +15,7 @@ namespace PrintTool
 {
 	public partial class MainWindow : Window
 	{
-
+		
 		const string SIRUSSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/";
 		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
 		const string JOLTPATH = @"\\jedibdlbroker.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds\25s\";
@@ -24,6 +24,7 @@ namespace PrintTool
 		Logger ptlog = new("PrintTool");
 		Printer currPrinter = new();
 		IPPHandler ippCli = new();
+		
 		List<SerialConnection> serialConnections = new();
 		List<TelnetConnection> telnetConnections = new();
 
@@ -54,6 +55,7 @@ namespace PrintTool
 			await ptlog.Log("Have a good day");
 
 			Helper.PopulateListBox(savedPrinters, "Data\\Printers\\");
+			Helper.PopulateListBox(jobListBox, "Data\\Jobs\\");
 			if (!Helper.HPStatus())
 			{
 				MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
@@ -70,10 +72,10 @@ namespace PrintTool
 
 			try
 			{
-				if (Settings.Default.LastLoaded is "" || !File.Exists(@"Data\Printers\" + Settings.Default.LastLoaded)) { }
+				if (Settings.Default.LastLoadedPrinter is "" || !File.Exists(@"Data\Printers\" + Settings.Default.LastLoadedPrinter)) { }
 				else
 				{
-					savedPrinters.SelectedItem = Settings.Default.LastLoaded;
+					savedPrinters.SelectedItem = Settings.Default.LastLoadedPrinter;
 					ConnectionsLoadDefaults(sender, e);
 				}
 
@@ -365,7 +367,7 @@ namespace PrintTool
 		public async void ConnectionsLoadDefaults(object sender, EventArgs e)
 		{
 			if (savedPrinters.SelectedItem is null or "Nothing Found") { await ptlog.Log("Select something first"); return; }
-			Settings.Default.LastLoaded = savedPrinters.SelectedItem.ToString();
+			Settings.Default.LastLoadedPrinter = savedPrinters.SelectedItem.ToString();
 			Settings.Default.Save();
 			string json = File.ReadAllText($"Data\\Printers\\{savedPrinters.SelectedItem}");
 			currPrinter = JsonSerializer.Deserialize<Printer>(json);
@@ -568,7 +570,7 @@ namespace PrintTool
 		private async void SiriusCustomLink_TextChanged(object sender, TextChangedEventArgs e)
 		{
 			await Task.Delay(10);
-			await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text + "?C=S;O=D", "fhx");
+			await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text, "fhx");
 		}
 
 		private async void SirusFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -580,7 +582,7 @@ namespace PrintTool
 			}
 			else
 			{
-				await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text + "?C=S;O=D", "fhx");
+				await Helper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text, "fhx");
 			}
 			sirusPackageSelect.SelectedIndex = 0;
 		}
@@ -723,7 +725,7 @@ namespace PrintTool
 		{
 			if (!await Helper.CheckIP(currPrinter.PrinterIp)) { MessageBox.Show("Invalid IP"); return; }
 			string stringToWrite = "";
-			string template = File.ReadAllText(@"Data\Jobs\template.ps");
+			string template = File.ReadAllText(@"Data\template.ps");
 			template = template.Replace("RVER", Settings.Default.Version.ToString());
 			template = template.Replace("RGENAT", DateTime.Now.ToString());
 			//Currpage
@@ -736,7 +738,7 @@ namespace PrintTool
 			template = template.Replace("ROUTBIN", ippOutputBin.Text);
 			template = template.Replace("RCOPIES", ippCopies.Text);
 			template = template.Replace("RUSERNAME", Environment.UserName);
-			
+
 
 			foreach (int i in Enumerable.Range(0, int.Parse(ippPages.Text)))
 			{
@@ -744,7 +746,7 @@ namespace PrintTool
 				tempstr = tempstr.Replace("RCURPAGE", i.ToString());
 				stringToWrite += tempstr;
 			}
-			
+
 			await File.WriteAllTextAsync(@"Data\Jobs\temp.ps", stringToWrite);
 			string media = ippMedia.Text;
 			string duplex = ippDuplex.Text;
@@ -755,9 +757,9 @@ namespace PrintTool
 			SharpIpp.Model.Finishings finish = (SharpIpp.Model.Finishings)Enum.Parse(typeof(SharpIpp.Model.Finishings), ippFinishings.Text);
 			string mediatype = ippPaperAttributes.Text;
 
-			var res = await ippCli.SendJob(@"Data\Jobs\temp.ps", media, duplex, msource, binout, copies, finish, collate,mediatype);
-			if(res is null) { return; }
-			ippJobStatusList.Items.Insert(0,new JobStatus(res.JobUri, ippCli));
+			var res = await ippCli.SendJob(@"Data\Jobs\temp.ps", media, duplex, msource, binout, copies, finish, collate, mediatype);
+			if (res is null) { return; }
+			ippJobStatusList.Items.Insert(0, new JobStatus(res.JobUri, ippCli));
 
 		}
 
@@ -769,7 +771,144 @@ namespace PrintTool
 
 		#endregion IPP
 
+		#region Testing
 
+		bool currTestingUSB = false;
+		private async void testUSBSend_Click(object sender, RoutedEventArgs e)
+		{
+			if (currTestingUSB)
+			{
+				cancelSource.Cancel();
+				cancelSource = new();
+				testUSBSend.Background = System.Windows.Media.Brushes.LightGreen;
+				testUSBSend.Content = "Test USB Send";
+				currTestingUSB = false;
+			}
+			else
+			{
+				currTestingUSB = true;
+				testUSBSend.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				testUSBSend.Content = "Cancel";
+				var tok = cancelSource.Token;
+				ProcessHandler usbSend = new("Services\\USBSend.exe", @"Data\template.ps", ptlog);
+				await usbSend.Start(tok);
+				testUSBSend.Background = System.Windows.Media.Brushes.LightGreen;
+				testUSBSend.Content = "Test USB Send";
+				currTestingUSB = false;
+			}
+		}
+
+
+		
+		private async void testQscan_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process pc = new();
+			pc.StartInfo.RedirectStandardInput = true;
+
+			pc.StartInfo.FileName = "cmd";
+			pc.StartInfo.RedirectStandardInput = true;
+
+			pc.Start();
+
+			pc.StandardInput.WriteLine(@"Services\QScanWS.exe");
+			await Task.Delay(1000);
+			pc.StandardInput.WriteLine("Ver=2010-01-29");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine("ProductName=JediColorMFP");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine($"FormatterIP={printerIpEntry.Text}");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine("JobType=Copy");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine("InputMediaSize=Letter");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine("OutputMediaSource=Tray2");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine("Sides=SimplexToSimplex");
+			await Task.Delay(100);
+			pc.StandardInput.WriteLine("Start");
+			
+
+		}
+
+
+
+		bool currSendingJobs = false;
+
+		private async void SendJobsButton_Click(object sender, RoutedEventArgs e)
+		{
+
+			if (currSendingJobs)
+			{
+				sendJobsButton.Content = "Send Jobs / Job";
+				jobListBox.IsEnabled = true;
+				currSendingJobs = false;
+				jobListBox.IsEnabled = true;
+				sendJobsButton.Background = System.Windows.Media.Brushes.LightGreen;
+			}
+			else
+			{ 
+				if (jobListBox.SelectedItems.Count == 0) { MessageBox.Show("Please select something first."); return; }
+				int timeBetweenJobs = 0;
+				try
+				{
+					timeBetweenJobs = int.Parse(testTimeBetween.Text);
+				}
+				catch
+				{
+					MessageBox.Show("Invalid seconds between jobs."); return;
+				}
+
+				sendJobsButton.Content = "Cancel";
+				jobListBox.IsEnabled = false;
+				currSendingJobs = true;
+				jobListBox.IsEnabled = false;
+				sendJobsButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				
+				
+
+				List<string> jobList = jobListBox.SelectedItems.Cast<string>().ToList();
+				foreach (string jobname in jobList)
+				{
+					if (currSendingJobs == false)
+					{
+						continue;
+					}
+					jobListBox.SelectedItem = jobname; //shows what is currently sending
+					
+					TcpClient tcpClient = new();
+					try
+					{
+						await tcpClient.ConnectAsync(printerIpEntry.Text, 9100);
+					}
+					catch
+					{
+						MessageBox.Show("Cannot connect to IP");
+					}
+					
+					await tcpClient.GetStream().WriteAsync(File.ReadAllBytes(@"Data\Jobs\"+jobname));
+					tcpClient.Close();
+					await Task.Delay(int.Parse(testTimeBetween.Text) * 1000);
+				}
+
+				//END TASK
+				sendJobsButton.Content = "Send Jobs / Job";
+				jobListBox.IsEnabled = true;
+				currSendingJobs = false;
+				jobListBox.IsEnabled = true;
+				sendJobsButton.Background = System.Windows.Media.Brushes.LightGreen;
+			}
+		}
+
+		private void OpenPathToJobs_Click(object sender, RoutedEventArgs e)
+		{
+			Helper.OpenPath("Data\\Jobs\\");
+		}
+
+
+
+
+		#endregion Testing
 
 
 		#region misc
@@ -800,12 +939,8 @@ namespace PrintTool
 			startClock.IsEnabled = true;
 			clockTime.Stop();
 		}
-
-
-
-
 		#endregion
 
-		
+
 	}
 }

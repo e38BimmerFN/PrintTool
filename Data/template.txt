@@ -1,0 +1,12 @@
+PrintTool ver : RVER
+Generated at : RGENAT
+Page : RCURPAGE
+Media : RMEDIA
+Paper : RPAPERAT
+Finishing : RFINISH
+Collation : RCOLLATE
+Duplexing : RDUPLEX
+Source Tray : RSOURCE
+Output Tray : ROUTBIN
+Copies : RCOPIES
+Have a good day RUSERNAME :)

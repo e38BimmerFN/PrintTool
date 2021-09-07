@@ -25,37 +25,13 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("6.1.0.1753/")]
-        public string DuneLastFW {
-            get {
-                return ((string)(this["DuneLastFW"]));
-            }
-            set {
-                this["DuneLastFW"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("115")]
+        [global::System.Configuration.DefaultSettingValueAttribute("118")]
         public int Version {
             get {
                 return ((int)(this["Version"]));
             }
             set {
                 this["Version"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastLoaded {
-            get {
-                return ((string)(this["LastLoaded"]));
-            }
-            set {
-                this["LastLoaded"] = value;
             }
         }
         
@@ -68,6 +44,18 @@ namespace PrintTool {
             }
             set {
                 this["TimesLaunched"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LastLoadedPrinter {
+            get {
+                return ((string)(this["LastLoadedPrinter"]));
+            }
+            set {
+                this["LastLoadedPrinter"] = value;
             }
         }
     }

@@ -5,11 +5,13 @@
 		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
-		Title="PrintTool by Derek Hearst" Height="972" Width="1394" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Icon="/favicon.ico">
+		d:DesignHeight="1000" d:DesignWidth="1500"
+		Title="PrintTool by Derek Hearst v116" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Icon="/favicon.ico" >
 
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="0.75*"/>
+	
 			<RowDefinition Height="0.75*"/>
 		</Grid.RowDefinitions>
 		<TabControl>
@@ -384,10 +386,39 @@
 				</UniformGrid>
 			</TabItem>
 			<TabItem Header="Test">
+				<DockPanel>
+					<GroupBox Header="Tests">
+						<UniformGrid Columns="3" Rows="3">
+							<Button x:Name="testUSBSend" Content="Test USB Send" Click="testUSBSend_Click"/>							
+							<Button x:Name="testQscan" Content="Test QScan Functionality" Click="testQscan_Click"/>
+						</UniformGrid>
+					</GroupBox>
+					<GroupBox Header="Send" DockPanel.Dock="Right" MinWidth="100">
+						<DockPanel>
+							<GroupBox Header="Seconds between jobs." DockPanel.Dock="Top" BorderBrush="{x:Null}" MinHeight="60">
+								<TextBox x:Name="testTimeBetween"  Text="3"/>
+							</GroupBox>
+							<Button Content="Open path to jobs" DockPanel.Dock="Top" Background="#7F0000FF" Click="OpenPathToJobs_Click" MinHeight="100"/>
+							<Button x:Name="sendJobsButton" Content="Send Jobs / Job" DockPanel.Dock="Top" Background="#7F00FF00" Click="SendJobsButton_Click"/>
+							
+						</DockPanel>
+					</GroupBox>
+					<GroupBox Header="Jobs">
+						
+							
+							<ListBox x:Name="jobListBox" SelectionMode="Extended" BorderBrush="{x:Null}">
 
+							</ListBox>
+						
+						
+					</GroupBox>
+					
+				</DockPanel>
+				
 			</TabItem>
 		</TabControl>
-		<Grid Grid.Row="1">
+	
+		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width=".4*"/>
 				<ColumnDefinition Width=".01*"/>
@@ -403,7 +434,7 @@
 					</UniformGrid>
 				</TabItem>
 			</TabControl>
-			<GridSplitter Grid.Column="1" ResizeDirection="Columns" ShowsPreview="True" HorizontalAlignment="Stretch"/>
+			<GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch"/>
 			<TabControl Grid.Column="2">
 				<TabItem Header="Serial Connections">
 					<TabControl x:Name="serialConnectionsTabControl" />
