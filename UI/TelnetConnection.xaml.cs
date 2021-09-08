@@ -14,11 +14,11 @@ namespace PrintTool
 	/// </summary>
 	public partial class TelnetConnection : UserControl
 	{
-		private System.Threading.CancellationTokenSource tokenSource = new();
-		private Client cli;
-		public int refreshRate = 200;
-		private Logger logger;
-		
+		readonly private System.Threading.CancellationTokenSource tokenSource = new();
+		readonly private Client cli;
+		private const int refreshRate = 200;
+		readonly private Logger logger;
+
 
 		public TelnetConnection(string ip, int port)
 		{

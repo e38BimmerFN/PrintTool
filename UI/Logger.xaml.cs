@@ -5,8 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Timers;
+using System.Windows.Controls;
 
 namespace PrintTool
 {
@@ -42,11 +42,11 @@ namespace PrintTool
 			}
 		}
 
-	
+
 
 		public async Task Log(string result)
 		{
-			
+
 			if (result is null or "" or "\n" or "\r" or "\r\n" or "\n\r") { return; } // removing empty lines
 			lineCount++;
 			result = Regex.Replace(result, "(\x9B|\x1B\\[)[0-?]*[ -\\/]*[@-~]", ""); //remove ansi
@@ -54,8 +54,8 @@ namespace PrintTool
 			result = Regex.Replace(result, "(\\0)", " "); //replace null
 
 			//fixing malformed newlines.
-			result = Regex.Replace(result, "(\r\r)", "\r",RegexOptions.Multiline);
-			result = Regex.Replace(result, "(\n\n)", "\n" ,RegexOptions.Multiline);
+			result = Regex.Replace(result, "(\r\r)", "\r", RegexOptions.Multiline);
+			result = Regex.Replace(result, "(\n\n)", "\n", RegexOptions.Multiline);
 			result = Regex.Replace(result, "(\n\r)", "\r\n", RegexOptions.Multiline);
 			result = Regex.Replace(result, "(\r\r\n\n)", "\r\n", RegexOptions.Multiline);
 
@@ -71,7 +71,7 @@ namespace PrintTool
 					LogBox.Text = "";
 					lineCount = 0;
 				}
-				LogBox.AppendText(result);				
+				LogBox.AppendText(result);
 			}));
 
 			Scroller.Dispatcher.Invoke(new Action(() =>
@@ -80,7 +80,7 @@ namespace PrintTool
 			}));
 
 			linestowrite += result;
-			
+
 		}
 	}
 }

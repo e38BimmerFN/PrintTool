@@ -13,14 +13,14 @@ namespace PrintTool
 		private Logger logger;
 		private SerialPortStream port = new();
 		public int refreshRate = 200;
-		
+
 
 
 
 		public SerialConnection(string portName)
 		{
 			InitializeComponent();
-			
+
 			logger = new(portName);
 			logLocation.Children.Add(logger);
 			port.PortName = portName;
@@ -40,7 +40,7 @@ namespace PrintTool
 			{
 				logger.Log(portName + " cannot be connected to.");
 			}
-			
+
 		}
 
 		private async void Port_DataReceived1(object sender, SerialDataReceivedEventArgs e)
@@ -71,7 +71,7 @@ namespace PrintTool
 			{
 				System.Windows.MessageBox.Show("Serial connection not accepting commands");
 			}
-			
+
 		}
 
 		private void CustomCommandEntry_KeyDown(object sender, KeyEventArgs e)

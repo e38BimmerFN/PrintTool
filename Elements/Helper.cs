@@ -8,10 +8,47 @@ using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+
 namespace PrintTool
 {
-	static class Helper
+	class Helper
 	{
+
+		private WebClient cli = new();
+		public System.Windows.Controls.ProgressBar progressBar = null;
+
+		public Helper(System.Windows.Controls.ProgressBar progressBar)
+		{
+			this.progressBar = progressBar;
+			cli.DownloadProgressChanged += Cli_DownloadProgressChanged;
+			cli.DownloadFileCompleted += Cli_DownloadFileCompleted;
+			cli.DownloadStringCompleted += Cli_DownloadStringCompleted;
+		}
+
+		private void Cli_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+		{
+			progressBar.Dispatcher.Invoke(new Action(() =>
+			{
+				progressBar.Visibility = Visibility.Collapsed;
+			}));
+		}
+
+		private async void Cli_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+		{
+			progressBar.Dispatcher.Invoke(new Action(() =>
+			{
+				progressBar.Visibility = Visibility.Collapsed;
+			}));
+		}
+
+		private void Cli_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+		{
+			progressBar.Dispatcher.Invoke(new Action(() =>
+			{
+				progressBar.Visibility = Visibility.Visible;
+				progressBar.Value = e.ProgressPercentage;
+			}));
+		}
 
 		public static bool HPStatus()
 		{
@@ -57,7 +94,7 @@ namespace PrintTool
 						process.StartInfo.FileName = "explorer.exe";
 						process.StartInfo.Arguments = from;
 						process.Start();
-						Application.Current.MainWindow.Close();
+
 						return;
 					}
 				}
@@ -65,7 +102,7 @@ namespace PrintTool
 		}
 
 
-		public async static void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "", bool flip = false)
+		public async void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "", bool flip = false)
 		{
 			List<string> results = await GetListings(site, filter);
 			if (flip) { results.Reverse(); }
@@ -76,7 +113,7 @@ namespace PrintTool
 			}
 		}
 
-		public static async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "", bool flip = false)
+		public async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "", bool flip = false)
 		{
 			List<string> results = await GetListings(site, filter);
 			if (flip) { results.Reverse(); }
@@ -88,13 +125,11 @@ namespace PrintTool
 			comboBox.SelectedIndex = 0;
 		}
 
-		public static async Task<string> DownloadOrCopyFile(string filename, string location)
+		public async Task<string> DownloadOrCopyFile(string filename, string location)
 		{
 			if (location.Contains("http"))
 			{
-				WebClient webClient = new();
-
-				await webClient.DownloadFileTaskAsync(location + filename, filename);
+				await cli.DownloadFileTaskAsync(location + filename, filename);
 				return filename;
 
 			}
@@ -116,18 +151,18 @@ namespace PrintTool
 			}
 		}
 
-		public static async Task<List<string>> GetListings(string uri, string filter = "")
+
+		public async Task<List<string>> GetListings(string uri, string filter = "")
 		{
 			List<string> results = new();
 			if (uri == "") { results.Add("Invalid URI"); return results; }
 
 
-
 			if (uri.Contains("http"))
 			{
-				WebClient client = new();
-				string webData = "";
-				try { webData = await client.DownloadStringTaskAsync(uri); }
+				WebClient webClient = new();
+				string webData = null;
+				try { webData = await webClient.DownloadStringTaskAsync(uri); }
 				catch { results.Add("Invalid URL"); return results; }
 				MatchCollection matches = new Regex("(?<=<a href=\")(.*)(?=\\/a><\\/td>)").Matches(webData);
 				foreach (Match match in matches)
@@ -198,6 +233,56 @@ namespace PrintTool
 		public static void OpenPath(string uri)
 		{
 			Process.Start("explorer", uri);
+		}
+
+
+		public async Task DLAndSend(string filename, string website, Logger logger, System.Windows.Controls.Button button, System.Threading.CancellationToken token)
+		{
+			Process usbsend = new();
+
+			button.IsEnabled = false;
+			button.Content = "Proccessing..";
+			await logger.Log("Downloading " + website + filename);
+			await DownloadOrCopyFile(filename, website);
+			await logger.Log("Download success.");
+			await logger.Log("Sending firmware to printer");
+
+			progressBar.Dispatcher.Invoke(new Action(() =>
+			{
+				progressBar.Visibility = Visibility.Visible;
+				progressBar.IsIndeterminate = true;
+			}));
+
+			usbsend.StartInfo.FileName = "Services\\USBSend.exe";
+			usbsend.StartInfo.Arguments = filename;
+			usbsend.StartInfo.CreateNoWindow = true;
+			usbsend.StartInfo.RedirectStandardOutput = true;
+			usbsend.OutputDataReceived += new DataReceivedEventHandler(async (sender, e) => { await logger.Log(e.Data); });
+			usbsend.Start();
+			usbsend.BeginOutputReadLine();
+			await usbsend.WaitForExitAsync(token);
+			if (usbsend.ExitCode == 0)
+			{
+				MessageBox.Show("Firmware upgrade success!");
+				await logger.Log("Firmware upgrade success!");
+			}
+			else
+			{
+				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.");
+				await logger.Log("Firmware upgrade error / canceled. Check USB Connection.");
+			}
+			try { usbsend.Kill(); }
+			catch { MessageBox.Show("Unable to close USBSend"); }
+			try { File.Delete(filename); }
+			catch { MessageBox.Show($"Unable to delete {filename}"); }
+			button.IsEnabled = true; ;
+			button.Content = "Download and Send";
+
+			progressBar.Dispatcher.Invoke(new Action(async () =>
+			{
+				progressBar.Visibility = Visibility.Collapsed;
+				progressBar.IsIndeterminate = false;
+			}));
 		}
 	}
 }

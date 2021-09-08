@@ -6,7 +6,7 @@
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
 		d:DesignHeight="1000" d:DesignWidth="1500"
-		Title="PrintTool by Derek Hearst v116" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Icon="/favicon.ico" >
+		Title="PrintTool by Derek Hearst v117" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual">
 
 	<Grid>
 		<Grid.RowDefinitions>
@@ -84,11 +84,11 @@
 										<TextBox Name="ippPrinterStateMessage"/>
 									</GroupBox>
 								</UniformGrid>
-								<UniformGrid Rows="4">
-									<GroupBox Header="Black Toner Level" BorderBrush="{x:Null}">
-										<TextBox Name="ippTonerLevel"/>
-									</GroupBox>
-								</UniformGrid>
+							
+								<GroupBox Header="Supply Levels" BorderBrush="{x:Null}">
+									<ListBox x:Name="supplyLevelsListBox" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+								</GroupBox>
+								
 
 							</UniformGrid>
 						</GroupBox>
@@ -99,7 +99,7 @@
 								<Button x:Name="ConnectSnoopyButton" Content="Connect To Snoopy On Dart" Click="ConnectSnoopy_Click" Background="LightGreen" />
 								<Button x:Name="openLogs" Content="Open Logs" Click="OpenLogs_Click" Background="#7F0000FF"/>
 								<Button x:Name="flushLogs" Content="Flush Logs" Click="FlushLogs_Click" Background="#7FFF0000"/>
-								<Button x:Name="refreshPrinterAttributes" Content="Get Printer Attributes" Click="refreshPrinterAttributes_Click" Background="#7F00FF00"/>							</UniformGrid>
+								<Button x:Name="refreshPrinterAttributes" Content="Get Printer Attributes" Click="RefreshPrinterAttributes_Click" Background="#7F00FF00"/>							</UniformGrid>
 						</GroupBox>
 
 
@@ -187,7 +187,11 @@
 										<ColumnDefinition Width="1*"/>
 									</Grid.ColumnDefinitions>
 									<Button x:Name="joltStart" Content="Start FIM" Grid.Column="0" Background="#7F00FF00" Click="JoltStart_Click"/>
-									<CheckBox x:Name="joltEnableCSV" Content="Enable CSV" VerticalAlignment="Center" Grid.Column="1"/>
+									<StackPanel Grid.Column="1" Margin="10">
+										<CheckBox x:Name="joltEnableCSV" Content="Enable CSV" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+										<CheckBox x:Name="joltEnableArm" Content="Use ARM" HorizontalAlignment="Stretch"/>
+									</StackPanel>
+									
 									<Button x:Name="joltOpenFW" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF" Click="JoltOpenFW_Click"/>
 								</Grid>
 							</GroupBox>
@@ -371,7 +375,7 @@
 							</GroupBox>
 						</UniformGrid>
 						<DockPanel Grid.Row="2" Grid.ColumnSpan="2">
-							<Button x:Name="ippCancelJobs" Content="Cancel Jobs" Click="ippCancelJobs_Click" DockPanel.Dock="Right" Background="#7FFF0000" MinWidth="100"/>
+							<Button x:Name="ippCancelJobs" Content="Cancel Jobs" Click="IppCancelJobs_Click" DockPanel.Dock="Right" Background="#7FFF0000" MinWidth="100"/>
 							<Button x:Name="ippSendJob" Content="Send Job" Click="IppSendJob_Click" Background="#7F00FF00"/>
 						</DockPanel>
 
@@ -389,8 +393,8 @@
 				<DockPanel>
 					<GroupBox Header="Tests">
 						<UniformGrid Columns="3" Rows="3">
-							<Button x:Name="testUSBSend" Content="Test USB Send" Click="testUSBSend_Click"/>							
-							<Button x:Name="testQscan" Content="Test QScan Functionality" Click="testQscan_Click"/>
+							<Button x:Name="testUSBSend" Content="Test USB Send" Click="TestUSBSend_Click"/>							
+							<Button x:Name="testQscan" Content="Test QScan Functionality" Click="TestQscan_Click"/>
 						</UniformGrid>
 					</GroupBox>
 					<GroupBox Header="Send" DockPanel.Dock="Right" MinWidth="100">
@@ -424,16 +428,23 @@
 				<ColumnDefinition Width=".01*"/>
 				<ColumnDefinition Width="*"/>
 			</Grid.ColumnDefinitions>
-			<TabControl SelectedIndex="0">
-				<TabItem Header="PrintTool" Name="ptLoggerHere"/>
-				<TabItem Header="Clock">
-					<UniformGrid Rows="3">
-						<Label Content="Null" Name="clockTimer" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Arial Black" FontSize="36"/>
-						<Button Content="Start Timer" Name="startClock" Click="StartClock_Click"/>
-						<Button x:Name="stopClock" Content="Stop Timer" Click="StopClock_Click"/>
-					</UniformGrid>
-				</TabItem>
-			</TabControl>
+			<DockPanel>
+				<ProgressBar x:Name="ptProgressBar" DockPanel.Dock="Bottom" MinHeight="20" Visibility="Collapsed"/>
+
+				<TabControl SelectedIndex="0" DockPanel.Dock="Top">
+
+					<TabItem Header="PrintTool" Name="ptLoggerHere"/>
+					<TabItem Header="Clock">
+						<UniformGrid Rows="3">
+							<Label Content="Null" Name="clockTimer" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Arial Black" FontSize="36"/>
+							<Button Content="Start Timer" Name="startClock" Click="StartClock_Click"/>
+							<Button x:Name="stopClock" Content="Stop Timer" Click="StopClock_Click"/>
+						</UniformGrid>
+					</TabItem>
+				</TabControl>
+				
+			</DockPanel>
+			
 			<GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch"/>
 			<TabControl Grid.Column="2">
 				<TabItem Header="Serial Connections">

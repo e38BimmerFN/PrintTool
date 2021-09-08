@@ -11,18 +11,18 @@ namespace PrintTool
 {
 	public class ProcessHandler
 	{
-		
+
 		private string fileToStart = "";
 		private string args = "";
 		private Logger outputDisplay;
-		private Process pc;		
+		private Process pc;
 
 		public ProcessHandler(string fileToStart, string args, Logger outputDisplay)
 		{
 			this.fileToStart = fileToStart;
 			this.args = args;
 			this.outputDisplay = outputDisplay;
-			
+
 		}
 
 		public async Task Start(CancellationToken token)
