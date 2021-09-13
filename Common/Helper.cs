@@ -33,7 +33,7 @@ namespace PrintTool
 			}));
 		}
 
-		private async void Cli_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+		private void Cli_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
 		{
 			progressBar.Dispatcher.Invoke(new Action(() =>
 			{
@@ -50,7 +50,7 @@ namespace PrintTool
 			}));
 		}
 
-		public static bool HPStatus()
+		public static bool ConnectedToHP()
 		{
 			return Directory.Exists(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\");
 		}
@@ -59,7 +59,7 @@ namespace PrintTool
 		{
 			string from = @"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\";
 			string to = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\";
-			if (HPStatus())
+			if (ConnectedToHP())
 			{
 				if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
 				{
@@ -102,36 +102,19 @@ namespace PrintTool
 		}
 
 
-		public async void PopulateListBox(System.Windows.Controls.ListBox listBox, string site, string filter = "", bool flip = false)
-		{
-			List<string> results = await GetListings(site, filter);
-			if (flip) { results.Reverse(); }
-			listBox.Items.Clear();
-			foreach (string result in results)
-			{
-				listBox.Items.Add(result);
-			}
-		}
-
-		public async Task PopulateComboBox(System.Windows.Controls.ComboBox comboBox, string site, string filter = "", bool flip = false)
-		{
-			List<string> results = await GetListings(site, filter);
-			if (flip) { results.Reverse(); }
-			comboBox.Items.Clear();
-			foreach (string result in results)
-			{
-				comboBox.Items.Add(result);
-			}
-			comboBox.SelectedIndex = 0;
-		}
-
-		public async Task<string> DownloadOrCopyFile(string filename, string location)
+		public async Task<bool> TryDownloadOrCopyFile(string filename, string location)
 		{
 			if (location.Contains("http"))
 			{
-				await cli.DownloadFileTaskAsync(location + filename, filename);
-				return filename;
-
+				try
+				{
+					await cli.DownloadFileTaskAsync(location + filename, filename);
+					return true;
+				}
+				catch
+				{					
+					return false;					
+				}
 			}
 			else if (location.Contains(@"\") || location.Contains(@"C:"))
 			{
@@ -141,71 +124,83 @@ namespace PrintTool
 				await readFile.CopyToAsync(copyFile);
 				readFile.Close();
 				copyFile.Close();
-				return filename;
+				return true;
 			}
-
 			else
 			{
-				MessageBox.Show("Invalid location");
-				return "";
+				return false;
 			}
 		}
 
-
-		public async Task<List<string>> GetListings(string uri, string filter = "")
+		public async static Task<List<string>> PopulateFromPathOrSite(string path, string filter = "", bool flip = false)
 		{
 			List<string> results = new();
-			if (uri == "") { results.Add("Invalid URI"); return results; }
-
-
-			if (uri.Contains("http"))
+			if (path.Contains("C:\\") || path.Contains("\\\\"))
 			{
-				WebClient webClient = new();
-				string webData = null;
-				try { webData = await webClient.DownloadStringTaskAsync(uri); }
-				catch { results.Add("Invalid URL"); return results; }
-				MatchCollection matches = new Regex("(?<=<a href=\")(.*)(?=\\/a><\\/td>)").Matches(webData);
-				foreach (Match match in matches)
-				{
-					Match submatch = Regex.Match(match.Value, "(?<=\">)(.*)(?=<)");
-					if (submatch.Success) { results.Add(submatch.Value); }
-				}
-				results.RemoveAt(0);
-			}
-
-
-			else if (uri.Contains(@"\"))
-			{
+				DirectoryInfo directory;
 				try
 				{
-					List<string> listings = new();
-					List<string> folders = Directory.GetDirectories(uri, "*", new EnumerationOptions()).ToList();
-					List<string> files = Directory.GetFiles(uri, "*", new EnumerationOptions()).ToList();
-					listings.AddRange(folders);
-					listings.AddRange(files);
-					foreach (string listing in listings)
+					directory = new(path);
+					foreach (FileInfo file in directory.EnumerateFiles())
 					{
-						results.Add(Path.GetFileName(listing));
+						if (!file.Name.Contains(filter)) { continue; }
+						results.Add(file.Name);
+					}
+					foreach (DirectoryInfo folder in directory.EnumerateDirectories())
+					{
+						if (!folder.Name.Contains(filter)) { continue; }
+						results.Add(folder.Name);
 					}
 				}
 				catch
 				{
-
+					results.Add($"{path} does not exist.");
+					return results;
 				}
-
-
 			}
-
-
-			List<string> filteredResults = new();
-			foreach (string result in results)
+			else if (path.Contains("http"))
 			{
-				if (result.EndsWith(filter)) { filteredResults.Add(result); }
+				WebClient webClient = new();
+				try
+				{
+					string webData = await webClient.DownloadStringTaskAsync(path);
+					MatchCollection matches = new Regex("(?<=<a href=\")(.*)(?=\\/a><\\/td>)").Matches(webData);
+					foreach (Match match in matches)
+					{
+						Match submatch = Regex.Match(match.Value, "(?<=\">)(.*)(?=<)");
+						if (submatch.Success && submatch.Value.Contains(filter) && submatch.Value != "Parent Directory") 
+						{ 
+							results.Add(submatch.Value); 
+						}
+					}
+				}
+				catch 
+				{
+					results.Add("Invalid URL"); 
+					return results; 
+				}				
+			}
+			else
+			{
+				results.Add($"{path} is not valid.");
+				return results;
 			}
 
-			if (filteredResults.Count > 100) { filteredResults.RemoveRange(100 - 1, filteredResults.Count - 100); }
-			if (filteredResults.Count == 0) { filteredResults.Add("Nothing Found"); return filteredResults; }
-			return filteredResults;
+
+			if(results.Count > 99)
+			{
+				results.RemoveRange(100, results.Count - 101);
+			}
+			if(results.Count == 0)
+			{
+				results.Add("Nothing Found");
+			}
+			if (flip == true)
+			{
+				results.Reverse();
+			}
+			return results;	
+
 		}
 
 
@@ -243,7 +238,11 @@ namespace PrintTool
 			button.IsEnabled = false;
 			button.Content = "Proccessing..";
 			await logger.Log("Downloading " + website + filename);
-			await DownloadOrCopyFile(filename, website);
+			if (!await TryDownloadOrCopyFile(filename, website))
+			{
+				
+			}
+			
 			await logger.Log("Download success.");
 			await logger.Log("Sending firmware to printer");
 

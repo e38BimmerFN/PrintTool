@@ -8,8 +8,5 @@
     <Setting Name="TimesLaunched" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
-    <Setting Name="LastLoadedPrinter" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
   </Settings>
 </SettingsFile>

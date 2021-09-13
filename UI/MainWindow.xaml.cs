@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -10,22 +11,27 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 
-
 namespace PrintTool
 {
 	public partial class MainWindow : Window
 	{
-
+		//Paths
 		const string SIRUSSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/";
 		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
 		const string JOLTPATH = @"\\jedibdlbroker.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds\25s\";
-		System.Threading.CancellationTokenSource cancelSource = new();
+		DirectoryInfo appdataPath = new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+		DirectoryInfo pathToSavePrintersTo = null;
+		DirectoryInfo pathToSaveJobsTo = null;
+		DirectoryInfo pathToSaveLogsTo = null;
 
-		readonly Logger ptlog = new("PrintTool");
-		Printer currPrinter = new();
-		readonly IPPHandler ippCli = new();
+
+		Printer currentlyDisplayedPrinter;
+		ObservableCollection<string> currentDisplayingJobs = new();
+		List<PrintJob> printedJobs = new();
+		Timer mainTimer = new(3000);
 		Helper ptHelper = null;
-
+		readonly Logger ptlog = new("PrintTool");
+		System.Threading.CancellationTokenSource cancelSource = new();
 
 		readonly List<SerialConnection> serialConnections = new();
 		readonly List<TelnetConnection> telnetConnections = new();
@@ -36,6 +42,30 @@ namespace PrintTool
 			InitializeComponent();
 			ptLoggerHere.Content = ptlog;
 			ptHelper = new(ptProgressBar);
+
+			pathToSavePrintersTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Printers");
+			pathToSaveJobsTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Jobs");
+			pathToSaveLogsTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Logs");
+			printingListActiveJobs.ItemsSource = currentDisplayingJobs;
+			mainTimer.Start();
+			mainTimer.Elapsed += MainTimer_Elapsed;
+		}
+
+		//Updating Jobs
+		private void MainTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		{
+			Application.Current.Dispatcher.Invoke(new Action(() =>
+			{
+				currentDisplayingJobs.Clear();
+				foreach (PrintJob pj in printedJobs)
+				{
+					if(pj is not null)
+					{
+						currentDisplayingJobs.Insert(0, pj.ToString());
+					}					
+				}
+			}));
+
 		}
 
 
@@ -56,352 +86,129 @@ namespace PrintTool
 			await ptlog.Log("Logs for this session will be located at : \\Data\\Logs\\Temp\\");
 			await ptlog.Log("Have a good day");
 
-			ptHelper.PopulateListBox(savedPrinters, "Data\\Printers\\");
-			ptHelper.PopulateListBox(jobListBox, "Data\\Jobs\\");
-			if (!Helper.HPStatus())
+
+			savedPrintersList.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
+			printingListPrinters.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
+			printingListJobs.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSaveJobsTo.FullName);
+
+
+			if (!Helper.ConnectedToHP())
 			{
 				MessageBox.Show("Attention! You are not connected or do not have access to required files. The tabs needing these resources will be disabled");
 				firmwareTab.IsEnabled = false;
 			}
 			else
 			{
-				await ptHelper.PopulateComboBox(joltYearSelect, JOLTPATH, "", true);
-				await ptHelper.PopulateComboBox(duneVersionSelect, DUNESITE + "?C=M;O=D");
+				joltYearSelect.ItemsSource = await Helper.PopulateFromPathOrSite(JOLTPATH, flip: true);
+				joltYearSelect.SelectedIndex = 0;
+
+				duneVersionSelect.ItemsSource = await Helper.PopulateFromPathOrSite(DUNESITE + "?C=M;O=D");
+				duneVersionSelect.SelectedIndex = 0;
+
 				sirusSGPSelect.Items.Add("yolo_sgp/");
 				sirusSGPSelect.Items.Add("avengers_sgp/");
 				sirusSGPSelect.SelectedIndex = 0;
 			}
-
-			try
-			{
-				if (Settings.Default.LastLoadedPrinter is "" || !File.Exists(@"Data\Printers\" + Settings.Default.LastLoadedPrinter)) { }
-				else
-				{
-					savedPrinters.SelectedItem = Settings.Default.LastLoadedPrinter;
-					ConnectionsLoadDefaults(sender, e);
-				}
-
-			}
-			catch
-			{
-				await ptlog.Log("Couldn't load last used printer.");
-			}
-
 		}
 
 		#endregion Startup
 
-		#region Connections Tab
+		#region Printers
 
 
-		//Printer Details
-		private async void PrinterModel_TextChanged(object sender, TextChangedEventArgs e)
+		private void openPathSavedPrinters_Click(object sender, RoutedEventArgs e)
 		{
-			await Task.Delay(10);
-			currPrinter.Model = printerModelEntry.Text;
+			Helper.OpenPath(pathToSavePrintersTo.FullName);
 		}
-		private async void PrinterEngine_TextChanged(object sender, TextChangedEventArgs e)
+
+		private async void addPrinter_Click(object sender, RoutedEventArgs e)
 		{
-			await Task.Delay(10);
-			currPrinter.Engine = printerEngineEntry.Text;
-		}
-		private async void PrinterID_TextChanged(object sender, TextChangedEventArgs e)
-		{
-			await Task.Delay(10);
-			currPrinter.Id = printerIdEntry.Text;
-		}
-		private async void PrinterTypeEntry_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			await Task.Delay(10);
-			currPrinter.Type = printerTypeEntry.Text;
-			switch (printerTypeEntry.Text)
+			InstallPrinterPopup pop = new();
+			pop.ShowDialog();
+			if (pop.DialogResult.Value)
 			{
-				case "Jedi":
-					joltTab.IsSelected = true;
-					break;
-				case "Dune":
-					duneTab.IsSelected = true;
-					break;
-				case "Sirus":
-					sirusTab.IsSelected = true;
-					break;
-				default:
-					break;
+				Printer pt = new(pop.ipaddress.Text, pop.nickname.Text);
+				await pt.RefreshValues();
+				Printer.SavePrinter(pathToSavePrintersTo, pt);
+				savedPrintersList.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
+				printingListPrinters.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
+				savedPrintersList.SelectedItem = pop.nickname.Text;
 			}
 		}
 
-		//Connections
-		private async void PrinterIpEntry_TextChanged(object sender, TextChangedEventArgs e)
+		private async void UpdatePrinterDisplayValues(Printer p)
 		{
-			await Task.Delay(500);
-			currPrinter.PrinterIp = printerIpEntry.Text;
-			if (await Helper.CheckIP(printerIpEntry.Text))
-			{
-				printerIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
-				openEWSButton.IsEnabled = true;
-				ippCli.Ip = printerIpEntry.Text;
-			}
-
-			else
-			{
-				printerIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				openEWSButton.IsEnabled = false;
-			}
-
-
-		}
-		private async void DartIpEntry_TextedChanged(object sender, TextChangedEventArgs e)
-		{
-			await Task.Delay(500);
-			currPrinter.DartIp = dartIpEntry.Text;
-			if (await Helper.CheckIP(dartIpEntry.Text))
-			{
-				dartIpEntry.Background = System.Windows.Media.Brushes.LightGreen;
-				connectTelnetButton.IsEnabled = true;
-				ConnectSnoopyButton.IsEnabled = true;
-				openDartButton.IsEnabled = true;
-			}
-
-			else
-			{
-				dartIpEntry.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				connectTelnetButton.IsEnabled = false;
-				ConnectSnoopyButton.IsEnabled = false;
-				openDartButton.IsEnabled = false;
-			}
-
+			currPrinterIP.Text = p.IP;
+			currPrinterLabel.Text = p.Nickname;
+			currPrinterName.Text = p.IPPName;
+			currPrinterNameInfo.Text = p.IPPPNameInfo;
+			currPrinterFirmware.Text = p.IPPFirmwareInstalled;
+			currPrinterPPM.Text = p.IPPPPM + " ppm";
+			currPrinterColorSupported.Text = p.IPPColorSupported;
+			currPrinterUUID.Text = p.IPPUUID;
+			currPrinterLocation.Text = p.IPPLocation;
+			currPrinterState.Text = p.IPPPrinterState;
+			currPrinterStateMessage.Text = p.IPPPrinterStateMessage;
+			currPrinterSupplyList.ItemsSource = p.IPPSupplyValues;
+			currPrinterSupportedMedia.ItemsSource = p.IPPSupportedMedia;
+			currPrinterSupportedMediaSource.ItemsSource = p.IPPSupportedMediaSource;
+			currPrinterSupportedMediaType.ItemsSource = p.IPPSupportedMediaType;
+			currPrinterSupportedOutputTray.ItemsSource = p.IPPSuppportedOutputBin;
+			currPrinterSupportedFinishings.ItemsSource = p.IPPSupportedFinishings;
+			currPrinterSupportedSides.ItemsSource = p.IPPSupportedSides;
 		}
 
-
-		private void OpenDartButton_Click(object sender, RoutedEventArgs e)
+		private async void deletePrinter_Click(object sender, RoutedEventArgs e)
 		{
-			System.Diagnostics.Process.Start("explorer", "http://" + dartIpEntry.Text);
-		}
-		private void OpenEWSButton_Click(object sender, RoutedEventArgs e)
-		{
-			System.Diagnostics.Process.Start("explorer", "http://" + printerIpEntry.Text);
-		}
-
-
-
-		bool serialConnected = false;
-		private async void ConnectSerial_Click(object sender, RoutedEventArgs e)
-		{
-			if (!serialConnected)
+			foreach (string file in savedPrintersList.SelectedItems)
 			{
-				await ptlog.Log("Connecting to serial connections...");
-				serialConnections.Clear();
-				serialConnectionsTabControl.Items.Clear();
-				foreach (string portname in SerialConnection.GetPorts())
+				File.Delete(pathToSavePrintersTo + "\\" + file);
+			}
+			savedPrintersList.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
+		}
+
+		private void savedPrintersList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			if (e.AddedItems.Count == 0) { return; } //handeling unselection
+			foreach (FileInfo file in pathToSavePrintersTo.EnumerateFiles())
+			{
+				if (file.Name == e.AddedItems[0].ToString()) //getting first item selected
 				{
-					await ptlog.Log("Connecting to " + portname);
-
-					SerialConnection conection = new(portname);
-					TabItem tab = new() { Content = conection, Header = portname };
-					serialConnectionsTabControl.Items.Add(tab);
-					serialConnections.Add(conection);
-
-				}
-				connectSerialButton.Content = "Disconnect from Serial";
-				connectSerialButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				serialConnected = true;
-				await ptlog.Log("Finished");
-			}
-			else
-			{
-				await ptlog.Log("Disconnecting from serial connections....");
-				foreach (SerialConnection sc in serialConnections) { sc.Close(); }
-				connectSerialButton.Content = "Connect to Serial";
-				connectSerialButton.Background = System.Windows.Media.Brushes.LightGreen;
-				serialConnected = false;
-				await ptlog.Log("Finished");
-			}
-
-		}
-		//bool snoopyConnected = false;
-		private void ConnectSnoopy_Click(object sender, RoutedEventArgs e)
-		{
-			//TODO
-		}
-		bool telnetConnected = false;
-		private async void ConnectTelnet_Click(object sender, RoutedEventArgs e)
-		{
-			if (!telnetConnected)
-			{
-				await ptlog.Log("Connecting to telnet connections...");
-				telnetConnections.Clear();
-				telnetConnectionsTabControl.Items.Clear();
-				foreach (int port in TelnetConnection.GetPorts())
-				{
-					await ptlog.Log("Connecting to " + port);
-					TelnetConnection connection = new(currPrinter.DartIp, port);
-					TabItem tab = new() { Content = connection, Header = port.ToString() };
-					telnetConnectionsTabControl.Items.Add(tab);
-					telnetConnections.Add(connection);
-				}
-				connectTelnetButton.Content = "Disconnect from Telnet";
-				connectTelnetButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
-				telnetConnected = true;
-				await ptlog.Log("Finished");
-
-			}
-			else
-			{
-				await ptlog.Log("Disconnecting from Telnet connections....");
-				foreach (TelnetConnection tc in telnetConnections) { tc.Close(); }
-				connectTelnetButton.Content = "Connect to Telnet";
-				connectTelnetButton.Background = System.Windows.Media.Brushes.LightGreen;
-				telnetConnected = false;
-				await ptlog.Log("Finished");
-			}
-
-		}
-
-		private async void FlushLogs_Click(object sender, RoutedEventArgs e)
-		{
-
-			foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\"))
-			{
-				if (file.Contains("LogPrintTool.txt")) { continue; }
-				File.Delete(file);
-			}
-			await ptlog.Log("Flushed Logs");
-		}
-
-
-
-
-
-		private void OpenLogs_Click(object sender, RoutedEventArgs e)
-		{
-			System.Diagnostics.Process.Start("explorer", Directory.GetCurrentDirectory().ToString() + @"\Data\Logs\Temp\");
-		}
-
-
-		private async void RefreshPrinterAttributes_Click(object sender, RoutedEventArgs e)
-		{
-			if (!await Helper.CheckIP(currPrinter.PrinterIp)) { return; }
-			ippCli.Ip = currPrinter.PrinterIp;
-
-			var response = await ippCli.GetPrinterDetails();
-			if (response is null) { return; }
-			List<SharpIpp.Model.IppAttribute> atl = response.Sections[1].Attributes;
-			ippMedia.Items.Clear();
-			ippMediaSource.Items.Clear();
-			ippPaperAttributes.Items.Clear();
-			ippOutputBin.Items.Clear();
-			ippDuplex.Items.Clear();
-			ippFinishings.Items.Clear();
-			ippCollate.Items.Clear();
-			supplyLevelsListBox.Items.Clear();
-			foreach (SharpIpp.Model.IppAttribute at in atl)
-			{
-				if (true)
-				{
-					switch (at.Name)
-					{
-						case "media-supported":
-							ippMedia.Items.Add(at.Value);
-							break;
-						case "media-source-supported":
-							ippMediaSource.Items.Add(at.Value);
-							break;
-						case "media-type-supported":
-							ippPaperAttributes.Items.Add(at.Value);
-							break;
-						case "output-bin-supported":
-							ippOutputBin.Items.Add(at.Value);
-							break;
-						case "sides-supported":
-							ippDuplex.Items.Add(at.Value);
-							break;
-						case "finishings-supported":
-							ippFinishings.Items.Add((SharpIpp.Model.Finishings)at.Value);
-							break;
-						case "multiple-document-handling-supported":
-							ippCollate.Items.Add(at.Value);
-							break;
-						case "printer-make-and-model":
-							ippName.Text = at.Value.ToString();
-							break;
-						case "printer-firmware-version":
-							ippFirmwareInstalled.Text = at.Value.ToString();
-							break;
-						case "pages-per-minute":
-							ippPPM.Text = at.Value.ToString();
-							break;
-						case "color-supported":
-							ippColorSupport.Text = at.Value.ToString();
-							break;
-						case "printer-state":
-							ippPrinterState.Text = ((SharpIpp.Model.PrinterState)at.Value).ToString();
-							break;
-						case "printer-state-reasons":
-							ippPrinterStateMessage.Text = at.Value.ToString();
-							break;
-						case "printer-supply":
-							List<string> strings = at.Value.ToString().Split(";").ToList();
-							ProgressBar pg = new() { Minimum = 0, Maximum = 100 };
-							GroupBox gb = new() { Content = pg, HorizontalAlignment = HorizontalAlignment.Stretch };
-							foreach (string temp in strings)
-							{
-								if (temp.Contains("level")) { pg.Value = int.Parse(temp.Split("=")[1]); }
-								else if (temp.Contains("colorantname")) { gb.Header = temp.Split("=")[1] + " " + pg.Value.ToString() + "%"; }
-							}
-							supplyLevelsListBox.Items.Add(gb);
-							break;
-						default:
-							break;
-					}
+					currentlyDisplayedPrinter = Printer.ReadFromFile(file);
+					UpdatePrinterDisplayValues(currentlyDisplayedPrinter);
 				}
 			}
-			try
+		}
+
+		private async void currPrinterRefresh_Click(object sender, RoutedEventArgs e)
+		{
+			if (await currentlyDisplayedPrinter.RefreshValues())
 			{
-				ippMedia.SelectedItem = "na_letter_8.5x11in";
-				ippMediaSource.SelectedIndex = 0;
-				ippPaperAttributes.SelectedItem = "stationery";
-				ippOutputBin.SelectedIndex = 0;
-				ippDuplex.SelectedIndex = 0;
-				ippFinishings.SelectedIndex = 0;
-				ippCollate.SelectedIndex = 0;
+				UpdatePrinterDisplayValues(currentlyDisplayedPrinter);
 			}
-			catch { }
+			else
+			{
+				MessageBox.Show("Cannot communicate with printer. IP Might have changed or printer is off.", "Cannot communicate with printer", MessageBoxButton.OK, MessageBoxImage.Error);
+			}
 
 		}
 
-
-		//Saving
-		public void ConnectionsSaveDefaults(object sender, EventArgs e)
+		private async void currPrinterEditValues_Click(object sender, RoutedEventArgs e)
 		{
-			File.WriteAllText($"Data\\Printers\\{currPrinter.Model}", JsonSerializer.Serialize(currPrinter));
-			ptHelper.PopulateListBox(savedPrinters, "Data\\Printers\\");
-		}
-		public async void ConnectionsLoadDefaults(object sender, EventArgs e)
-		{
-			if (savedPrinters.SelectedItem is null or "Nothing Found") { await ptlog.Log("Select something first"); return; }
-			Settings.Default.LastLoadedPrinter = savedPrinters.SelectedItem.ToString();
-			Settings.Default.Save();
-			string json = File.ReadAllText($"Data\\Printers\\{savedPrinters.SelectedItem}");
-			currPrinter = JsonSerializer.Deserialize<Printer>(json);
-			printerModelEntry.Text = currPrinter.Model;
-			printerIdEntry.Text = currPrinter.Id;
-			printerEngineEntry.Text = currPrinter.Engine;
-			printerTypeEntry.Text = currPrinter.Type;
-			printerIpEntry.Text = currPrinter.PrinterIp;
-			dartIpEntry.Text = currPrinter.DartIp;
-
-		}
-		public async void ConnectionsDeleteDefaults(object sender, EventArgs e)
-		{
-			if (savedPrinters.SelectedItem is null or "Nothing Found") { await ptlog.Log("Select something first"); return; }
-			File.Delete(@"Data\Printers\" + savedPrinters.SelectedItem);
-			ptHelper.PopulateListBox(savedPrinters, "Data\\Printers\\");
+			InstallPrinterPopup pop = new(currentlyDisplayedPrinter.Nickname, currentlyDisplayedPrinter.IP);
+			pop.ShowDialog();
+			if (pop.DialogResult.Value)
+			{
+				currentlyDisplayedPrinter.IP = pop.ipaddress.Text;
+				currentlyDisplayedPrinter.Nickname = pop.nickname.Text;
+				await currentlyDisplayedPrinter.RefreshValues();
+				Printer.SavePrinter(pathToSavePrintersTo, currentlyDisplayedPrinter);
+				savedPrintersList.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
+				savedPrintersList.SelectedItem = pop.nickname.Text;
+			}
 		}
 
-
-
-
-		#endregion Connections
+		#endregion
 
 		#region Firmware Tab
 		#region Jolt
@@ -409,104 +216,121 @@ namespace PrintTool
 
 		private async void JoltYearSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(joltMonthSelect, JOLTPATH + joltYearSelect.Text + "\\", "", true);
+			string path = JOLTPATH + joltYearSelect.SelectedValue + "\\";
+			joltMonthSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, flip: true);
+			joltMonthSelect.SelectedIndex = 0;
 		}
 
 		private async void JoltMonthSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(joltDaySelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\", "", true);
-
+			string path = JOLTPATH + joltYearSelect.SelectedValue + "\\" + joltMonthSelect.SelectedValue + "\\";
+			joltDaySelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, flip: true);
+			joltDaySelect.SelectedIndex = 0;
 		}
 		private async void JoltDaySelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(joltProductSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\");
+			string path = JOLTPATH + joltYearSelect.SelectedValue + "\\" + joltMonthSelect.SelectedValue + "\\" + joltDaySelect.SelectedValue + "\\Products\\";
+			joltProductSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path);
+			joltProductSelect.SelectedIndex = 0;
 		}
 
 		private async void JoltProductSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(joltVersionSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\", "", true);
+			string path = JOLTPATH + joltYearSelect.SelectedValue + "\\" + joltMonthSelect.SelectedValue + "\\" + joltDaySelect.SelectedValue + "\\Products\\" + joltProductSelect.SelectedValue + "\\";
+			joltVersionSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path);
+			joltVersionSelect.SelectedIndex = 0;
 		}
 
 		private async void JoltVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
-			await ptHelper.PopulateComboBox(joltCSVSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
-			await ptHelper.PopulateComboBox(joltFIMSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "exe");
+			string path = JOLTPATH + joltYearSelect.SelectedValue + "\\" + joltMonthSelect.SelectedValue + "\\" + joltDaySelect.SelectedValue + "\\Products\\" + joltProductSelect.SelectedValue + "\\" + joltVersionSelect.SelectedValue + "\\";
+			joltBuildSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "bdl");
+			joltCSVSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "csv");
+			joltFIMSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "exe");
+			joltBuildSelect.SelectedIndex = 0;
+			joltCSVSelect.SelectedIndex = 0;
+			joltFIMSelect.SelectedIndex = 0;
 		}
 
 		private async void JoltCustomLink_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
-			await ptHelper.PopulateComboBox(joltCSVSelect, joltCustomLink.Text, "csv");
-			await ptHelper.PopulateComboBox(joltFIMSelect, joltCustomLink.Text, "exe");
+			string path = joltCustomLink.Text;
+			joltBuildSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "bdl");
+			joltCSVSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "csv");
+			joltFIMSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "exe");
+			joltBuildSelect.SelectedIndex = 0;
+			joltCSVSelect.SelectedIndex = 0;
+			joltFIMSelect.SelectedIndex = 0;
 		}
 
 		private async void JoltFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			if (joltFwTab.SelectedIndex == 0)
 			{
-				await ptHelper.PopulateComboBox(joltBuildSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "bdl");
-				await ptHelper.PopulateComboBox(joltCSVSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "csv");
-				await ptHelper.PopulateComboBox(joltFIMSelect, JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\", "exe");
+				string path = JOLTPATH + joltYearSelect.SelectedValue + "\\" + joltMonthSelect.SelectedValue + "\\" + joltDaySelect.SelectedValue + "\\Products\\" + joltProductSelect.SelectedValue + "\\" + joltVersionSelect.SelectedValue + "\\";
+				joltBuildSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "bdl");
+				joltCSVSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "csv");
+				joltFIMSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "exe");
+				joltBuildSelect.SelectedIndex = 0;
+				joltCSVSelect.SelectedIndex = 0;
+				joltFIMSelect.SelectedIndex = 0;
 			}
 			else
 			{
-				await ptHelper.PopulateComboBox(joltBuildSelect, joltCustomLink.Text, "bdl");
-				await ptHelper.PopulateComboBox(joltCSVSelect, joltCustomLink.Text, "csv");
-				await ptHelper.PopulateComboBox(joltFIMSelect, joltCustomLink.Text, "exe");
+				string path = joltCustomLink.Text;
+				joltBuildSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "bdl");
+				joltCSVSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "csv");
+				joltFIMSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "exe");
+				joltBuildSelect.SelectedIndex = 0;
+				joltCSVSelect.SelectedIndex = 0;
+				joltFIMSelect.SelectedIndex = 0;
 			}
 		}
 
 
 		private async void JoltStart_Click(object sender, RoutedEventArgs e)
 		{
-			joltStart.IsEnabled = false;
+			//joltStart.IsEnabled = false;
 
-			string sourceLink;
-			if (joltFwTab.SelectedIndex == 0)
-			{
-				sourceLink = JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\";
-			}
-			else
-			{
-				sourceLink = joltCustomLink.Text + "\\";
-			}
-			await ptlog.Log($"Now starting download of {sourceLink}");
+			//string sourceLink;
+			//if (joltFwTab.SelectedIndex == 0)
+			//{
+			//	sourceLink = JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\";
+			//}
+			//else
+			//{
+			//	sourceLink = joltCustomLink.Text + "\\";
+			//}
+			//await ptlog.Log($"Now starting download of {sourceLink}");
 
-			await ptHelper.DownloadOrCopyFile(joltBuildSelect.Text, sourceLink);
-			await ptHelper.DownloadOrCopyFile(joltCSVSelect.Text, sourceLink);
-			await ptHelper.DownloadOrCopyFile(joltFIMSelect.Text, sourceLink);
-			await ptlog.Log($"Finished downloading of {joltBuildSelect.Text}, {joltCSVSelect.Text}, and{joltFIMSelect.Text}");
-			string armcommand = "arm";
-			string csvcommand = "";
+			//await ptHelper.TryDownloadOrCopyFile(joltBuildSelect.Text, sourceLink);
+			//await ptHelper.TryDownloadOrCopyFile(joltCSVSelect.Text, sourceLink);
+			//await ptHelper.TryDownloadOrCopyFile(joltFIMSelect.Text, sourceLink);
+			//await ptlog.Log($"Finished downloading of {joltBuildSelect.Text}, {joltCSVSelect.Text}, and{joltFIMSelect.Text}");
+			//string armcommand = "arm";
+			//string csvcommand = "";
 
-			if (!(joltEnableArm.IsChecked ?? false)) { armcommand += "64"; }
-			if (joltEnableCSV.IsChecked ?? false) { csvcommand = $"-c {joltCSVSelect.Text}"; }
+			//if (!(joltEnableArm.IsChecked ?? false)) { armcommand += "64"; }
+			//if (joltEnableCSV.IsChecked ?? false) { csvcommand = $"-c {joltCSVSelect.Text}"; }
 
-			string command = $"-x {currPrinter.PrinterIp} -t bios -n {armcommand} {csvcommand} {joltBuildSelect.Text}";
+			//string command = $"-x {currPrinter.PrinterIp} -t bios -n {armcommand} {csvcommand} {joltBuildSelect.Text}";
 
-			await ptlog.Log($"Running fimClient with these commands : {joltFIMSelect.Text} {command}");
-			ProcessHandler handler = new(joltFIMSelect.Text, command, ptlog);
-			await handler.Start(cancelSource.Token);
+			//await ptlog.Log($"Running fimClient with these commands : {joltFIMSelect.Text} {command}");
+			//ProcessHandler handler = new(joltFIMSelect.Text, command, ptlog);
+			//await handler.Start(cancelSource.Token);
 
-			try
-			{
-				File.Delete(joltBuildSelect.Text);
-				File.Delete(joltCSVSelect.Text);
-				File.Delete(joltFIMSelect.Text);
-			}
-			catch { };
+			//try
+			//{
+			//	File.Delete(joltBuildSelect.Text);
+			//	File.Delete(joltCSVSelect.Text);
+			//	File.Delete(joltFIMSelect.Text);
+			//}
+			//catch { };
 
 
-			await ptlog.Log("FIM Process done!");
-			MessageBox.Show("Installation done!");
-			joltStart.IsEnabled = true;
+			//await ptlog.Log("FIM Process done!");
+			//MessageBox.Show("Installation done!");
+			//joltStart.IsEnabled = true;
 		}
 
 		private void JoltOpenFW_Click(object sender, RoutedEventArgs e)
@@ -561,32 +385,37 @@ namespace PrintTool
 		//Main UI
 		private async void SirusSGPSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(sirusDistSelect, SIRUSSITE + sirusSGPSelect.Text, "dist/");
+			string path = SIRUSSITE + sirusSGPSelect.SelectedValue;
+			sirusDistSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "dist/");
+			sirusDistSelect.SelectedIndex = 0;
 		}
 
 		private async void SirusDistSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(sirusFWVersionSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + "?C=M;O=D");
+			string path = SIRUSSITE + sirusSGPSelect.SelectedValue + sirusDistSelect.SelectedValue + "?C=M;O=D";
+			sirusFWVersionSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path);
+			sirusFWVersionSelect.SelectedIndex = 0;
 		}
 
 		private async void SirusFWVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(sirusBranchSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text);
+			string path = SIRUSSITE + sirusSGPSelect.SelectedValue + sirusDistSelect.SelectedValue + sirusFWVersionSelect.SelectedValue;
+			sirusBranchSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path);
+			sirusBranchSelect.SelectedIndex = 0;
 		}
 
 		private async void SirusBranchSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(sirusPackageSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text + "?C=S;O=D", "fhx");
+			string path = SIRUSSITE + sirusSGPSelect.SelectedValue + sirusDistSelect.SelectedValue + sirusFWVersionSelect.SelectedValue + sirusBranchSelect.SelectedValue + "?C=S;O=D";
+			sirusPackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+			sirusPackageSelect.SelectedIndex = 0;
 		}
 
 		private async void SiriusCustomLink_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text, "fhx");
+			string path = sirusCustomLink.Text;
+			sirusPackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+			sirusPackageSelect.SelectedIndex = 0;
 		}
 
 		private async void SirusFwTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -594,13 +423,16 @@ namespace PrintTool
 			await Task.Delay(10);
 			if (sirusFwTab.SelectedIndex == 0)
 			{
-				await ptHelper.PopulateComboBox(sirusPackageSelect, SIRUSSITE + sirusSGPSelect.Text + sirusDistSelect.Text + sirusFWVersionSelect.Text + sirusBranchSelect.Text + "?C=S;O=D", "fhx");
+				string path = SIRUSSITE + sirusSGPSelect.SelectedValue + sirusDistSelect.SelectedValue + sirusFWVersionSelect.SelectedValue + sirusBranchSelect.SelectedValue + "?C=S;O=D";
+				sirusPackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+				sirusPackageSelect.SelectedIndex = 0;
 			}
 			else
 			{
-				await ptHelper.PopulateComboBox(sirusPackageSelect, sirusCustomLink.Text, "fhx");
+				string path = sirusCustomLink.Text;
+				sirusPackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+				sirusPackageSelect.SelectedIndex = 0;
 			}
-			sirusPackageSelect.SelectedIndex = 0;
 		}
 
 		//Quick Links
@@ -655,21 +487,23 @@ namespace PrintTool
 		{
 			if (duneFwTab.SelectedIndex == 0)
 			{
-				await ptHelper.PopulateComboBox(dunePackageSelect, DUNESITE + duneVersionSelect.Text + duneModelSelect.Text + "?C=S;O=D", "fhx");
+				string path = DUNESITE + duneVersionSelect.SelectedValue + duneModelSelect.SelectedValue + "?C=S;O=D";
+				dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+				dunePackageSelect.SelectedIndex = 0;
 			}
 			else
 			{
-				await ptHelper.PopulateComboBox(dunePackageSelect, duneCustomLink.Text, "fhx");
+				string path = duneCustomLink.Text;
+				dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+				dunePackageSelect.SelectedIndex = 0;
 			}
-
-
 		}
 
 
 		private async void DuneVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(duneModelSelect, DUNESITE + duneVersionSelect.Text);
+			string path = DUNESITE + duneVersionSelect.SelectedValue;
+			duneModelSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path);
 			if (duneModelSelect.Items[0].ToString().Contains("defaultProductGroup"))
 			{
 				duneModelSelect.Items.RemoveAt(0);
@@ -679,14 +513,16 @@ namespace PrintTool
 
 		private async void DuneModelSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(dunePackageSelect, DUNESITE + duneVersionSelect.Text + duneModelSelect.Text + "?C=S;O=D", "fhx");
+			string path = DUNESITE + duneVersionSelect.Text + duneModelSelect.Text + "?C=S;O=D";
+			dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+			dunePackageSelect.SelectedIndex = 0;
 		}
 
 		private async void DuneCustomLink_TextChanged(object sender, TextChangedEventArgs e)
 		{
-			await Task.Delay(10);
-			await ptHelper.PopulateComboBox(dunePackageSelect, duneCustomLink.Text, "fhx");
+			string path = duneCustomLink.Text;
+			dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
+			dunePackageSelect.SelectedIndex = 0;
 		}
 
 		//Special Links
@@ -737,52 +573,150 @@ namespace PrintTool
 		#region IPP Tab
 
 
-		private async void IppSendJob_Click(object sender, RoutedEventArgs e)
+		private async void printingPrintJobs_Click(object sender, RoutedEventArgs e)
 		{
-			if (!await Helper.CheckIP(currPrinter.PrinterIp)) { MessageBox.Show("Invalid IP"); return; }
-			string stringToWrite = "";
-			string template = File.ReadAllText(@"Data\template.ps");
-			template = template.Replace("RVER", Settings.Default.Version.ToString());
-			template = template.Replace("RGENAT", DateTime.Now.ToString());
-			//Currpage
-			template = template.Replace("RMEDIA", ippMedia.Text);
-			template = template.Replace("RPAPERAT", ippPaperAttributes.Text);
-			template = template.Replace("RFINISH", ippFinishings.Text);
-			template = template.Replace("RCOLLATE", ippCollate.Text);
-			template = template.Replace("RDUPLEX", ippDuplex.Text);
-			template = template.Replace("RSOURCE", ippMediaSource.Text);
-			template = template.Replace("ROUTBIN", ippOutputBin.Text);
-			template = template.Replace("RCOPIES", ippCopies.Text);
-			template = template.Replace("RUSERNAME", Environment.UserName);
-
-
-			foreach (int i in Enumerable.Range(0, int.Parse(ippPages.Text)))
+			PrintJob.JobParams myParams = new()
 			{
-				string tempstr = template;
-				tempstr = tempstr.Replace("RCURPAGE", i.ToString());
-				stringToWrite += tempstr;
+				media = printingMedia.Text,
+				duplexing = printingDuplex.Text,
+				sourceTray = printingMediaSource.Text,
+				outputTray = printingOutputBin.Text,
+				copies = int.Parse(printingCopies.Text),
+				collation = printingCollate.Text,
+				finishing = (SharpIpp.Model.Finishings)Enum.Parse(typeof(SharpIpp.Model.Finishings), printingFinishings.Text),
+				mediaAttributes = printingPaperAttributes.Text,
+			};
+
+			List<Printer> printersToSendTo = new();
+			List<FileInfo> jobsToSend = new();
+			foreach (string file in printingListPrinters.SelectedItems)
+			{
+				printersToSendTo.Add(Printer.ReadFromFile(new(pathToSavePrintersTo + "\\" + file))); //creates a printer for all selected printers
+			}
+			foreach (string file in printingListJobs.SelectedItems)
+			{
+				jobsToSend.Add(new(pathToSaveJobsTo + "\\" + file));
 			}
 
-			await File.WriteAllTextAsync(@"Data\Jobs\temp.ps", stringToWrite);
-			string media = ippMedia.Text;
-			string duplex = ippDuplex.Text;
-			string msource = ippMediaSource.Text;
-			string binout = ippOutputBin.Text;
-			int copies = int.Parse(ippCopies.Text);
-			string collate = ippCollate.Text;
-			SharpIpp.Model.Finishings finish = (SharpIpp.Model.Finishings)Enum.Parse(typeof(SharpIpp.Model.Finishings), ippFinishings.Text);
-			string mediatype = ippPaperAttributes.Text;
 
-			var res = await ippCli.SendJob(@"Data\Jobs\temp.ps", media, duplex, msource, binout, copies, finish, collate, mediatype);
-			if (res is null) { return; }
-			ippJobStatusList.Items.Insert(0, new JobStatus(res.JobUri, ippCli));
 
+			if (jobsToSend.Count > 1)
+			{
+
+			}
+
+			foreach (Printer tempPrinter in printersToSendTo)
+			{
+				foreach (FileInfo job in jobsToSend)
+				{
+					printedJobs.Add(await tempPrinter.TrySendJob(job, myParams));
+				}
+			}
 		}
 
-		private async void IppCancelJobs_Click(object sender, RoutedEventArgs e)
+		private async void printingPrintTemplate_Click(object sender, RoutedEventArgs e)
 		{
-			await ippCli.CancelJob();
+			PrintJob.JobParams myParams = new()
+			{
+				media = printingMedia.Text,
+				duplexing = printingDuplex.Text,
+				sourceTray = printingMediaSource.Text,
+				outputTray = printingOutputBin.Text,
+				copies = int.Parse(printingCopies.Text),
+				collation = printingCollate.Text,
+				finishing = (SharpIpp.Model.Finishings)Enum.Parse(typeof(SharpIpp.Model.Finishings), printingFinishings.Text),
+				mediaAttributes = printingPaperAttributes.Text,
+			};
+			string finished = "";
+
+			foreach (int i in Enumerable.Range(0, int.Parse(printingPages.Text)))
+			{
+				finished += "/Helvetica findfont 12 scalefont setfont \r\n" +
+							"clippath stroke\r\n" +
+							"20 240 moveto\r\n" +
+							$"(PrintTool ver : {Settings.Default.Version.ToString()}) show \r\n" +
+							"20 220 moveto\r\n" +
+							$"(Generated at : {DateTime.Now.ToString()}) show\r\n" +
+							"20 200 moveto\r\n" +
+							$"(Page : {i}) show\r\n" +
+							"20 180 moveto\r\n" +
+							$"(Media : {printingMedia.Text}) show\r\n" +
+							"20 160 moveto\r\n" +
+							$"(Paper : {printingPaperAttributes.Text}) show\r\n" +
+							"20 140 moveto\r\n" +
+							$"(Finishing : {printingFinishings.Text}) show\r\n" +
+							"20 120 moveto\r\n" +
+							$"(Collation : {printingCollate.Text}) show\r\n" +
+							"20 100 moveto\r\n" +
+							$"(Duplexing : {printingDuplex.Text}) show\r\n" +
+							"20 80 moveto\r\n" +
+							$"(Source Tray : {printingMediaSource.Text}) show\r\n" +
+							"20 60 moveto\r\n" +
+							$"(Output Tray : {printingOutputBin.Text}) show\r\n" +
+							"20 40 moveto\r\n" +
+							$"(Copies : {printingCopies.Text}) show\r\n" +
+							"20 20 moveto\r\n" +
+							$"(Have a good day {Environment.UserName}:\\)) show\r\n" +
+							"showpage\r\n";
+			}
+			await File.WriteAllTextAsync(pathToSaveJobsTo.FullName + "\\temp.ps", finished);
+
+			List<Printer> printersToSendTo = new();
+			foreach (string file in printingListPrinters.SelectedItems)
+			{
+				printersToSendTo.Add(Printer.ReadFromFile(new(pathToSavePrintersTo + "\\" + file))); //creates a printer for all selected printers
+			}
+			foreach (Printer tempPrinter in printersToSendTo)
+			{
+				printedJobs.Add(await tempPrinter.TrySendJob(new(pathToSaveJobsTo.FullName + "\\temp.ps"), myParams));
+			}
 		}
+
+		private void openPathToJobs(object sender, RoutedEventArgs e)
+		{
+			Helper.OpenPath(pathToSaveJobsTo.FullName);
+		}
+
+		private async void printingCancelJobs_Click(object sender, RoutedEventArgs e)
+		{
+			foreach (string file in printingListPrinters.SelectedItems)
+			{
+				Printer p = Printer.ReadFromFile(new(pathToSavePrintersTo + "\\" + file));
+				if (!await p.CancelJobs())
+				{
+					MessageBox.Show("Unable To Cancel Jobs", "Error When Cancelling", MessageBoxButton.OK, MessageBoxImage.Error);
+				}
+			}
+		}
+
+		private void printingListPrinters_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+		{
+			foreach (string file in printingListPrinters.SelectedItems)
+			{
+				Printer p = Printer.ReadFromFile(new(pathToSavePrintersTo + "\\" + file));
+				printingMedia.ItemsSource = p.IPPSupportedMedia;
+				printingDuplex.ItemsSource = p.IPPSupportedSides;
+				printingMediaSource.ItemsSource = p.IPPSupportedMediaSource;
+				printingOutputBin.ItemsSource = p.IPPSuppportedOutputBin;
+				printingCollate.ItemsSource = p.IPPSupportedCollate;
+				printingFinishings.ItemsSource = p.IPPSupportedFinishings;
+				printingPaperAttributes.ItemsSource = p.IPPSupportedMediaType;
+			}
+
+			printingMedia.SelectedItem = "na_letter_8.5x11in";
+			printingDuplex.SelectedIndex = 0;
+			printingMediaSource.SelectedItem = "auto";
+			printingOutputBin.SelectedIndex = 0;
+			printingCollate.SelectedIndex = 0;
+			printingFinishings.SelectedIndex = 0;
+			printingPaperAttributes.SelectedItem = "stationery";
+		}
+
+		private async void RefreshJobsList(object sender, RoutedEventArgs e)
+		{
+			printingListJobs.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSaveJobsTo.FullName);
+		}
+
 
 
 		#endregion IPP
@@ -796,19 +730,19 @@ namespace PrintTool
 			{
 				cancelSource.Cancel();
 				cancelSource = new();
-				testUSBSend.Background = System.Windows.Media.Brushes.LightGreen;
+				testUSBSend.Background = System.Windows.Media.Brushes.DarkGreen;
 				testUSBSend.Content = "Test USB Send";
 				currTestingUSB = false;
 			}
 			else
 			{
 				currTestingUSB = true;
-				testUSBSend.Background = System.Windows.Media.Brushes.PaleVioletRed;
+				testUSBSend.Background = System.Windows.Media.Brushes.DarkRed;
 				testUSBSend.Content = "Cancel";
 				var tok = cancelSource.Token;
 				ProcessHandler usbSend = new("Services\\USBSend.exe", @"Data\template.ps", ptlog);
 				await usbSend.Start(tok);
-				testUSBSend.Background = System.Windows.Media.Brushes.LightGreen;
+				testUSBSend.Background = System.Windows.Media.Brushes.DarkGreen;
 				testUSBSend.Content = "Test USB Send";
 				currTestingUSB = false;
 			}
@@ -832,7 +766,7 @@ namespace PrintTool
 			await Task.Delay(100);
 			pc.StandardInput.WriteLine("ProductName=JediColorMFP");
 			await Task.Delay(100);
-			pc.StandardInput.WriteLine($"FormatterIP={printerIpEntry.Text}");
+			pc.StandardInput.WriteLine($"FormatterIP=");
 			await Task.Delay(100);
 			pc.StandardInput.WriteLine("JobType=Copy");
 			await Task.Delay(100);
@@ -849,78 +783,99 @@ namespace PrintTool
 
 
 
-		bool currSendingJobs = false;
-
-		private async void SendJobsButton_Click(object sender, RoutedEventArgs e)
+		bool serialConnected = false;
+		private async void ConnectSerial_Click(object sender, RoutedEventArgs e)
 		{
-
-			if (currSendingJobs)
+			if (!serialConnected)
 			{
-				sendJobsButton.Content = "Send Jobs / Job";
-				jobListBox.IsEnabled = true;
-				currSendingJobs = false;
-				jobListBox.IsEnabled = true;
-				sendJobsButton.Background = System.Windows.Media.Brushes.LightGreen;
+				await ptlog.Log("Connecting to serial connections...");
+				serialConnections.Clear();
+				serialConnectionsTabControl.Items.Clear();
+				foreach (string portname in SerialConnection.GetPorts())
+				{
+					await ptlog.Log("Connecting to " + portname);
+
+					SerialConnection conection = new(portname);
+					TabItem tab = new() { Content = conection, Header = portname };
+					serialConnectionsTabControl.Items.Add(tab);
+					serialConnections.Add(conection);
+
+				}
+				connectSerialButton.Content = "Disconnect from Serial";
+				connectSerialButton.Background = System.Windows.Media.Brushes.DarkRed;
+				serialConnected = true;
+				await ptlog.Log("Finished");
 			}
 			else
 			{
-				if (jobListBox.SelectedItems.Count == 0) { MessageBox.Show("Please select something first."); return; }
-				int timeBetweenJobs = 0;
-				try
-				{
-					timeBetweenJobs = int.Parse(testTimeBetween.Text);
-				}
-				catch
-				{
-					MessageBox.Show("Invalid seconds between jobs."); return;
-				}
-
-				sendJobsButton.Content = "Cancel";
-				jobListBox.IsEnabled = false;
-				currSendingJobs = true;
-				jobListBox.IsEnabled = false;
-				sendJobsButton.Background = System.Windows.Media.Brushes.PaleVioletRed;
-
-
-
-				List<string> jobList = jobListBox.SelectedItems.Cast<string>().ToList();
-				foreach (string jobname in jobList)
-				{
-					if (currSendingJobs == false)
-					{
-						continue;
-					}
-					jobListBox.SelectedItem = jobname; //shows what is currently sending
-
-					TcpClient tcpClient = new();
-					try
-					{
-						await tcpClient.ConnectAsync(printerIpEntry.Text, 9100);
-					}
-					catch
-					{
-						MessageBox.Show("Cannot connect to IP");
-					}
-
-					await tcpClient.GetStream().WriteAsync(File.ReadAllBytes(@"Data\Jobs\" + jobname));
-					tcpClient.Close();
-					await Task.Delay(int.Parse(testTimeBetween.Text) * 1000);
-				}
-
-				//END TASK
-				sendJobsButton.Content = "Send Jobs / Job";
-				jobListBox.IsEnabled = true;
-				currSendingJobs = false;
-				jobListBox.IsEnabled = true;
-				sendJobsButton.Background = System.Windows.Media.Brushes.LightGreen;
+				await ptlog.Log("Disconnecting from serial connections....");
+				foreach (SerialConnection sc in serialConnections) { sc.Close(); }
+				connectSerialButton.Content = "Connect to Serial";
+				connectSerialButton.Background = System.Windows.Media.Brushes.DarkGreen;
+				serialConnected = false;
+				await ptlog.Log("Finished");
 			}
-		}
 
-		private void OpenPathToJobs_Click(object sender, RoutedEventArgs e)
+		}
+		//bool snoopyConnected = false;
+		private void ConnectSnoopy_Click(object sender, RoutedEventArgs e)
 		{
-			Helper.OpenPath("Data\\Jobs\\");
+			//TODO
+		}
+		bool telnetConnected = false;
+
+		private async void ConnectTelnet_Click(object sender, RoutedEventArgs e)
+		{
+			//if (!telnetConnected)
+			//{
+			//	await ptlog.Log("Connecting to telnet connections...");
+			//	telnetConnections.Clear();
+			//	telnetConnectionsTabControl.Items.Clear();
+			//	foreach (int port in TelnetConnection.GetPorts())
+			//	{
+			//		await ptlog.Log("Connecting to " + port);
+			//		TelnetConnection connection = new(currPrinter.DartIp, port);
+			//		TabItem tab = new() { Content = connection, Header = port.ToString() };
+			//		telnetConnectionsTabControl.Items.Add(tab);
+			//		telnetConnections.Add(connection);
+			//	}
+			//	connectTelnetButton.Content = "Disconnect from Telnet";
+			//	connectTelnetButton.Background = System.Windows.Media.Brushes.DarkRed;
+			//	telnetConnected = true;
+			//	await ptlog.Log("Finished");
+
+			//}
+			//else
+			//{
+			//	await ptlog.Log("Disconnecting from Telnet connections....");
+			//	foreach (TelnetConnection tc in telnetConnections) { tc.Close(); }
+			//	connectTelnetButton.Content = "Connect to Telnet";
+			//	connectTelnetButton.Background = System.Windows.Media.Brushes.DarkGreen;
+			//	telnetConnected = false;
+			//	await ptlog.Log("Finished");
+			//}
+
 		}
 
+		private async void FlushLogs_Click(object sender, RoutedEventArgs e)
+		{
+
+			foreach (string file in Directory.GetFiles(@"Data\Logs\Temp\"))
+			{
+				if (file.Contains("LogPrintTool.txt")) { continue; }
+				File.Delete(file);
+			}
+			await ptlog.Log("Flushed Logs");
+		}
+
+
+
+
+
+		private void OpenLogs_Click(object sender, RoutedEventArgs e)
+		{
+			System.Diagnostics.Process.Start("explorer", Directory.GetCurrentDirectory().ToString() + @"\Data\Logs\Temp\");
+		}
 
 
 
@@ -955,7 +910,10 @@ namespace PrintTool
 			startClock.IsEnabled = true;
 			clockTime.Stop();
 		}
+
 		#endregion
+
+
 
 
 	}

@@ -46,17 +46,5 @@ namespace PrintTool {
                 this["TimesLaunched"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastLoadedPrinter {
-            get {
-                return ((string)(this["LastLoadedPrinter"]));
-            }
-            set {
-                this["LastLoadedPrinter"] = value;
-            }
-        }
     }
 }

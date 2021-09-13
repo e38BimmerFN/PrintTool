@@ -6,123 +6,97 @@
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
 		d:DesignHeight="1000" d:DesignWidth="1500"
-		Title="PrintTool by Derek Hearst v117" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual">
+		Title="PrintTool by Derek Hearst v117" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Style="{DynamicResource CustomWindowStyle}">
 
 	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="0.75*"/>
-	
-			<RowDefinition Height="0.75*"/>
+
+			<RowDefinition Height="0.65*"/>
 		</Grid.RowDefinitions>
 		<TabControl>
-			<TabItem x:Name="connectionsTab" Header="Device and Log Setup">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width=".3*"/>
-					</Grid.ColumnDefinitions>
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="auto"/>
-							<RowDefinition Height="auto"/>
-							<RowDefinition Height="*"/>
-							<RowDefinition Height="auto" MinHeight="100"/>
-						</Grid.RowDefinitions>
-						<UniformGrid Columns="4" MinHeight="70">
-							<GroupBox Header="Printer IP" BorderBrush="{x:Null}">
-								<TextBox Name="printerIpEntry" Text="0.0.0.0" TextChanged="PrinterIpEntry_TextChanged"  VerticalAlignment="Center" />
-							</GroupBox>
-							<GroupBox Header="" BorderBrush="{x:Null}">
-								<Button x:Name="openEWSButton" Content="Open EWS" Click="OpenEWSButton_Click"/>
-							</GroupBox>
-							<GroupBox Header="Dart IP" BorderBrush="{x:Null}">
-								<TextBox Name="dartIpEntry" Text="0.0.0.0" TextChanged="DartIpEntry_TextedChanged" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
-							</GroupBox>
-							<GroupBox Header="" BorderBrush="{x:Null}">
-								<Button x:Name="openDartButton" Content="Open Dart Site" Click="OpenDartButton_Click"/>
-							</GroupBox>
-						</UniformGrid>
-						<GroupBox Header="Printer Details" Grid.Row="1">
-							<UniformGrid Columns="4">
-								<UniformGrid Rows="4">
-									<GroupBox Header="Printer type" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-										<ComboBox Name="printerTypeEntry" SelectedIndex="2" SelectionChanged="PrinterTypeEntry_SelectionChanged">
-											<ComboBoxItem Content="Jedi"/>
-											<ComboBoxItem Content="Dune"/>
-											<ComboBoxItem Content="Sirus"/>
-										</ComboBox>
-									</GroupBox>
-									<GroupBox Header="Model" Grid.Row="0" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-										<TextBox Text="" Name="printerModelEntry" TextChanged="PrinterModel_TextChanged"/>
-									</GroupBox>
-									<GroupBox Header="Model Revison" Grid.Row="1" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-										<TextBox Text="" Name="printerEngineEntry" TextChanged="PrinterEngine_TextChanged" />
-									</GroupBox>
-									<GroupBox Header="PET Label" Grid.Row="2" BorderBrush="{x:Null}" DockPanel.Dock="Top">
-										<TextBox Text="" Name="printerIdEntry" TextChanged="PrinterID_TextChanged"/>
-									</GroupBox>
+			<TabItem Header="Printers">
+				<DockPanel>
+					<DockPanel>
+						<DockPanel DockPanel.Dock="Top">
+							<Button x:Name="openPathSavedPrinters" Content="Open Path" DockPanel.Dock="Right" Click="openPathSavedPrinters_Click" MinWidth="100" Background="#FF323250"/>
+							<Button x:Name="deletePrinter" Content="Delete Printer" DockPanel.Dock="Right" Click="deletePrinter_Click" MinWidth="100" Background="#FF503232"/>
+							<Button x:Name="addPrinter" Content="New Printer" MinWidth="100" Click="addPrinter_Click" Background="#FF325032"/>
+						</DockPanel>
+						<ListBox x:Name="savedPrintersList" DockPanel.Dock="Top" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto" SelectionChanged="savedPrintersList_SelectionChanged"/>
+					</DockPanel>
+					<ScrollViewer VerticalScrollBarVisibility="Auto">
+						<StackPanel>
+							<GroupBox Header="Changeable Information" BorderBrush="#FF503232">
+								<UniformGrid Rows="1">
+									<GroupBox Header="IP Address" >
+										<TextBox Name="currPrinterIP" IsReadOnly="true"/>
+									</GroupBox>									
+									<GroupBox Header="Printer Label">
+										<TextBox Name="currPrinterLabel" IsReadOnly="true"/>
+									</GroupBox>								
+									<Button x:Name="currPrinterEditValues" Content="Edit IP And Label" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FF325032" Click="currPrinterEditValues_Click" />
+									<Button x:Name="currPrinterRefresh" Content="Refresh Attributes"  Background="#FF325032" Click="currPrinterRefresh_Click"/>
 								</UniformGrid>
-								<UniformGrid Rows="4">
-									<GroupBox Header="Printer Name" BorderBrush="{x:Null}">
-										<TextBox Name="ippName" IsReadOnly="True"/>
-									</GroupBox>
-									<GroupBox Header="Printer Firmware" BorderBrush="{x:Null}">
-										<TextBox Name="ippFirmwareInstalled" IsReadOnly="True"/>
-									</GroupBox>
-									<GroupBox Header="Pages Per Min" BorderBrush="{x:Null}">
-										<TextBox Name="ippPPM" IsReadOnly="True"/>
-									</GroupBox>
-									<GroupBox Header="Color Supported" BorderBrush="{x:Null}">
-										<TextBox Name="ippColorSupport" IsReadOnly="True"/>
-									</GroupBox>
-								</UniformGrid>
-								<UniformGrid Rows="4">
-									<GroupBox Header="Printer State" BorderBrush="{x:Null}">
-										<TextBox Name="ippPrinterState"/>
-									</GroupBox>
-									<GroupBox Header="Printer State Message" BorderBrush="{x:Null}">
-										<TextBox Name="ippPrinterStateMessage"/>
-									</GroupBox>
-								</UniformGrid>
-							
-								<GroupBox Header="Supply Levels" BorderBrush="{x:Null}">
-									<ListBox x:Name="supplyLevelsListBox" HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+							</GroupBox>
+							<UniformGrid Columns="3">
+								<GroupBox Header="Printer Name">
+									<TextBox Name="currPrinterName" IsReadOnly="true"/>
 								</GroupBox>
-								
-
+								<GroupBox Header="Printer Make and Model">
+									<TextBox Name="currPrinterNameInfo" IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Printer FW">
+									<TextBox Name="currPrinterFirmware" IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Printer PPM">
+									<TextBox Name="currPrinterPPM" IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Color Supported">
+									<TextBox Name="currPrinterColorSupported"  IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Printer UUID">
+									<TextBox
+									x:Name="currPrinterUUID" IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Printer Location">
+									<TextBox x:Name="currPrinterLocation" IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Printer State">
+									<TextBox Name="currPrinterState" IsReadOnly="true"/>
+								</GroupBox>
+								<GroupBox Header="Printer Message">
+									<TextBox Name="currPrinterStateMessage" IsReadOnly="true"/>
+								</GroupBox>
 							</UniformGrid>
-						</GroupBox>
-						<GroupBox Header="Logging" Grid.Row="3">
-							<UniformGrid Rows="1">
-								<Button x:Name="connectSerialButton" Content="Connect To Serial" Click="ConnectSerial_Click" Background="LightGreen" />
-								<Button x:Name="connectTelnetButton" Content="Connect To Telnet" Click="ConnectTelnet_Click" Background="LightGreen"/>
-								<Button x:Name="ConnectSnoopyButton" Content="Connect To Snoopy On Dart" Click="ConnectSnoopy_Click" Background="LightGreen" />
-								<Button x:Name="openLogs" Content="Open Logs" Click="OpenLogs_Click" Background="#7F0000FF"/>
-								<Button x:Name="flushLogs" Content="Flush Logs" Click="FlushLogs_Click" Background="#7FFF0000"/>
-								<Button x:Name="refreshPrinterAttributes" Content="Get Printer Attributes" Click="RefreshPrinterAttributes_Click" Background="#7F00FF00"/>							</UniformGrid>
-						</GroupBox>
-
-
-
-					</Grid>
-					<GroupBox Header="Saved Connections" Grid.Column="1">
-						<Grid Grid.Column="1">
-							<Grid.RowDefinitions>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="auto"/>
-							</Grid.RowDefinitions>
-							<ListBox Name="savedPrinters" Grid.Row="0"/>
-							<UniformGrid Grid.Row="1" Columns="3">
-
-								<Button Content="Save" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" Click="ConnectionsSaveDefaults"/>
-								<Button Content="Load" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch"  Click="ConnectionsLoadDefaults"/>
-								<Button Content="Delete" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Click="ConnectionsDeleteDefaults"/>
-							</UniformGrid>
-						</Grid>
-					</GroupBox>
-
-
-				</Grid>
+							<GroupBox Header="Printer Supplies">
+								<ListBox x:Name="currPrinterSupplyList" Foreground="White"/>
+							</GroupBox>
+							<GroupBox Header="Supported Job Attributes">
+								<UniformGrid Columns="3">
+									<GroupBox Header="Supported Media" MaxHeight="300">
+										<ListBox x:Name="currPrinterSupportedMedia"/>
+									</GroupBox>
+									<GroupBox Header="Supported Media Source"  MaxHeight="300">
+										<ListBox x:Name="currPrinterSupportedMediaSource"/>
+									</GroupBox>
+									<GroupBox Header="Supported Media Type"  MaxHeight="300">
+										<ListBox x:Name="currPrinterSupportedMediaType"/>
+									</GroupBox>
+									<GroupBox Header="Supported Output Tray"  MaxHeight="300">
+										<ListBox x:Name="currPrinterSupportedOutputTray"/>
+									</GroupBox>
+									<GroupBox Header="Supported Finishings"  MaxHeight="300">
+										<ListBox x:Name="currPrinterSupportedFinishings"/>
+									</GroupBox>
+									<GroupBox Header="Supported Duplexing Options"  MaxHeight="300">
+										<ListBox x:Name="currPrinterSupportedSides"/>
+									</GroupBox>
+								</UniformGrid>
+							</GroupBox>
+						</StackPanel>
+					</ScrollViewer>
+				</DockPanel>
 			</TabItem>
 
 			<TabItem x:Name="firmwareTab" Header="Firmware">
@@ -131,9 +105,8 @@
 						<Grid>
 							<Grid.RowDefinitions>
 								<RowDefinition Height="auto"/>
+								<RowDefinition Height="auto"/>								
 								<RowDefinition Height="auto"/>
-								<RowDefinition Height="*"/>
-								<RowDefinition Height="auto" MinHeight="100"/>
 
 							</Grid.RowDefinitions>
 							<Grid.ColumnDefinitions>
@@ -177,8 +150,6 @@
 									<ComboBox Name="joltFIMSelect" />
 								</GroupBox>
 							</UniformGrid>
-
-
 							<GroupBox Header="Send" Grid.Row="3">
 								<Grid>
 									<Grid.ColumnDefinitions>
@@ -191,7 +162,6 @@
 										<CheckBox x:Name="joltEnableCSV" Content="Enable CSV" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
 										<CheckBox x:Name="joltEnableArm" Content="Use ARM" HorizontalAlignment="Stretch"/>
 									</StackPanel>
-									
 									<Button x:Name="joltOpenFW" Content="Open Path to FW" Grid.Column="2" Background="#7F0000FF" Click="JoltOpenFW_Click"/>
 								</Grid>
 							</GroupBox>
@@ -324,104 +294,102 @@
 					</TabItem>
 				</TabControl>
 			</TabItem>
-			<TabItem Header="Print">
-				<UniformGrid Columns="2">
-					<Grid>
-						<Grid.RowDefinitions>
-							<RowDefinition Height="auto"/>
-							<RowDefinition Height="*"/>
-							<RowDefinition Height="Auto" MinHeight="100"/>
-						</Grid.RowDefinitions>
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="*"/>
-						</Grid.ColumnDefinitions>
-						<UniformGrid Columns="1" Grid.Row="0">
-							<GroupBox Header="Pages and Copies">
-								<UniformGrid Rows="1">
-									<GroupBox Header="Pages"  BorderBrush="{x:Null}">
-										<TextBox x:Name="ippPages" Text="1"/>
-									</GroupBox>
-									<GroupBox Header="Copies" BorderBrush="{x:Null}">
-										<TextBox x:Name="ippCopies" Text="1"/>
-									</GroupBox>
+			<TabItem Header="Printing">
+				<DockPanel>
+					<GroupBox DockPanel.Dock="Left" Header="Printers" MinWidth="150" MaxWidth="300">
+						<ListBox Name="printingListPrinters" SelectionChanged="printingListPrinters_SelectionChanged"/>
+					</GroupBox>
+
+					<GroupBox Header="Jobs" MinWidth="150" MaxWidth="400">
+						<DockPanel>
+							<UniformGrid DockPanel.Dock="Bottom" Rows="1">
+								<Button Content="Refresh Jobs" Background="#FF325032" Click="RefreshJobsList"/>
+								<Button  Content="Open Path to Jobs" Background="#FF323250" Click="openPathToJobs"/>
+							</UniformGrid>
+							<ListBox Name="printingListJobs" SelectionMode="Extended"/>
+						</DockPanel>
+					</GroupBox>
+
+
+					<GroupBox Header="Print Settings" DockPanel.Dock="Left" MaxWidth="300">
+						<DockPanel>
+							<DockPanel DockPanel.Dock="Bottom" MinHeight="100">
+								<UniformGrid Rows="1" DockPanel.Dock="Top" MinHeight="50">
+									<Button x:Name="printingCancelJobs" Content="Cancel Jobs" Click="printingCancelJobs_Click" Background="#FF503232"/>
+									<Button x:Name="printingPrintJobs" Content="Send Job or Jobs" Click="printingPrintJobs_Click" Background="#FF325032" DockPanel.Dock="Right"/>
 								</UniformGrid>
-							</GroupBox>
-							<GroupBox Header="Supported Media" BorderBrush="{x:Null}">
-								<ComboBox Name="ippMedia"/>
-							</GroupBox>
+														
+								<Button x:Name="printingPrintTemplate" Content="Send Template" Click="printingPrintTemplate_Click" DockPanel.Dock="Bottom" Background="#FF323250"/>
+							</DockPanel>
 
-							<GroupBox Header="Duplexing Options" BorderBrush="{x:Null}">
-								<ComboBox Name="ippDuplex"/>
-							</GroupBox>
-							<GroupBox Header="Source Tray" BorderBrush="{x:Null}">
-								<ComboBox Name="ippMediaSource"/>
-							</GroupBox>
+							<UniformGrid Columns="2" DockPanel.Dock="Top">
+								<GroupBox Header="Pages and Copies" BorderBrush="{x:Null}">
+									<UniformGrid Rows="1">
+										<TextBox x:Name="printingPages" Text="1" VerticalAlignment="Center" Padding="5"/>
+										<TextBox x:Name="printingCopies" Text="1" VerticalAlignment="Center" Padding="5"/>		
+									</UniformGrid>									
+								</GroupBox>
 
+								<GroupBox Header="Coallate" BorderBrush="{x:Null}">
+									<ComboBox Name="printingCollate"/>
+								</GroupBox>
 
-						</UniformGrid>
-						<UniformGrid Grid.Row="0" Grid.Column="2" Columns="1" Rows="4">
-							<GroupBox Header="Coallate" BorderBrush="{x:Null}">
-								<ComboBox Name="ippCollate"/>
-							</GroupBox>
-							<GroupBox Header="Supported Paper Attributes" BorderBrush="{x:Null}">
-								<ComboBox Name="ippPaperAttributes"/>
-							</GroupBox>
-							<GroupBox Header="Finishing" BorderBrush="{x:Null}">
-								<ComboBox Name="ippFinishings"/>
-							</GroupBox>
-							<GroupBox Header="Output Tray" BorderBrush="{x:Null}">
-								<ComboBox Name="ippOutputBin"/>
-							</GroupBox>
-						</UniformGrid>
-						<DockPanel Grid.Row="2" Grid.ColumnSpan="2">
-							<Button x:Name="ippCancelJobs" Content="Cancel Jobs" Click="IppCancelJobs_Click" DockPanel.Dock="Right" Background="#7FFF0000" MinWidth="100"/>
-							<Button x:Name="ippSendJob" Content="Send Job" Click="IppSendJob_Click" Background="#7F00FF00"/>
+								<GroupBox Header="Supported Media" BorderBrush="{x:Null}">
+									<ComboBox Name="printingMedia"/>
+								</GroupBox>
+								<GroupBox Header="Supported Paper Attributes" BorderBrush="{x:Null}">
+									<ComboBox Name="printingPaperAttributes"/>
+								</GroupBox>
+
+								<GroupBox Header="Duplexing Options" BorderBrush="{x:Null}">
+									<ComboBox Name="printingDuplex"/>
+								</GroupBox>
+								<GroupBox Header="Finishing" BorderBrush="{x:Null}">
+									<ComboBox Name="printingFinishings"/>
+								</GroupBox>
+
+								<GroupBox Header="Source Tray" BorderBrush="{x:Null}">
+									<ComboBox Name="printingMediaSource"/>
+								</GroupBox>
+								<GroupBox Header="Output Tray" BorderBrush="{x:Null}">
+									<ComboBox Name="printingOutputBin"/>
+								</GroupBox>
+							</UniformGrid>
+
 						</DockPanel>
 
+					</GroupBox>
 
-					</Grid>
-					<UniformGrid>
-						<ListBox x:Name="ippJobStatusList">
-							
-							
-						</ListBox>
-					</UniformGrid>
-				</UniformGrid>
+
+					<GroupBox DockPanel.Dock="Right" Header="Job Status">
+						<ListBox x:Name="printingListActiveJobs"/>
+					</GroupBox>
+				</DockPanel>
 			</TabItem>
 			<TabItem Header="Test">
 				<DockPanel>
 					<GroupBox Header="Tests">
 						<UniformGrid Columns="3" Rows="3">
-							<Button x:Name="testUSBSend" Content="Test USB Send" Click="TestUSBSend_Click"/>							
+							<Button x:Name="testUSBSend" Content="Test USB Send" Click="TestUSBSend_Click"/>
 							<Button x:Name="testQscan" Content="Test QScan Functionality" Click="TestQscan_Click"/>
 						</UniformGrid>
 					</GroupBox>
-					<GroupBox Header="Send" DockPanel.Dock="Right" MinWidth="100">
-						<DockPanel>
-							<GroupBox Header="Seconds between jobs." DockPanel.Dock="Top" BorderBrush="{x:Null}" MinHeight="60">
-								<TextBox x:Name="testTimeBetween"  Text="3"/>
-							</GroupBox>
-							<Button Content="Open path to jobs" DockPanel.Dock="Top" Background="#7F0000FF" Click="OpenPathToJobs_Click" MinHeight="100"/>
-							<Button x:Name="sendJobsButton" Content="Send Jobs / Job" DockPanel.Dock="Top" Background="#7F00FF00" Click="SendJobsButton_Click"/>
-							
-						</DockPanel>
-					</GroupBox>
-					<GroupBox Header="Jobs">
-						
-							
-							<ListBox x:Name="jobListBox" SelectionMode="Extended" BorderBrush="{x:Null}">
-
-							</ListBox>
-						
-						
-					</GroupBox>
 					
-				</DockPanel>
-				
+				</DockPanel>				
+			</TabItem>
+			<TabItem Header="Logging">
+				<GroupBox Header="Logging" Grid.Row="3">
+					<UniformGrid Rows="1">
+						<Button x:Name="connectSerialButton" Content="Connect To Serial" Click="ConnectSerial_Click" Background="DarkGreen" />
+						<Button x:Name="connectTelnetButton" Content="Connect To Telnet" Click="ConnectTelnet_Click" Background="DarkGreen"/>
+						<Button x:Name="ConnectSnoopyButton" Content="Connect To Snoopy On Dart" Click="ConnectSnoopy_Click" Background="DarkGreen" />
+						<Button x:Name="openLogs" Content="Open Logs" Click="OpenLogs_Click" Background="#7F0000FF"/>
+						<Button x:Name="flushLogs" Content="Flush Logs" Click="FlushLogs_Click" Background="#7FFF0000"/>						
+					</UniformGrid>
+				</GroupBox>
 			</TabItem>
 		</TabControl>
-	
+
 		<Grid Grid.Row="2">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width=".4*"/>
@@ -442,9 +410,9 @@
 						</UniformGrid>
 					</TabItem>
 				</TabControl>
-				
+
 			</DockPanel>
-			
+
 			<GridSplitter Grid.Column="1" ResizeDirection="Columns" HorizontalAlignment="Stretch"/>
 			<TabControl Grid.Column="2">
 				<TabItem Header="Serial Connections">
