@@ -36,7 +36,7 @@ namespace PrintTool
 		public int PagesComplete { get; set; }
 		public int PPM { get; set; }
 
-		private System.Timers.Timer mainTimer = new(2000);
+		private System.Timers.Timer mainTimer = new(1000);
 		private List<int> pagesCompleted = new();
 		private List<int> timebetween = new();
 
@@ -45,9 +45,10 @@ namespace PrintTool
 			this.cli = cli;
 			this.JobUri = jobUri;
 			this.PrinterUri = printerUri;
-
+			mainTimer.Elapsed += MainTimer_Elapsed;
+			mainTimer.Start();
 		}
-		
+
 		public async Task<bool> TryCancel(Uri printerUri)
 		{
 			try
@@ -106,7 +107,7 @@ namespace PrintTool
 			if (timebetween.Count > 2)
 			{
 				double average = timebetween.Average();
-				average = average / 2;
+				average = average / 1;
 				PPM = (int)(average * 60);
 			}
 
@@ -135,7 +136,7 @@ namespace PrintTool
 		override
 		public string ToString()
 		{
-			return $"Job ID: {JobID}|  | State : {JobStatus} | Messsage : {JobMesage} | StopWatch : {SecondsToComplete} Seconds | Pages Printed : {PagesComplete} | PPM : {PPM}";
+			return $"Job ID: {JobID}|  | State : {JobStatus} | Messsage : {JobMesage} | Started at : {StartedAt.ToShortTimeString()} | Ended at {EndedAt.ToShortTimeString()} | Time To Complete : {SecondsToComplete} Seconds | Pages Printed : {PagesComplete} | PPM : {PPM}";
 		}
 
 

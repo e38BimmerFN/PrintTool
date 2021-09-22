@@ -34,7 +34,7 @@ namespace PrintTool
 			ja.Add(new IppAttribute(Tag.Keyword, "output-bin", outputTray));
 			ja.Add(new IppAttribute(Tag.Keyword, "sides", duplex));
 			ja.Add(new IppAttribute(Tag.Keyword, "multiple-document-handling", collate));
-			if (finish != Finishings.None)
+			if (finish != Finishings.none)
 			{
 				ja.Add(new IppAttribute(Tag.Enum, "finishings", (int)finish));
 			}

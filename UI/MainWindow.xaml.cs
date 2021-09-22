@@ -28,7 +28,7 @@ namespace PrintTool
 		Printer currentlyDisplayedPrinter;
 		ObservableCollection<string> currentDisplayingJobs = new();
 		List<PrintJob> printedJobs = new();
-		Timer mainTimer = new(3000);
+		Timer RefreshJobListTimer = new(1000);
 		Helper ptHelper = null;
 		readonly Logger ptlog = new("PrintTool");
 		System.Threading.CancellationTokenSource cancelSource = new();
@@ -47,8 +47,8 @@ namespace PrintTool
 			pathToSaveJobsTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Jobs");
 			pathToSaveLogsTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Logs");
 			printingListActiveJobs.ItemsSource = currentDisplayingJobs;
-			mainTimer.Start();
-			mainTimer.Elapsed += MainTimer_Elapsed;
+			RefreshJobListTimer.Start();
+			RefreshJobListTimer.Elapsed += MainTimer_Elapsed;
 		}
 
 		//Updating Jobs
@@ -290,47 +290,49 @@ namespace PrintTool
 
 		private async void JoltStart_Click(object sender, RoutedEventArgs e)
 		{
-			//joltStart.IsEnabled = false;
+			IPEntry ipgetter = new();
+			ipgetter.ShowDialog();
+			if(ipgetter.DialogResult == false) { return; }
+			joltStart.IsEnabled = false;
+			string sourceLink;
+			if (joltFwTab.SelectedIndex == 0)
+			{
+				sourceLink = JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\";
+			}
+			else
+			{
+				sourceLink = joltCustomLink.Text + "\\";
+			}
+			await ptlog.Log($"Now starting download of {sourceLink}");
 
-			//string sourceLink;
-			//if (joltFwTab.SelectedIndex == 0)
-			//{
-			//	sourceLink = JOLTPATH + joltYearSelect.Text + "\\" + joltMonthSelect.Text + "\\" + joltDaySelect.Text + "\\Products\\" + joltProductSelect.Text + "\\" + joltVersionSelect.Text + "\\";
-			//}
-			//else
-			//{
-			//	sourceLink = joltCustomLink.Text + "\\";
-			//}
-			//await ptlog.Log($"Now starting download of {sourceLink}");
+			await ptHelper.TryDownloadOrCopyFile(joltBuildSelect.Text, sourceLink);
+			await ptHelper.TryDownloadOrCopyFile(joltCSVSelect.Text, sourceLink);
+			await ptHelper.TryDownloadOrCopyFile(joltFIMSelect.Text, sourceLink);
+			await ptlog.Log($"Finished downloading of {joltBuildSelect.Text}, {joltCSVSelect.Text}, and{joltFIMSelect.Text}");
+			string armcommand = "arm";
+			string csvcommand = "";
 
-			//await ptHelper.TryDownloadOrCopyFile(joltBuildSelect.Text, sourceLink);
-			//await ptHelper.TryDownloadOrCopyFile(joltCSVSelect.Text, sourceLink);
-			//await ptHelper.TryDownloadOrCopyFile(joltFIMSelect.Text, sourceLink);
-			//await ptlog.Log($"Finished downloading of {joltBuildSelect.Text}, {joltCSVSelect.Text}, and{joltFIMSelect.Text}");
-			//string armcommand = "arm";
-			//string csvcommand = "";
+			if (!(joltEnableArm.IsChecked ?? false)) { armcommand += "64"; }
+			if (joltEnableCSV.IsChecked ?? false) { csvcommand = $"-c {joltCSVSelect.Text}"; }
 
-			//if (!(joltEnableArm.IsChecked ?? false)) { armcommand += "64"; }
-			//if (joltEnableCSV.IsChecked ?? false) { csvcommand = $"-c {joltCSVSelect.Text}"; }
+			string command = $"-x {ipgetter.ipaddress.Text} -t bios -n {armcommand} {csvcommand} {joltBuildSelect.Text}";
 
-			//string command = $"-x {currPrinter.PrinterIp} -t bios -n {armcommand} {csvcommand} {joltBuildSelect.Text}";
+			await ptlog.Log($"Running fimClient with these commands : {joltFIMSelect.Text} {command}");
+			ProcessHandler handler = new(joltFIMSelect.Text, command, ptlog);
+			await handler.Start(cancelSource.Token);
 
-			//await ptlog.Log($"Running fimClient with these commands : {joltFIMSelect.Text} {command}");
-			//ProcessHandler handler = new(joltFIMSelect.Text, command, ptlog);
-			//await handler.Start(cancelSource.Token);
-
-			//try
-			//{
-			//	File.Delete(joltBuildSelect.Text);
-			//	File.Delete(joltCSVSelect.Text);
-			//	File.Delete(joltFIMSelect.Text);
-			//}
-			//catch { };
+			try
+			{
+				File.Delete(joltBuildSelect.Text);
+				File.Delete(joltCSVSelect.Text);
+				File.Delete(joltFIMSelect.Text);
+			}
+			catch { };
 
 
-			//await ptlog.Log("FIM Process done!");
-			//MessageBox.Show("Installation done!");
-			//joltStart.IsEnabled = true;
+			await ptlog.Log("FIM Process done!");
+			MessageBox.Show("Installation done!");
+			joltStart.IsEnabled = true;
 		}
 
 		private void JoltOpenFW_Click(object sender, RoutedEventArgs e)
@@ -445,6 +447,11 @@ namespace PrintTool
 		private void YoloUnsecureConvert_Click(object sender, RoutedEventArgs e)
 		{
 			sirusCustomLink.Text = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/yolo/convert_to_unsecure/";
+			sirusFwTab.SelectedIndex = 1;
+		}
+		private void yoloHarishREset_Click(object sender, RoutedEventArgs e)
+		{
+			sirusCustomLink.Text = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/release/harish/";
 			sirusFwTab.SelectedIndex = 1;
 		}
 
@@ -616,6 +623,7 @@ namespace PrintTool
 
 		private async void printingPrintTemplate_Click(object sender, RoutedEventArgs e)
 		{
+			if(printingListPrinters.Items.Count == 0) { return; }
 			PrintJob.JobParams myParams = new()
 			{
 				media = printingMedia.Text,
@@ -826,34 +834,40 @@ namespace PrintTool
 
 		private async void ConnectTelnet_Click(object sender, RoutedEventArgs e)
 		{
-			//if (!telnetConnected)
-			//{
-			//	await ptlog.Log("Connecting to telnet connections...");
-			//	telnetConnections.Clear();
-			//	telnetConnectionsTabControl.Items.Clear();
-			//	foreach (int port in TelnetConnection.GetPorts())
-			//	{
-			//		await ptlog.Log("Connecting to " + port);
-			//		TelnetConnection connection = new(currPrinter.DartIp, port);
-			//		TabItem tab = new() { Content = connection, Header = port.ToString() };
-			//		telnetConnectionsTabControl.Items.Add(tab);
-			//		telnetConnections.Add(connection);
-			//	}
-			//	connectTelnetButton.Content = "Disconnect from Telnet";
-			//	connectTelnetButton.Background = System.Windows.Media.Brushes.DarkRed;
-			//	telnetConnected = true;
-			//	await ptlog.Log("Finished");
+			if (!telnetConnected)
+			{
+				IPEntry ipgetter = new();
+				ipgetter.ShowDialog();
+				if(ipgetter.DialogResult == false)
+				{
+					return;
+				}
+				await ptlog.Log("Connecting to telnet connections...");
+				telnetConnections.Clear();
+				telnetConnectionsTabControl.Items.Clear();
+				foreach (int port in TelnetConnection.GetPorts())
+				{
+					await ptlog.Log("Connecting to " + port);
+					TelnetConnection connection = new(ipgetter.ipaddress.Text, port);
+					TabItem tab = new() { Content = connection, Header = port.ToString() };
+					telnetConnectionsTabControl.Items.Add(tab);
+					telnetConnections.Add(connection);
+				}
+				connectTelnetButton.Content = "Disconnect from Telnet";
+				connectTelnetButton.Background = System.Windows.Media.Brushes.DarkRed;
+				telnetConnected = true;
+				await ptlog.Log("Finished");
 
-			//}
-			//else
-			//{
-			//	await ptlog.Log("Disconnecting from Telnet connections....");
-			//	foreach (TelnetConnection tc in telnetConnections) { tc.Close(); }
-			//	connectTelnetButton.Content = "Connect to Telnet";
-			//	connectTelnetButton.Background = System.Windows.Media.Brushes.DarkGreen;
-			//	telnetConnected = false;
-			//	await ptlog.Log("Finished");
-			//}
+			}
+			else
+			{
+				await ptlog.Log("Disconnecting from Telnet connections....");
+				foreach (TelnetConnection tc in telnetConnections) { tc.Close(); }
+				connectTelnetButton.Content = "Connect to Telnet";
+				connectTelnetButton.Background = System.Windows.Media.Brushes.DarkGreen;
+				telnetConnected = false;
+				await ptlog.Log("Finished");
+			}
 
 		}
 
@@ -911,10 +925,11 @@ namespace PrintTool
 			clockTime.Stop();
 		}
 
+
+
+
 		#endregion
 
-
-
-
+		
 	}
 }

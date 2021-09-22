@@ -189,7 +189,7 @@ namespace PrintTool
 			ja.Add(new IppAttribute(Tag.Keyword, "output-bin", param.outputTray));
 			ja.Add(new IppAttribute(Tag.Keyword, "sides", param.duplexing));
 			ja.Add(new IppAttribute(Tag.Keyword, "multiple-document-handling", param.collation));
-			if (param.finishing != Finishings.None)
+			if (param.finishing != Finishings.none)
 			{
 				ja.Add(new IppAttribute(Tag.Enum, "finishings", (int)param.finishing));
 			}
