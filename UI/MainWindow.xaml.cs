@@ -635,38 +635,43 @@ namespace PrintTool
 				finishing = (SharpIpp.Model.Finishings)Enum.Parse(typeof(SharpIpp.Model.Finishings), printingFinishings.Text),
 				mediaAttributes = printingPaperAttributes.Text,
 			};
-			string finished = "";
-
+			string finished =
+					"\u001B%-12345X@PJL JOB NAME = \"PrintTool Template\"\r\n" +
+					"@PJL ENTER LANGUAGE = POSTSCRIPT\r\n";
 			foreach (int i in Enumerable.Range(0, int.Parse(printingPages.Text)))
 			{
-				finished += "/Helvetica findfont 12 scalefont setfont \r\n" +
-							"clippath stroke\r\n" +
-							"20 240 moveto\r\n" +
-							$"(PrintTool ver : {Settings.Default.Version.ToString()}) show \r\n" +
-							"20 220 moveto\r\n" +
-							$"(Generated at : {DateTime.Now.ToString()}) show\r\n" +
-							"20 200 moveto\r\n" +
-							$"(Page : {i}) show\r\n" +
-							"20 180 moveto\r\n" +
-							$"(Media : {printingMedia.Text}) show\r\n" +
-							"20 160 moveto\r\n" +
-							$"(Paper : {printingPaperAttributes.Text}) show\r\n" +
-							"20 140 moveto\r\n" +
-							$"(Finishing : {printingFinishings.Text}) show\r\n" +
-							"20 120 moveto\r\n" +
-							$"(Collation : {printingCollate.Text}) show\r\n" +
-							"20 100 moveto\r\n" +
-							$"(Duplexing : {printingDuplex.Text}) show\r\n" +
-							"20 80 moveto\r\n" +
-							$"(Source Tray : {printingMediaSource.Text}) show\r\n" +
-							"20 60 moveto\r\n" +
-							$"(Output Tray : {printingOutputBin.Text}) show\r\n" +
-							"20 40 moveto\r\n" +
-							$"(Copies : {printingCopies.Text}) show\r\n" +
-							"20 20 moveto\r\n" +
-							$"(Have a good day {Environment.UserName}:\\)) show\r\n" +
-							"showpage\r\n";
+				finished +=
+					"/Helvetica findfont 12 scalefont setfont \r\n" +
+					"clippath stroke\r\n" +
+					"20 240 moveto\r\n" +
+					$"(PrintTool ver : {Settings.Default.Version.ToString()}) show \r\n" +
+					"20 220 moveto\r\n" +
+					$"(Generated at : {DateTime.Now.ToString()}) show\r\n" +
+					"20 200 moveto\r\n" +
+					$"(Page : {i}) show\r\n" +
+					"20 180 moveto\r\n" +
+					$"(Media : {printingMedia.Text}) show\r\n" +
+					"20 160 moveto\r\n" +
+					$"(Paper : {printingPaperAttributes.Text}) show\r\n" +
+					"20 140 moveto\r\n" +
+					$"(Finishing : {printingFinishings.Text}) show\r\n" +
+					"20 120 moveto\r\n" +
+					$"(Collation : {printingCollate.Text}) show\r\n" +
+					"20 100 moveto\r\n" +
+					$"(Duplexing : {printingDuplex.Text}) show\r\n" +
+					"20 80 moveto\r\n" +
+					$"(Source Tray : {printingMediaSource.Text}) show\r\n" +
+					"20 60 moveto\r\n" +
+					$"(Output Tray : {printingOutputBin.Text}) show\r\n" +
+					"20 40 moveto\r\n" +
+					$"(Copies : {printingCopies.Text}) show\r\n" +
+					"20 20 moveto\r\n" +
+					$"(Have a good day {Environment.UserName}:\\)) show\r\n" +
+					"showpage\r\n";
 			}
+			finished += "\u001B%-12345X@PJL EOJ\r\n" +
+				"\u001b%-12345X\r\n";				
+
 			await File.WriteAllTextAsync(pathToSaveJobsTo.FullName + "\\temp.ps", finished);
 
 			List<Printer> printersToSendTo = new();
