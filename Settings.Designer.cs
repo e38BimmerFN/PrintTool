@@ -25,7 +25,7 @@ namespace PrintTool {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("203")]
+        [global::System.Configuration.DefaultSettingValueAttribute("207")]
         public int Version {
             get {
                 return ((int)(this["Version"]));
@@ -44,6 +44,18 @@ namespace PrintTool {
             }
             set {
                 this["TimesLaunched"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool KeepDownloads {
+            get {
+                return ((bool)(this["KeepDownloads"]));
+            }
+            set {
+                this["KeepDownloads"] = value;
             }
         }
     }

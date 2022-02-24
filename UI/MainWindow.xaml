@@ -6,7 +6,7 @@
 		xmlns:local="clr-namespace:PrintTool"
 		mc:Ignorable="d"
 		d:DesignHeight="1000" d:DesignWidth="1500"
-		Title="PrintTool by Derek Hearst v2.0.3" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Style="{DynamicResource CustomWindowStyle}">
+		Title="PrintTool by Derek Hearst v2.0.7" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Style="{DynamicResource CustomWindowStyle}">
 
 	<Grid>
 		<Grid.RowDefinitions>
@@ -382,14 +382,22 @@
 			</TabItem>
 			<TabItem Header="Logging">
 				<GroupBox Header="Logging" Grid.Row="3">
-					<UniformGrid Rows="1">
-						<Button x:Name="connectSerialButton" Content="Connect To Serial" Click="ConnectSerial_Click" Background="DarkGreen" />
-						<Button x:Name="connectTelnetButton" Content="Connect To Telnet" Click="ConnectTelnet_Click" Background="DarkGreen"/>
-						<Button x:Name="ConnectSnoopyButton" Content="Connect To Snoopy On Dart" Click="ConnectSnoopy_Click" Background="DarkGreen" />
-						<Button x:Name="openLogs" Content="Open Logs" Click="OpenLogs_Click" Background="#7F0000FF"/>
-						<Button x:Name="flushLogs" Content="Flush Logs" Click="FlushLogs_Click" Background="#7FFF0000"/>						
-					</UniformGrid>
+					<UniformGrid Rows="2" Columns="4">
+						<Button x:Name="connectSerialButton" Content="Connect To Serial" Click="ConnectSerial_Click" Background="DarkGreen" />                        
+                        <Button x:Name="connectTelnetButton" Content="Connect To Telnet (Dart On DUNE)" Click="ConnectTelnet_Click" Background="DarkGreen"/>
+                        <Button x:Name="openLogs" Content="Open Logs" Click="OpenLogs_Click" Background="#7F0000FF"/>
+						<Button x:Name="flushLogs" Content="Flush Logs" Click="FlushLogs_Click" Background="#7FFF0000"/>
+                        <Button x:Name="pauseSerialLoggingButton" Content="Pause Serial Logging" Click="pauseSerialLoggingButton_Click" IsEnabled="False"/>
+                        <Button x:Name="pauseTelnetLoggingButton" Content="Pause Telnet Logging" Click="pauseTelnetLoggingButton_Click" IsEnabled="False"/>
+
+                    </UniformGrid>
 				</GroupBox>
+			</TabItem>
+			<TabItem Header="Settings">
+				<UniformGrid>
+					<CheckBox x:Name="keepDownloadCopies" Content="Keep Firmware Downloaded" Click="keepDownloadCopies_Click"/>
+					<Button x:Name="openSavedFirmware" Content="Open Saved Firmware" Click="openSavedFirmware_Click"/>
+				</UniformGrid>
 			</TabItem>
 		</TabControl>
 

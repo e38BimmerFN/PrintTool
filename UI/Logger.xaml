@@ -7,7 +7,7 @@
 			 mc:Ignorable="d" 
 			 d:DesignHeight="450" d:DesignWidth="800">
 
-	<ScrollViewer x:Name="Scroller" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.VerticalScrollBarVisibility="Visible">
-		<TextBox x:Name="LogBox" FontFamily="Consolas" />
+	<ScrollViewer x:Name="Scroller" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible">
+		<TextBox x:Name="LogBox" FontFamily="Consolas" TextWrapping="Wrap" />
 	</ScrollViewer>
 </UserControl>

@@ -61,6 +61,7 @@ namespace PrintTool
 			string to = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\PrintTool\";
 			if (ConnectedToHP())
 			{
+				//ran if on share
 				if (Directory.GetCurrentDirectory().Contains(@"\DevScratch\Derek\PrintTool"))
 				{
 					MessageBox.Show("Now updating or installing into " + to);
@@ -84,17 +85,23 @@ namespace PrintTool
 					process.Start();
 					Application.Current.MainWindow.Close();
 				}
+				//ran if not on 
 				else
 				{
 					int version = int.Parse(File.ReadAllLines(@"\\jedibdlbroker.boi.rd.hpicorp.net\DevScratch\Derek\PrintTool\versionAndNotes.txt")[0]);
 					if (Settings.Default.Version < version)
 					{
-						MessageBox.Show("This program is out of date. Please run the installer");
-						Process process = new();
-						process.StartInfo.FileName = "explorer.exe";
-						process.StartInfo.Arguments = from;
-						process.Start();
-
+						MessageBoxResult result = MessageBox.Show("This program is out of date, would you like to update?", "Would you like to update?", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+						if (result == MessageBoxResult.Yes)
+						{
+							MessageBox.Show("Please run PrintTool.exe");
+							Process process = new();
+							process.StartInfo.FileName = "explorer.exe";
+							process.StartInfo.Arguments = from;
+							process.Start();
+							Application.Current.MainWindow.Close();
+						}
+									
 						return;
 					}
 				}
@@ -108,6 +115,7 @@ namespace PrintTool
 			{
 				try
 				{
+					ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
 					await cli.DownloadFileTaskAsync(location + filename, filename);
 					return true;
 				}
@@ -135,7 +143,7 @@ namespace PrintTool
 		public async static Task<List<string>> PopulateFromPathOrSite(string path, string filter = "", bool flip = false)
 		{
 			List<string> results = new();
-			if (path.Contains("C:\\") || path.Contains("\\\\"))
+			if (path.Contains("\\\\") || Regex.IsMatch(path, ".:\\\\"))
 			{
 				DirectoryInfo directory;
 				try
@@ -160,6 +168,7 @@ namespace PrintTool
 			}
 			else if (path.Contains("http"))
 			{
+				ServicePointManager.ServerCertificateValidationCallback = (a, b, c, d) => true;
 				WebClient webClient = new();
 				try
 				{
@@ -272,8 +281,19 @@ namespace PrintTool
 			}
 			try { usbsend.Kill(); }
 			catch { MessageBox.Show("Unable to close USBSend"); }
+			if(Settings.Default.KeepDownloads == true)
+			{
+				try
+				{
+					File.Copy(filename, "Firmware/" + filename);
+				}
+				catch { MessageBox.Show($"Unable to save {filename}"); }
+			}
+
 			try { File.Delete(filename); }
 			catch { MessageBox.Show($"Unable to delete {filename}"); }
+			
+			
 			button.IsEnabled = true; ;
 			button.Content = "Download and Send";
 

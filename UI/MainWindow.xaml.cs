@@ -23,6 +23,7 @@ namespace PrintTool
 		DirectoryInfo pathToSavePrintersTo = null;
 		DirectoryInfo pathToSaveJobsTo = null;
 		DirectoryInfo pathToSaveLogsTo = null;
+		DirectoryInfo pathToSaveFirmwareTo = null;
 
 
 		Printer currentlyDisplayedPrinter;
@@ -46,9 +47,12 @@ namespace PrintTool
 			pathToSavePrintersTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Printers");
 			pathToSaveJobsTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Jobs");
 			pathToSaveLogsTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Logs");
+			pathToSaveFirmwareTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Firmware");
 			printingListActiveJobs.ItemsSource = currentDisplayingJobs;
 			RefreshJobListTimer.Start();
 			RefreshJobListTimer.Elapsed += MainTimer_Elapsed;
+
+			keepDownloadCopies.IsChecked = Settings.Default.KeepDownloads;
 		}
 
 		//Updating Jobs
@@ -818,6 +822,8 @@ namespace PrintTool
 				connectSerialButton.Background = System.Windows.Media.Brushes.DarkRed;
 				serialConnected = true;
 				await ptlog.Log("Finished");
+				pauseSerialLoggingButton.IsEnabled = true;
+				serialpaused = false;
 			}
 			else
 			{
@@ -827,14 +833,35 @@ namespace PrintTool
 				connectSerialButton.Background = System.Windows.Media.Brushes.DarkGreen;
 				serialConnected = false;
 				await ptlog.Log("Finished");
+				pauseSerialLoggingButton.IsEnabled = false;
+				serialpaused = false;
 			}
 
 		}
-		//bool snoopyConnected = false;
-		private void ConnectSnoopy_Click(object sender, RoutedEventArgs e)
+
+		bool serialpaused = false;
+		private void pauseSerialLoggingButton_Click(object sender, RoutedEventArgs e)
 		{
-			//TODO
+            if (serialpaused)
+            {
+				pauseSerialLoggingButton.Content = "Unpause Serial Logging";
+				foreach (SerialConnection sc in serialConnections)
+				{
+					sc.paused = true;
+				}
+			}
+            else
+            {
+				pauseSerialLoggingButton.Content = "Pause Serial Logging";
+				foreach (SerialConnection sc in serialConnections)
+				{
+					sc.paused = false;
+				}
+			}
 		}
+			
+
+		
 		bool telnetConnected = false;
 
 		private async void ConnectTelnet_Click(object sender, RoutedEventArgs e)
@@ -862,6 +889,8 @@ namespace PrintTool
 				connectTelnetButton.Background = System.Windows.Media.Brushes.DarkRed;
 				telnetConnected = true;
 				await ptlog.Log("Finished");
+				pauseTelnetLoggingButton.IsEnabled = true;
+				telnetpaused = false;
 
 			}
 			else
@@ -872,9 +901,35 @@ namespace PrintTool
 				connectTelnetButton.Background = System.Windows.Media.Brushes.DarkGreen;
 				telnetConnected = false;
 				await ptlog.Log("Finished");
+				pauseTelnetLoggingButton.IsEnabled = false;
+				telnetpaused = false;
 			}
 
 		}
+
+
+		bool telnetpaused = false;
+		
+		private void pauseTelnetLoggingButton_Click(object sender, RoutedEventArgs e)
+		{
+			if (telnetpaused)
+			{
+				pauseTelnetLoggingButton.Content = "Pause Telnet Logging";
+				foreach (TelnetConnection sc in telnetConnections)
+				{
+					sc.paused = true;
+				}
+			}
+			else
+			{
+				pauseTelnetLoggingButton.Content = "Unpause Telnet Logging";
+				foreach (TelnetConnection sc in telnetConnections)
+				{
+					sc.paused = false;
+				}
+			}
+		}
+
 
 		private async void FlushLogs_Click(object sender, RoutedEventArgs e)
 		{
@@ -933,8 +988,20 @@ namespace PrintTool
 
 
 
+
 		#endregion
 
-		
-	}
+		private void keepDownloadCopies_Click(object sender, RoutedEventArgs e)
+		{
+			Settings.Default.KeepDownloads = keepDownloadCopies.IsChecked ?? false;
+			Settings.Default.Save();
+		}
+
+		private void openSavedFirmware_Click(object sender, RoutedEventArgs e)
+		{
+			Helper.OpenPath(pathToSaveFirmwareTo.FullName);
+		}
+
+       
+    }
 }

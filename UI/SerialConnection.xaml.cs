@@ -13,7 +13,7 @@ namespace PrintTool
 		private Logger logger;
 		private SerialPortStream port = new();
 		public int refreshRate = 200;
-
+		public bool paused = false;
 
 
 
@@ -45,8 +45,16 @@ namespace PrintTool
 
 		private async void Port_DataReceived1(object sender, SerialDataReceivedEventArgs e)
 		{
-			try { await logger.Log(port.ReadExisting()); }
-			catch { }
+            if (paused)
+            {
+
+            }
+            else
+            {
+				try { await logger.Log(port.ReadExisting()); }
+				catch { }
+			}
+			
 		}
 
 
@@ -59,6 +67,8 @@ namespace PrintTool
 			}
 		}
 
+
+		
 
 		public void SendData(string data)
 		{

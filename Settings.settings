@@ -3,10 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="Version" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">203</Value>
+      <Value Profile="(Default)">207</Value>
     </Setting>
     <Setting Name="TimesLaunched" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="KeepDownloads" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

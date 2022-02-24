@@ -20,8 +20,13 @@
 				<RowDefinition Height=".15*"/>
 			</Grid.RowDefinitions>
 			<GroupBox Header="Common Commands" Grid.Row="0">
-				<UniformGrid>
-
+				<UniformGrid Columns="2">
+					<Button x:Name="printEngineModel" Content="Print Engine Model" Click="printEngineModel_Click" />
+					<Button x:Name="getCanonFWRev" Content="Get Canon DCC FW Version" Click="getCanonFWRev_Click" />
+					<Button x:Name="getEngineVerient" Content="Get Engine Variant (MT#)" Click="getEngineVerient_Click" />
+					<Button x:Name="tryEngineUpdate" Content="Try DCC FW Engine Update" Click="tryEngineUpdate_Click" />
+					<Button x:Name="getUpdateStatus" Content="Get DCC FW Update Status" Click="getUpdateStatus_Click" />
+					<Button x:Name="reboot" Content="Reboot" Click="reboot_Click" />
 				</UniformGrid>
 			</GroupBox>
 			<GroupBox Header="Custom Commands here. Press enter to send" Grid.Row="1">

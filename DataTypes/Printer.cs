@@ -149,8 +149,15 @@ namespace PrintTool
 						SupplyInfo info = new();
 						foreach (string temp in at.Value.ToString().Split(";").ToList())
 						{
-							if (temp.Contains("level")) { info.percent = int.Parse(temp.Split("=")[1]); }
-							else if (temp.Contains("colorantname")) { info.supplyname = temp.Split("=")[1]; } //the[1] gets the value after the =
+							try
+							{
+								if (temp.Contains("level")) { info.percent = int.Parse(temp.Split("=")[1]); }
+								else if (temp.Contains("colorantname")) { info.supplyname = temp.Split("=")[1]; } //the[1] gets the value after the =
+							}
+							catch
+							{
+
+							}
 						}
 						IPPSupplyValues.Add(info);
 						break;
@@ -215,8 +222,9 @@ namespace PrintTool
 				jobsSent.Add(temp);
 				return temp;
 			}
-			catch
+			catch(Exception e)
 			{
+				System.Windows.MessageBox.Show("Error, server busy or another error.");
 				return null;
 				
 			}
