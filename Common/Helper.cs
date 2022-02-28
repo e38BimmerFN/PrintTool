@@ -108,9 +108,15 @@ namespace PrintTool
 			}
 		}
 
-
+		DirectoryInfo appdataPath = new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+		
 		public async Task<bool> TryDownloadOrCopyFile(string filename, string location)
 		{
+			var pathToSaveFirmwareTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Firmware");
+			if (File.Exists(pathToSaveFirmwareTo.FullName +"\\" + filename))
+            {
+				location = pathToSaveFirmwareTo.FullName;
+            }
 			if (location.Contains("http"))
 			{
 				try
@@ -196,14 +202,14 @@ namespace PrintTool
 			}
 
 
-			if(results.Count > 99)
-			{
-				results.RemoveRange(100, results.Count - 101);
-			}
-			if(results.Count == 0)
-			{
-				results.Add("Nothing Found");
-			}
+			//if(results.Count > 299)
+			//{
+			//	results.RemoveRange(300, results.Count - 301);
+			//}
+			//if(results.Count == 0)
+			//{
+			//	results.Add("Nothing Found");
+			//}
 			if (flip == true)
 			{
 				results.Reverse();

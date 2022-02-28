@@ -17,7 +17,7 @@ namespace PrintTool
 	{
 		//Paths
 		const string SIRUSSITE = "http://sgpfwws.ijp.sgp.rd.hpicorp.net/cr/bpd/sh_release/";
-		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/published/daily_builds/";
+		const string DUNESITE = "https://dunebdlserver.boi.rd.hpicorp.net/media/";
 		const string JOLTPATH = @"\\jedibdlbroker.boi.rd.hpicorp.net\JediSystems\Published\DailyBuilds\25s\";
 		DirectoryInfo appdataPath = new(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 		DirectoryInfo pathToSavePrintersTo = null;
@@ -103,15 +103,18 @@ namespace PrintTool
 			}
 			else
 			{
+
 				joltYearSelect.ItemsSource = await Helper.PopulateFromPathOrSite(JOLTPATH, flip: true);
 				joltYearSelect.SelectedIndex = 0;
-
-				duneVersionSelect.ItemsSource = await Helper.PopulateFromPathOrSite(DUNESITE + "?C=M;O=D");
-				duneVersionSelect.SelectedIndex = 0;
 
 				sirusSGPSelect.Items.Add("yolo_sgp/");
 				sirusSGPSelect.Items.Add("avengers_sgp/");
 				sirusSGPSelect.SelectedIndex = 0;
+
+				duneBuildSeelct.Items.Add("published/daily_builds/");
+				duneBuildSeelct.Items.Add("intermediate_builds/");
+				duneBuildSeelct.SelectedIndex = 0;
+				
 			}
 		}
 
@@ -498,33 +501,72 @@ namespace PrintTool
 		{
 			if (duneFwTab.SelectedIndex == 0)
 			{
-				string path = DUNESITE + duneVersionSelect.SelectedValue + duneModelSelect.SelectedValue + "?C=S;O=D";
+				string path = DUNESITE + duneBuildSeelct.Text + duneVersionSelect.SelectedValue + duneModelSelect.SelectedValue + "?C=S;O=D";
 				dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
 				dunePackageSelect.SelectedIndex = 0;
 			}
-			else
+			else if(duneFwTab.SelectedIndex==1)
 			{
-				string path = duneCustomLink.Text;
+            	string path = duneCustomLink.Text;
 				dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
-				dunePackageSelect.SelectedIndex = 0;
+				dunePackageSelect.SelectedIndex = 0;            
 			}
 		}
 
 
+		List<string> tempVersionsForDune;
+		private async void duneBuildSeelct_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			string path = DUNESITE + duneBuildSeelct.SelectedItem;
+
+			HashSet<string> majorVersions = new();
+			tempVersionsForDune = await Helper.PopulateFromPathOrSite(path, "", true);
+			foreach(string version in tempVersionsForDune)
+            {
+				var major = System.Text.RegularExpressions.Regex.Match(version, "\\d\\.\\d");
+				if(major.Value == "") { continue; }
+				majorVersions.Add(major.Value);
+            }
+			
+			duneVersionSelectMajor.ItemsSource = majorVersions;
+			duneVersionSelectMajor.SelectedIndex = 0;
+		
+		}
+
+		private async void duneVersionSelectMajor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			List<string> trunacated = new();
+			foreach(string version in tempVersionsForDune)
+            {
+                if (version.StartsWith(duneVersionSelectMajor.SelectedItem.ToString()))
+                {
+					trunacated.Add(version);
+                }
+            }
+			duneVersionSelect.ItemsSource = trunacated;
+			duneVersionSelect.SelectedIndex = 0;
+		}
+
 		private async void DuneVersionSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			string path = DUNESITE + duneVersionSelect.SelectedValue;
-			duneModelSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path);
-			if (duneModelSelect.Items[0].ToString().Contains("defaultProductGroup"))
+			if(duneVersionSelect.SelectedItem is null) { return; }
+			string path = DUNESITE + duneBuildSeelct.SelectedItem + duneVersionSelect.SelectedItem;
+			List<string> modles = await Helper.PopulateFromPathOrSite(path);
+			if (modles[0].ToString().Contains("defaultProductGroup"))
 			{
 				duneModelSelect.Items.RemoveAt(0);
 			}
+			duneModelSelect.ItemsSource = modles;
 			duneModelSelect.SelectedIndex = 0;
 		}
 
 		private async void DuneModelSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			string path = DUNESITE + duneVersionSelect.Text + duneModelSelect.Text + "?C=S;O=D";
+            
+			if(duneModelSelect.SelectedItem is null or "") {
+				return; 
+			}
+			string path = DUNESITE + duneBuildSeelct.SelectedItem + duneVersionSelect.SelectedItem + duneModelSelect.SelectedItem + "?C=S;O=D";
 			dunePackageSelect.ItemsSource = await Helper.PopulateFromPathOrSite(path, "fhx");
 			dunePackageSelect.SelectedIndex = 0;
 		}
@@ -567,7 +609,7 @@ namespace PrintTool
 		{
 			if (duneFwTab.SelectedIndex == 0)
 			{
-				Helper.OpenPath(DUNESITE + duneVersionSelect.Text + duneModelSelect.Text);
+				Helper.OpenPath(DUNESITE + duneBuildSeelct.Text + duneVersionSelect.Text + duneModelSelect.Text);
 			}
 			else
 			{
@@ -1002,6 +1044,6 @@ namespace PrintTool
 			Helper.OpenPath(pathToSaveFirmwareTo.FullName);
 		}
 
-       
+        
     }
 }
