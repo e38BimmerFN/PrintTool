@@ -47,28 +47,54 @@ Print
 UPDATES
 
 210 - Overhauled dune firmware gathering, and FW gathering from the drive. Also added the ability to reuse saved FW and pause logging.
+
 206 - Fixed AutoUpdater and commands
+
 205 - Added the ability to save downloaded firmware, removed snoopy on dart feature, and added telnet commands
+
 204 - Fixed dune version fetching (broke due to certificate being exprired )
+
 203 - Fixed last update
+
 202 - Fixing template generation.
+
 201 - Fixing printing readout, fixing bell finsishings support.
+
 200 - UI Rework, brand new printing and printer pages, some behind the scenes optimizations
+
 117 - Fixing supply status, stablity improvements 
+
 116 - Misc fixes, adding testing, bulk job sending
+
 115 - Job status readback
+
 114 - bugfixes
+
 113 - autoping ip and autopop printer attributes
+
 112 - fix telnet connections
+
 111 - Overhaul of logging and printer status, and printing itself.
+
 110 - Update UI for firmware, and enable jolt firmware installs.
+
 109 - Finish logging of serial and telnet
+
 108 - Enable telnet logging, major refractor, lots of UI changes.
+
 107 - logging of serial enabled, QOL changes, printer status querying 
+
 106 - connections overhaul
+
 105 - updating and installer fixes
+
 104 - finish yolo and dune firmware parsing / oop updates
+
 103 - major refractor
+
 102 - Items requested by robert
+
 101 - First Release
+
 100 - Initial Commit
+
