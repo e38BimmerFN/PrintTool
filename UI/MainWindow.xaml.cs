@@ -111,8 +111,7 @@ namespace PrintTool
 				sirusSGPSelect.Items.Add("avengers_sgp/");
 				sirusSGPSelect.SelectedIndex = 0;
 
-				duneBuildSeelct.Items.Add("published/daily_builds/");
-				duneBuildSeelct.Items.Add("intermediate_builds/");
+				duneBuildSeelct.Items.Add("published/daily_builds/");				
 				duneBuildSeelct.SelectedIndex = 0;
 				
 			}
@@ -590,7 +589,7 @@ namespace PrintTool
 			System.Threading.CancellationToken cancelToken = cancelSource.Token;
 			if (duneFwTab.SelectedIndex == 0)
 			{
-				await ptHelper.DLAndSend(dunePackageSelect.Text, DUNESITE + duneVersionSelect.Text + duneModelSelect.Text, ptlog, duneSendFW, cancelToken);
+				await ptHelper.DLAndSend(dunePackageSelect.Text, DUNESITE + duneBuildSeelct.Text + duneVersionSelect.Text + duneModelSelect.Text, ptlog, duneSendFW, cancelToken);
 			}
 			else
 			{

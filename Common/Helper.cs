@@ -112,11 +112,6 @@ namespace PrintTool
 		
 		public async Task<bool> TryDownloadOrCopyFile(string filename, string location)
 		{
-			var pathToSaveFirmwareTo = appdataPath.CreateSubdirectory("DerekTools").CreateSubdirectory("PrintTool").CreateSubdirectory("Firmware");
-			if (File.Exists(pathToSaveFirmwareTo.FullName +"\\" + filename))
-            {
-				location = pathToSaveFirmwareTo.FullName;
-            }
 			if (location.Contains("http"))
 			{
 				try
@@ -143,7 +138,7 @@ namespace PrintTool
 			else
 			{
 				return false;
-			}
+			}			
 		}
 
 		public async static Task<List<string>> PopulateFromPathOrSite(string path, string filter = "", bool flip = false)
@@ -286,15 +281,7 @@ namespace PrintTool
 				await logger.Log("Firmware upgrade error / canceled. Check USB Connection.");
 			}
 			try { usbsend.Kill(); }
-			catch { MessageBox.Show("Unable to close USBSend"); }
-			if(Settings.Default.KeepDownloads == true)
-			{
-				try
-				{
-					File.Copy(filename, "Firmware/" + filename);
-				}
-				catch { MessageBox.Show($"Unable to save {filename}"); }
-			}
+			catch { MessageBox.Show("Unable to close USBSend"); }			
 
 			try { File.Delete(filename); }
 			catch { MessageBox.Show($"Unable to delete {filename}"); }

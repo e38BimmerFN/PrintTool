@@ -7,7 +7,7 @@
 		xmlns:System="clr-namespace:System;assembly=System.Runtime" x:Class="PrintTool.MainWindow"
 		mc:Ignorable="d"
 		d:DesignHeight="1000" d:DesignWidth="1500"
-		Title="PrintTool by Derek Hearst v2.1.0" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Style="{DynamicResource CustomWindowStyle}">
+		Title="PrintTool by Derek Hearst v2.1.1" ContentRendered="LoadTrigger" ResizeMode="CanResizeWithGrip" SizeToContent="Manual" Style="{DynamicResource CustomWindowStyle}">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -225,7 +225,7 @@
 
                             <UniformGrid  Grid.Row="3" Columns="3">
                                 <Button x:Name="sirusSendFW" Content="Download and Send" Background="#7F00FF00" Click="SirusSendFW_Click"/>
-                                <Button x:Name="sirusCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="SirusCancelFW_Click"/>
+                                <Button x:Name="sirusCancelFW" Content="Cancel Sending FW" Background="#7FFF0000" Click="SirusCancelFW_Click"/>
                                 <Button x:Name="sirusOpenFW" Content="Open FW Link" Background="#7F0000FF" Click="SirusOpenFW_Click" />
                             </UniformGrid>
 
@@ -287,7 +287,7 @@
 
                             <UniformGrid  Grid.Row="3" Columns="3">
                                 <Button x:Name="duneSendFW" Content="Download and Send" Background="#7F00FF00" Click="DuneSendFW_Click"/>
-                                <Button x:Name="duneCancelFW" Content="Cancel Download" Background="#7FFF0000" Click="DuneCancelFW_Click"/>
+                                <Button x:Name="duneCancelFW" Content="Cancel Sending FW" Background="#7FFF0000" Click="DuneCancelFW_Click"/>
                                 <Button x:Name="duneOpenFw" Content="Open FW Link" Background="#7F0000FF" Click="DuneOpenFw_Click" />
                             </UniformGrid>
 
@@ -402,7 +402,7 @@
             </TabItem>
             <TabItem Header="Settings">
                 <UniformGrid>
-                    <CheckBox x:Name="keepDownloadCopies" Content="Keep Firmware Downloaded" Click="keepDownloadCopies_Click"/>
+                    <CheckBox x:Name="keepDownloadCopies" Content="Keep Firmware Downloaded" Click="keepDownloadCopies_Click" IsEnabled="false"/>
                     <Button x:Name="openSavedFirmware" Content="Open Saved Firmware" Click="openSavedFirmware_Click"/>
                 </UniformGrid>
             </TabItem>
