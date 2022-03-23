@@ -272,12 +272,12 @@ namespace PrintTool
 			await usbsend.WaitForExitAsync(token);
 			if (usbsend.ExitCode == 0)
 			{
-				MessageBox.Show("Firmware upgrade success!");
+				MessageBox.Show("Firmware upgrade success!","Success!",MessageBoxButton.OK,MessageBoxImage.Information,MessageBoxResult.OK);
 				await logger.Log("Firmware upgrade success!");
 			}
 			else
 			{
-				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.");
+				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 				await logger.Log("Firmware upgrade error / canceled. Check USB Connection.");
 			}
 			try { usbsend.Kill(); }

@@ -1,0 +1,48 @@
+﻿<Window x:Class="PrintTool.TelnetIPSelection"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PrintTool"
+        mc:Ignorable="d"
+        Title="Input IP Address's" Height="658" Width="599" Style="{DynamicResource CustomWindowStyle}" Background="#FF232323" BorderBrush="#FF343434" Foreground="#FFEBEBEB">
+    <DockPanel>
+        
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" DockPanel.Dock="Bottom">
+            <Button x:Name="OkayButton" Content="Okay" FontSize="30" Margin="10" Click="OkayButton_Click"/>
+            <Button x:Name="CancelButton" Content="Cancel" FontSize="30" Margin="10" IsCancel="True" Click="CancelButton_Click"/>
+        </StackPanel>
+        
+        
+        <GroupBox Header="Dart IP and Port's" FontSize="30" DockPanel.Dock="Top">
+            <StackPanel>
+                <GroupBox Header="Dart IP" Margin="10">
+                    <TextBox Text="Input IP Here." FontSize="24" Name="DartIpEntry" GotKeyboardFocus="DartIpEntry_GotKeyboardFocus"/>
+                </GroupBox>
+                <GroupBox Header="Dart Ports" Margin="10">
+                    <UniformGrid>
+                        <TextBox Text="8108" Name="dartport1"/>
+                        <TextBox Text="8109" Name="dartport2"/>
+                        <TextBox Text="8100" Name="dartport3"/>
+                        <TextBox Text=""/>
+                        
+                    </UniformGrid>
+                </GroupBox>
+            </StackPanel>
+            
+        </GroupBox>
+        <GroupBox Header="Printer Telnet IP and Port / OPTIONAL" DockPanel.Dock="Top" FontSize="30" FontWeight="Normal">
+            <StackPanel>
+                <GroupBox Header="Printer IP" Margin="10">
+                    <TextBox Text="Input IP Here." FontSize="24" Name="PrinterIPEntry" GotKeyboardFocus="PrinterIPEntry_GotKeyboardFocus"/>
+                </GroupBox>
+                
+                <GroupBox Header="Port" Margin="10">
+                    <TextBox Text="9104" FontSize="24" Name="printerport1"/>
+                </GroupBox>
+                
+            </StackPanel>
+        </GroupBox>
+
+    </DockPanel>
+</Window>

@@ -111,7 +111,7 @@ namespace PrintTool
 				sirusSGPSelect.Items.Add("avengers_sgp/");
 				sirusSGPSelect.SelectedIndex = 0;
 
-				duneBuildSeelct.Items.Add("published/daily_builds/");				
+				duneBuildSeelct.Items.Add("published/daily_builds/");		
 				duneBuildSeelct.SelectedIndex = 0;
 				
 			}
@@ -617,6 +617,24 @@ namespace PrintTool
 
 		}
 
+		private async void duneRefreshFW_Click(object sender, RoutedEventArgs e)
+		{
+			string path = DUNESITE + duneBuildSeelct.SelectedItem;
+
+			HashSet<string> majorVersions = new();
+			tempVersionsForDune = await Helper.PopulateFromPathOrSite(path, "", true);
+			foreach (string version in tempVersionsForDune)
+			{
+				var major = System.Text.RegularExpressions.Regex.Match(version, "\\d\\.\\d");
+				if (major.Value == "") { continue; }
+				majorVersions.Add(major.Value);
+			}
+
+			duneVersionSelectMajor.ItemsSource = majorVersions;
+			duneVersionSelectMajor.SelectedIndex = 0;
+
+		}
+
 		#endregion Dune
 
 		#endregion Firmware
@@ -889,6 +907,7 @@ namespace PrintTool
 				foreach (SerialConnection sc in serialConnections)
 				{
 					sc.paused = true;
+					serialpaused = true;
 				}
 			}
             else
@@ -897,6 +916,7 @@ namespace PrintTool
 				foreach (SerialConnection sc in serialConnections)
 				{
 					sc.paused = false;
+					serialpaused = false;
 				}
 			}
 		}
@@ -909,20 +929,43 @@ namespace PrintTool
 		{
 			if (!telnetConnected)
 			{
-				IPEntry ipgetter = new();
-				ipgetter.ShowDialog();
-				if(ipgetter.DialogResult == false)
+				TelnetIPSelection ipgather = new();
+				ipgather.ShowDialog();
+
+				if(ipgather.DialogResult == false)
 				{
 					return;
 				}
+
+				List<KeyValuePair<String, int>> ipandports = new();
+                try
+                {
+					if (!ipgather.skipdart)
+					{
+						ipandports.Add(new(ipgather.DartIpEntry.Text, int.Parse(ipgather.dartport1.Text)));
+						ipandports.Add(new(ipgather.DartIpEntry.Text, int.Parse(ipgather.dartport2.Text)));
+						ipandports.Add(new(ipgather.DartIpEntry.Text, int.Parse(ipgather.dartport3.Text)));
+					}
+					if (!ipgather.skipprint)
+					{
+						ipandports.Add(new(ipgather.PrinterIPEntry.Text, int.Parse(ipgather.printerport1.Text)));
+					}
+				}
+                catch
+                {
+					MessageBox.Show("Error in parsing telent stuff");
+                }
+				
+				
+
 				await ptlog.Log("Connecting to telnet connections...");
 				telnetConnections.Clear();
 				telnetConnectionsTabControl.Items.Clear();
-				foreach (int port in TelnetConnection.GetPorts())
+				foreach (KeyValuePair<string,int> kvp in ipandports)
 				{
-					await ptlog.Log("Connecting to " + port);
-					TelnetConnection connection = new(ipgetter.ipaddress.Text, port);
-					TabItem tab = new() { Content = connection, Header = port.ToString() };
+					await ptlog.Log("Connecting to " + kvp.Key + kvp.Value);
+					TelnetConnection connection = new(kvp.Key, kvp.Value);
+					TabItem tab = new() { Content = connection, Header = kvp.Value.ToString() };
 					telnetConnectionsTabControl.Items.Add(tab);
 					telnetConnections.Add(connection);
 				}
@@ -959,6 +1002,7 @@ namespace PrintTool
 				foreach (TelnetConnection sc in telnetConnections)
 				{
 					sc.paused = true;
+					telnetpaused = true;
 				}
 			}
 			else
@@ -967,6 +1011,7 @@ namespace PrintTool
 				foreach (TelnetConnection sc in telnetConnections)
 				{
 					sc.paused = false;
+					telnetpaused = false;
 				}
 			}
 		}

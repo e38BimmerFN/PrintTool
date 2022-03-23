@@ -25,9 +25,16 @@ namespace PrintTool
 			InitializeComponent();
 			logger = new(port.ToString());
 			logLocation.Children.Add(logger);
-			var token = tokenSource.Token;
+			var token = tokenSource.Token;            
 			cli = new Client(ip, port, token);
-			cli.TryLoginAsync("root", "", 1000);
+			try
+			{
+				cli.TryLoginAsync("root", "", 1000);
+			}
+            catch
+            {
+				MessageBox.Show("Unable to connect to" + ip + port);
+            }
 			Timer timer = new(refreshRate);
 			timer.Elapsed += GetData;
 			timer.Start();
@@ -37,19 +44,13 @@ namespace PrintTool
 
 		private async void GetData(object sender, ElapsedEventArgs e)
 		{
-            if (paused)
+			string result;
+			try { result = await cli.ReadAsync(); }
+			catch { return; }
+			if (!paused)
             {
-
-            }
-            else
-            {
-				string result;
-				try { result = await cli.ReadAsync(); }
-				catch { return; }
-
 				await logger.Log(result);
-			}
-			
+			}		
 		}
 
 		public async Task Write(string command)
