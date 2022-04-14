@@ -207,7 +207,14 @@ namespace PrintTool
 			{
 				currentlyDisplayedPrinter.IP = pop.ipaddress.Text;
 				currentlyDisplayedPrinter.Nickname = pop.nickname.Text;
-				await currentlyDisplayedPrinter.RefreshValues();
+                try
+                {
+					await currentlyDisplayedPrinter.RefreshValues();
+				}
+                catch
+                {
+					MessageBox.Show("Error fetching values");
+                }
 				Printer.SavePrinter(pathToSavePrintersTo, currentlyDisplayedPrinter);
 				savedPrintersList.ItemsSource = await Helper.PopulateFromPathOrSite(pathToSavePrintersTo.FullName);
 				savedPrintersList.SelectedItem = pop.nickname.Text;
@@ -963,7 +970,7 @@ namespace PrintTool
 				telnetConnectionsTabControl.Items.Clear();
 				foreach (KeyValuePair<string,int> kvp in ipandports)
 				{
-					await ptlog.Log("Connecting to " + kvp.Key + kvp.Value);
+					await ptlog.Log("Connecting to " + kvp.Key + " : "+ kvp.Value);
 					TelnetConnection connection = new(kvp.Key, kvp.Value);
 					TabItem tab = new() { Content = connection, Header = kvp.Value.ToString() };
 					telnetConnectionsTabControl.Items.Add(tab);
@@ -996,9 +1003,10 @@ namespace PrintTool
 		
 		private void pauseTelnetLoggingButton_Click(object sender, RoutedEventArgs e)
 		{
-			if (telnetpaused)
+			if (!telnetpaused)
 			{
-				pauseTelnetLoggingButton.Content = "Pause Telnet Logging";
+	
+				pauseTelnetLoggingButton.Content = "Unpause Telnet Logging";
 				foreach (TelnetConnection sc in telnetConnections)
 				{
 					sc.paused = true;
@@ -1007,7 +1015,7 @@ namespace PrintTool
 			}
 			else
 			{
-				pauseTelnetLoggingButton.Content = "Unpause Telnet Logging";
+				pauseTelnetLoggingButton.Content = "Pause Telnet Logging";
 				foreach (TelnetConnection sc in telnetConnections)
 				{
 					sc.paused = false;

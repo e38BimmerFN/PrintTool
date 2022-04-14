@@ -35,6 +35,7 @@ namespace PrintTool
 			try
 			{
 				File.AppendAllTextAsync($"{fileLoc}Log{fileName}.txt", linestowrite);
+				linestowrite = "";
 			}
 			catch
 			{

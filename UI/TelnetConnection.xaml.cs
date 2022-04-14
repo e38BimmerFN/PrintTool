@@ -26,9 +26,10 @@ namespace PrintTool
 			logger = new(port.ToString());
 			logLocation.Children.Add(logger);
 			var token = tokenSource.Token;            
-			cli = new Client(ip, port, token);
+			
 			try
 			{
+				cli = new Client(ip, port, token);
 				cli.TryLoginAsync("root", "", 1000);
 			}
             catch
@@ -64,16 +65,6 @@ namespace PrintTool
 			cli.Dispose();
 		}
 
-		public static List<int> GetPorts()
-		{
-			List<int> connections = new();
-			connections.Add(8108);
-			connections.Add(8109);
-			connections.Add(8110);
-
-
-			return connections;
-		}
 
 		private async void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
 		{
