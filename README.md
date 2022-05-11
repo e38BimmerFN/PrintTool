@@ -10,7 +10,7 @@ CURRENT
 2. Updating firmware - jolt, sirus, and dune
 3. Sending various print jobs - using the "IPP" technology, USB, and raw 9100
 4. Status feedback and rich communication with the printer
-5. Auto Upddating
+5. Auto Updating
 
 PLANNED
 1. Capturing machine logs
