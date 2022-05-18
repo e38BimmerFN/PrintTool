@@ -1,18 +1,16 @@
 # PrintTool
 
 Hello, this is the guide and readme for the program "PrintTool" created by derek hearst.
-This program is undergoing heavy development and can / will change as features that are needed arise.
+This program is undergoing heavy development and can / will change as features that are needed.
 ---------------------------------------------------------------------------
-CURRENT CAPABILITES / PLANNED
-
-CURRENT
+CURRENT CAPABILITES
 1. Connecting and gathering logs - only serial and telnet at the moment
 2. Updating firmware - jolt, sirus, and dune
 3. Sending various print jobs - using the "IPP" technology, USB, and raw 9100
 4. Status feedback and rich communication with the printer
 5. Auto Updating
 
-PLANNED
+PLANNED CAPABILITES
 1. Capturing machine logs
 2. Working with HP UPD Directly
 3. Capability to work with finishers
