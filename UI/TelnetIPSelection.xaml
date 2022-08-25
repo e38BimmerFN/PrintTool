@@ -16,14 +16,14 @@
         
         <GroupBox Header="Dart IP and Port's" FontSize="30" DockPanel.Dock="Top">
             <StackPanel>
-                <GroupBox Header="Dart IP" Margin="10">
-                    <TextBox Text="Input IP Here." FontSize="24" Name="DartIpEntry" GotKeyboardFocus="DartIpEntry_GotKeyboardFocus"/>
+                <GroupBox Header="Dart IP Address" Margin="10">
+                    <TextBox Text="Input IP Address Here." FontSize="24" Name="DartIpEntry" GotKeyboardFocus="DartIpEntry_GotKeyboardFocus"/>
                 </GroupBox>
-                <GroupBox Header="Dart Ports" Margin="10">
+                <GroupBox Header="DUNE Dart Ports" Margin="10">
                     <UniformGrid>
-                        <TextBox Text="8108" Name="dartport1"/>
-                        <TextBox Text="8109" Name="dartport2"/>
-                        <TextBox Text="8110" Name="dartport3"/>
+                        <TextBox Text="8108 Linux Serial" Name="dartport1"/>
+                        <TextBox Text="8109 Kernel" Name="dartport2"/>
+                        <TextBox Text="8110 DoX" Name="dartport3"/>
                         <TextBox Text=""/>
                         
                     </UniformGrid>
@@ -33,12 +33,12 @@
         </GroupBox>
         <GroupBox Header="Printer Telnet IP and Port / OPTIONAL" DockPanel.Dock="Top" FontSize="30" FontWeight="Normal">
             <StackPanel>
-                <GroupBox Header="Printer IP" Margin="10">
-                    <TextBox Text="Input IP Here." FontSize="24" Name="PrinterIPEntry" GotKeyboardFocus="PrinterIPEntry_GotKeyboardFocus"/>
+                <GroupBox Header="Printer JDI IP Address" Margin="10">
+                    <TextBox Text="Input IP Address Here." FontSize="24" Name="PrinterIPEntry" GotKeyboardFocus="PrinterIPEntry_GotKeyboardFocus"/>
                 </GroupBox>
                 
-                <GroupBox Header="Port" Margin="10">
-                    <TextBox Text="9104" FontSize="24" Name="printerport1"/>
+                <GroupBox Header="Telnet Port" Margin="10">
+                    <TextBox Text="9104 Main App Port" FontSize="24" Name="printerport1"/>
                 </GroupBox>
                 
             </StackPanel>

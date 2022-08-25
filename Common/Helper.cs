@@ -277,8 +277,8 @@ namespace PrintTool
 			}
 			else
 			{
-				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection.", "ERROR", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-				await logger.Log("Firmware upgrade error / canceled. Check USB Connection.");
+				MessageBox.Show("Firmware upgrade error / canceled. Check USB Connection. Ensure USB cable is connected from PC to printer.", "FW File Send ERROR", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+				await logger.Log("Firmware upgrade error / canceled. Check USB Connection. Ensure USB cable is connected from PC to printer.");
 			}
 			try { usbsend.Kill(); }
 			catch { MessageBox.Show("Unable to close USBSend"); }			
@@ -288,7 +288,7 @@ namespace PrintTool
 			
 			
 			button.IsEnabled = true; ;
-			button.Content = "Download and Send";
+			button.Content = "Download and Send FW File";
 
 			progressBar.Dispatcher.Invoke(new Action(async () =>
 			{

@@ -224,9 +224,9 @@
                             </GroupBox>
 
                             <UniformGrid  Grid.Row="3" Columns="3">
-                                <Button x:Name="sirusSendFW" Content="Download and Send" Background="#7F00FF00" Click="SirusSendFW_Click"/>
-                                <Button x:Name="sirusCancelFW" Content="Cancel Sending FW" Background="#7FFF0000" Click="SirusCancelFW_Click"/>
-                                <Button x:Name="sirusOpenFW" Content="Open FW Link" Background="#7F0000FF" Click="SirusOpenFW_Click" />
+                                <Button x:Name="sirusSendFW" Content="Download and Send FW File" Background="#7F00FF00" Click="SirusSendFW_Click"/>
+                                <Button x:Name="sirusCancelFW" Content="Cancel Sending FW File" Background="#7FFF0000" Click="SirusCancelFW_Click"/>
+                                <Button x:Name="sirusOpenFW" Content="Open FW Repo Link" Background="#7F0000FF" Click="SirusOpenFW_Click" />
                             </UniformGrid>
 
                             <GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="8" >
@@ -281,15 +281,15 @@
                                     </GroupBox>
                                 </TabItem>
                             </TabControl>
-                            <GroupBox Grid.Row="1" Header="Select Package" BorderBrush="{x:Null}">
+                            <GroupBox Grid.Row="1" Header="Select FW Package" BorderBrush="{x:Null}">
                                 <ComboBox x:Name="dunePackageSelect"/>
                             </GroupBox>
 
                             <UniformGrid  Grid.Row="3" Columns="4">
-                                <Button x:Name="duneSendFW" Content="Download and Send" Background="#7F00FF00" Click="DuneSendFW_Click"/>
-                                <Button x:Name="duneCancelFW" Content="Cancel Sending FW" Background="#7FFF0000" Click="DuneCancelFW_Click"/>
-                                <Button x:Name="duneOpenFw" Content="Open FW Link" Background="#7F0000FF" Click="DuneOpenFw_Click" />
-                                <Button x:Name="duneRefreshFW" Content="Refresh FW" Background="#7F0000FF" Click="duneRefreshFW_Click"/>
+                                <Button x:Name="duneSendFW" Content="Download and Send FW File" Background="#7F00FF00" Click="DuneSendFW_Click"/>
+                                <Button x:Name="duneCancelFW" Content="Cancel Sending FW File" Background="#7FFF0000" Click="DuneCancelFW_Click"/>
+                                <Button x:Name="duneOpenFw" Content="Open FW Repo Link" Background="#7F0000FF" Click="DuneOpenFw_Click" />
+                                <Button x:Name="duneRefreshFW" Content="Refresh FW Repo List" Background="#7F0000FF" Click="duneRefreshFW_Click"/>
                             </UniformGrid>
 
                             <GroupBox Header="Quick Links" Grid.Column="1"  Grid.RowSpan="4" >
