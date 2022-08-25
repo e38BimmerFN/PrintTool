@@ -272,8 +272,8 @@ namespace PrintTool
 			await usbsend.WaitForExitAsync(token);
 			if (usbsend.ExitCode == 0)
 			{
-				MessageBox.Show("Firmware upgrade success!","Success!",MessageBoxButton.OK,MessageBoxImage.Information,MessageBoxResult.OK);
-				await logger.Log("Firmware upgrade success!");
+				MessageBox.Show("Firmware File Sent Success!","Success!",MessageBoxButton.OK,MessageBoxImage.Information,MessageBoxResult.OK);
+				await logger.Log("Firmware File Sent Success!");
 			}
 			else
 			{
